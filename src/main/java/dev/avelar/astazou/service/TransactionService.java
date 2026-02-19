@@ -14,6 +14,7 @@ import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
 
@@ -23,10 +24,10 @@ public class TransactionService {
   private static final Logger LOGGER = LoggerFactory.getLogger(TransactionService.class);
 
   @Value("${astazou.python.interpreter}")
-  private String pythonInterpreter;
+  protected String pythonInterpreter;
 
   @Value("${astazou.python.itau-pdf-parser}")
-  private String itauPdfParserScript;
+  protected String itauPdfParserScript;
 
   private final TransactionRepository repository;
 
@@ -66,14 +67,19 @@ public class TransactionService {
       outputCsv = new File(csvName);
     }
 
-    ProcessBuilder pb = new ProcessBuilder(pythonInterpreter, itauPdfParserScript, pdf.getAbsolutePath(), outputCsv.getAbsolutePath());
+    ProcessBuilder pb = new ProcessBuilder(pythonInterpreter, itauPdfParserScript, pdf.getAbsolutePath(),
+        outputCsv.getAbsolutePath());
     pb.redirectErrorStream(true);
 
     try {
       Process p = pb.start();
-      // consume process output to avoid blocking
+      List<String> logRows = new LinkedList<>();
+
       try (BufferedReader br = new BufferedReader(new InputStreamReader(p.getInputStream()))) {
-        while (br.readLine() != null) { /* consume */ }
+        String row = "";
+        while ((row = br.readLine()) != null) {
+          logRows.add(row);
+        }
       }
 
       int exit = p.waitFor();

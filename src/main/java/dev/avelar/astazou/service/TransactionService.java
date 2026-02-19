@@ -105,16 +105,21 @@ public class TransactionService {
         header = br.readLine();
       }
 
+      LocalDate currentDate = null;
+      int positionOnDay = 0;
+
       String line;
       while ((line = br.readLine()) != null) {
-        if (line.trim().isEmpty()) continue;
+        if (line.trim().isEmpty())
+          continue;
 
         String[] parts = line.split(",(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)", -1);
         for (int i = 0; i < parts.length; i++) {
           parts[i] = parts[i].trim().replaceAll("^\"|\"$", "");
         }
 
-        if (parts.length < 5) continue;
+        if (parts.length < 5)
+          continue;
 
         LocalDate date = LocalDate.parse(parts[0], fmt);
         String description = parts[1];
@@ -122,14 +127,22 @@ public class TransactionService {
         String type = parts[3];
         int page = Integer.parseInt(parts[4]);
 
-        transactions.add(Transaction.builder()
-            .transactionDate(date)
-            .description(description)
-            .amount(amount)
-            .type(type)
-            .page(page)
-            .createdAt(OffsetDateTime.now())
-            .build());
+        if (!date.equals(currentDate)) {
+          currentDate = date;
+          positionOnDay = 1;
+        } else {
+          positionOnDay++;
+        }
+
+        transactions.add(
+            Transaction.builder()
+                .transactionDate(date)
+                .description(description)
+                .amount(amount)
+                .type(type)
+                .page(page)
+                .sequence(positionOnDay)
+                .createdAt(OffsetDateTime.now()).build());
       }
     } catch (IOException e) {
       throw new UncheckedIOException(e);

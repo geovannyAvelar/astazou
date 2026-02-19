@@ -42,4 +42,6 @@ public class Transaction {
 
   private String username;
 
+  private int sequence;
+
 }

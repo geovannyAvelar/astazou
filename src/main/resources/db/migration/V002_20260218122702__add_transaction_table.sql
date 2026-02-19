@@ -12,6 +12,7 @@ CREATE TABLE transactions (
     amount NUMERIC(14,2) NOT NULL,
     type VARCHAR(10) NOT NULL,
     page INTEGER,
+    sequence INTEGER NOT NULL,
     bank_account_id BIGINT NOT NULL REFERENCES bank_account(id),
     created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
 );

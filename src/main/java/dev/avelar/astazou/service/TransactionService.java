@@ -1,11 +1,15 @@
 package dev.avelar.astazou.service;
 
+import dev.avelar.astazou.model.BankAccount;
 import dev.avelar.astazou.model.Transaction;
+import dev.avelar.astazou.repository.BankAccountRepository;
 import dev.avelar.astazou.repository.TransactionRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import java.io.*;
@@ -13,10 +17,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 @Service
 public class TransactionService {
@@ -31,28 +32,43 @@ public class TransactionService {
 
   private final TransactionRepository repository;
 
+  private final BankAccountRepository bankAccountRepository;
+
   @Autowired
-  public TransactionService(TransactionRepository repository) {
+  public TransactionService(TransactionRepository repository, BankAccountRepository bankAccountRepository) {
     this.repository = repository;
+    this.bankAccountRepository = bankAccountRepository;
   }
 
-  public void save(File pdf, String username) {
-    save(parseItauPdf(pdf), username);
+  public Page<Transaction> findAll(int page, int itemsPerPage) {
+    return repository.findAll(PageRequest.of(page, itemsPerPage));
   }
 
-  protected void save(List<Transaction> transactions, String username) {
+  public void save(File pdf, String username, Long bankAccountId) {
+    save(parseItauPdf(pdf), username, bankAccountId);
+  }
+
+  protected void save(List<Transaction> transactions, String username, Long bankAccountId) {
     for (Transaction transaction : transactions) {
       try {
-        transaction.setUsername(username);
-        save(transaction);
+        Optional<BankAccount> bankAccountOpt = bankAccountRepository.findById(bankAccountId);
+
+        if (bankAccountOpt.isEmpty()) {
+          throw new IllegalAccessException("Bank account not found");
+        }
+
+        BankAccount bankAccount = bankAccountOpt.get();
+
+        if (!bankAccount.getUsername().equals(username)) {
+          throw new IllegalAccessException("You are not the owner of this bank account");
+        }
+
+        transaction.setBankAccountId(bankAccount.getId());
+        repository.save(transaction);
       } catch (Exception e) {
         LOGGER.warn("Cannot process transaction. Cause: {}", e.getMessage());
       }
     }
-  }
-
-  protected Transaction save(Transaction transaction) {
-    return repository.save(transaction);
   }
 
   protected List<Transaction> parseItauPdf(File pdf) {

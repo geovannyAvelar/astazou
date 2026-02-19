@@ -1,7 +1,9 @@
 package dev.avelar.astazou.controller;
 
+import dev.avelar.astazou.model.Transaction;
 import dev.avelar.astazou.service.TransactionService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -22,6 +24,12 @@ public class TransactionController {
     this.service = service;
   }
 
+  @GetMapping("/{account_id}")
+  public ResponseEntity<Page<Transaction>> getTransactions(@PathVariable("account_id") Long accountId,
+      @RequestParam int page, @RequestParam int itemsPerPage) {
+    return ResponseEntity.ok(service.findAll(page, itemsPerPage));
+  }
+
   @PostMapping(path = "/itau/{account_id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   public ResponseEntity<Void> parseItauCsv(@RequestParam("file") MultipartFile file,
                                            @PathVariable("account_id") Long accountId) {
@@ -38,7 +46,7 @@ public class TransactionController {
     try {
       File tmp = File.createTempFile("itau-", ".pdf");
       file.transferTo(tmp);
-      service.save(tmp, username);
+      service.save(tmp, username, accountId);
       tmp.delete();
       return ResponseEntity.accepted().build();
     } catch (Exception e) {

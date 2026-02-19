@@ -40,7 +40,8 @@ public class Transaction {
   @Column("created_at")
   private OffsetDateTime createdAt;
 
-  private String username;
+  @Column("bank_account_id")
+  private Long bankAccountId;
 
   private int sequence;
 

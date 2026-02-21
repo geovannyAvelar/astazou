@@ -14,5 +14,5 @@ CREATE TABLE transactions (
     page INTEGER,
     sequence INTEGER NOT NULL,
     bank_account_id BIGINT NOT NULL REFERENCES bank_account(id),
-    created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );

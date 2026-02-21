@@ -9,6 +9,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -59,10 +60,10 @@ public class ApiExceptionHandler {
     return ResponseEntity.status(HttpStatus.BAD_REQUEST).headers(JSON_HEADERS).body(body);
   }
 
-  @ExceptionHandler(Exception.class)
-  public ResponseEntity<ErrorResponse> handleGeneric(Exception ex, HttpServletRequest request) {
-    ErrorResponse body = buildResponse(HttpStatus.INTERNAL_SERVER_ERROR, ex.getMessage() != null ? ex.getMessage() : "Unexpected error", request.getRequestURI(), null);
-    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).headers(JSON_HEADERS).body(body);
+  @ExceptionHandler(BadCredentialsException.class)
+  public ResponseEntity<ErrorResponse> badCredentials(HttpMessageNotReadableException ex, HttpServletRequest request) {
+    ErrorResponse body = buildResponse(HttpStatus.UNAUTHORIZED, "Unauthorized", request.getRequestURI(), null);
+    return ResponseEntity.status(HttpStatus.UNAUTHORIZED).headers(JSON_HEADERS).body(body);
   }
 
   @ExceptionHandler(FeignException.class)
@@ -76,4 +77,11 @@ public class ApiExceptionHandler {
         request.getRequestURI(), null);
     return ResponseEntity.status(HttpStatus.BAD_GATEWAY).headers(JSON_HEADERS).body(body);
   }
+
+  @ExceptionHandler(Exception.class)
+  public ResponseEntity<ErrorResponse> handleGeneric(Exception ex, HttpServletRequest request) {
+    ErrorResponse body = buildResponse(HttpStatus.INTERNAL_SERVER_ERROR, ex.getMessage() != null ? ex.getMessage() : "Unexpected error", request.getRequestURI(), null);
+    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).headers(JSON_HEADERS).body(body);
+  }
+
 }

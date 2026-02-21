@@ -56,6 +56,28 @@ public interface TransactionRepository extends CrudRepository<Transaction, Long>
       @Param("year") Integer year);
 
   @Query("""
+        SELECT COALESCE(SUM(t.amount), 0) FROM transactions t
+        JOIN bank_account ba ON t.bank_account_id = ba.id
+        WHERE ba.username = :username
+        AND t.amount > 0
+        AND EXTRACT(YEAR FROM t.transaction_date) = :year
+        AND EXTRACT(MONTH FROM t.transaction_date) = :month
+      """)
+  Double calculateIncomeByUsernameAndMonth(@Param("username") String username, @Param("month") Integer month,
+      @Param("year") Integer year);
+
+  @Query("""
+        SELECT COALESCE(SUM(ABS(t.amount)), 0) FROM transactions t
+        JOIN bank_account ba ON t.bank_account_id = ba.id
+        WHERE ba.username = :username
+        AND t.amount < 0
+        AND EXTRACT(YEAR FROM t.transaction_date) = :year
+        AND EXTRACT(MONTH FROM t.transaction_date) = :month
+      """)
+  Double calculateExpenseByUsernameAndMonth(@Param("username") String username, @Param("month") Integer month,
+      @Param("year") Integer year);
+
+  @Query("""
         SELECT t.* FROM transactions t
         JOIN bank_account ba ON t.bank_account_id = ba.id
         WHERE ba.username = :username

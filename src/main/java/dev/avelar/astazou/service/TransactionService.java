@@ -1,5 +1,6 @@
 package dev.avelar.astazou.service;
 
+import dev.avelar.astazou.dto.Balance;
 import dev.avelar.astazou.model.BankAccount;
 import dev.avelar.astazou.model.Transaction;
 import dev.avelar.astazou.repository.BankAccountRepository;
@@ -42,17 +43,19 @@ public class TransactionService {
     this.bankAccountRepository = bankAccountRepository;
   }
 
-  public Page<Transaction> findByAccount(Long accountId, int page, int itemsPerPage) {
-    return repository.findByBankAccountId(accountId,
-        PageRequest.of(page, itemsPerPage, Sort.Direction.DESC, "transaction_date"));
-  }
-
   public Page<Transaction> findByAccountIdAndMonth(Long bankAccountId, Integer month, Integer year, int page,
       int itemsPerPage) {
     List<Transaction> transactions =
         repository.findByAccountIdAndMonth(bankAccountId, month, year, itemsPerPage, page * itemsPerPage);
     Long count = repository.countByAccountIdAndMonth(bankAccountId, month, year);
     return new PageImpl<>(transactions, PageRequest.of(page, itemsPerPage), count);
+  }
+
+  public Balance calculateMonthBalance(String username, Integer month, Integer year) {
+    Double income = repository.calculateIncomeByUsernameAndMonth(username, month, year);
+    Double expenses = repository.calculateExpenseByUsernameAndMonth(username, month, year);
+    Double balance = income - expenses;
+    return new Balance(income, expenses, balance);
   }
 
   public Page<Transaction> findLast10(String username) {

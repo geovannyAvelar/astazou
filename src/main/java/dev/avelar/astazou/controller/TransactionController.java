@@ -1,5 +1,6 @@
 package dev.avelar.astazou.controller;
 
+import dev.avelar.astazou.dto.Balance;
 import dev.avelar.astazou.model.Transaction;
 import dev.avelar.astazou.service.TransactionService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,6 +45,28 @@ public class TransactionController {
     }
 
     return ResponseEntity.ok(service.findByAccountIdAndMonth(accountId, month, year, page, itemsPerPage));
+  }
+
+  @GetMapping("/balance")
+  public ResponseEntity<Balance> calculateBalanceMonth(@RequestParam(required = false) Integer month,
+      @RequestParam(required = false) Integer year) {
+    Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+
+    if (auth == null) {
+      return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+    }
+
+    var now = OffsetDateTime.now();
+
+    if (month == null || month < 0 || month >= 12) {
+      month = now.getMonthValue();
+    }
+
+    if (year == null) {
+      year = now.getYear();
+    }
+
+    return ResponseEntity.ok(service.calculateMonthBalance(auth.getName(), month, year));
   }
 
   @GetMapping("/last")

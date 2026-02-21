@@ -24,12 +24,17 @@ import {
   Landmark,
   Loader2,
   LogOut,
-  PiggyBank,
   TrendingUp,
   Wallet,
 } from "lucide-react"
 
 const API_BASE = process.env.API_BASE_URL || "http://localhost:8080"
+
+interface Balance {
+  income: number
+  expenses: number
+  amount: number
+}
 
 interface Transaction {
   id: number
@@ -61,10 +66,24 @@ export function DashboardContent() {
   const { t } = useI18n()
   const router = useRouter()
   const [isLoggingOut, setIsLoggingOut] = useState(false)
+  const [balance, setBalance] = useState<Balance | null>(null)
   const [transactions, setTransactions] = useState<Transaction[]>([])
   const [isLoadingTransactions, setIsLoadingTransactions] = useState(true)
 
-  // Fetch last 10 transactions
+  const fetchBalance = useCallback(async () => {
+    try {
+      const res = await fetch(`${API_BASE}/transactions/balance`, {
+        credentials: "include"
+      })
+      if (res.ok) {
+        const data: Balance = await res.json()
+        setBalance(data)
+      }
+    } catch (error) {
+      console.error("Failed to fetch balance:", error)
+    }
+  }, [])
+
   const fetchLastTransactions = useCallback(async () => {
     setIsLoadingTransactions(true)
     try {
@@ -83,8 +102,9 @@ export function DashboardContent() {
   }, [])
 
   useEffect(() => {
+    fetchBalance()
     fetchLastTransactions()
-  }, [fetchLastTransactions])
+  }, [fetchBalance, fetchLastTransactions])
 
   async function handleLogout() {
     setIsLoggingOut(true)
@@ -186,31 +206,18 @@ export function DashboardContent() {
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <SummaryCard
             title={t.totalBalance}
-            value="$24,563.00"
-            change="+2.5%"
-            trend="up"
+            value={balance ? formatCurrency(balance.amount) : "$0.00"}
             icon={<Wallet className="size-5" />}
           />
           <SummaryCard
             title={t.monthlyIncome}
-            value="$8,350.00"
-            change="+12.3%"
-            trend="up"
+            value={balance ? formatCurrency(balance.income) : "$0.00"}
             icon={<TrendingUp className="size-5" />}
           />
           <SummaryCard
             title={t.monthlyExpenses}
-            value="$3,420.00"
-            change="-4.1%"
-            trend="down"
+            value={balance ? formatCurrency(balance.expenses) : "$0.00"}
             icon={<CreditCard className="size-5" />}
-          />
-          <SummaryCard
-            title={t.savings}
-            value="$12,890.00"
-            change="+8.7%"
-            trend="up"
-            icon={<PiggyBank className="size-5" />}
           />
         </div>
 
@@ -290,14 +297,10 @@ export function DashboardContent() {
 function SummaryCard({
   title,
   value,
-  change,
-  trend,
   icon,
 }: {
   title: string
   value: string
-  change: string
-  trend: "up" | "down"
   icon: React.ReactNode
 }) {
   return (
@@ -307,11 +310,6 @@ function SummaryCard({
           <div className="flex size-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
             {icon}
           </div>
-          <span className={`text-xs font-medium ${
-            trend === "up" ? "text-primary" : "text-destructive"
-          }`}>
-            {change}
-          </span>
         </div>
         <div className="mt-3">
           <p className="text-sm text-muted-foreground">{title}</p>

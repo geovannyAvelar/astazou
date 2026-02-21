@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
+import java.time.OffsetDateTime;
 
 @RestController
 @RequestMapping("/transactions")
@@ -29,8 +30,20 @@ public class TransactionController {
   public ResponseEntity<Page<Transaction>> getTransactions(
       @PathVariable("account_id") Long accountId,
       @RequestParam(required = false, defaultValue = "0") int page,
-      @RequestParam(required = false, defaultValue = "10") int itemsPerPage) {
-    return ResponseEntity.ok(service.findByAccount(accountId, page, itemsPerPage));
+      @RequestParam(required = false, defaultValue = "10") int itemsPerPage,
+      @RequestParam(required = false) Integer month,
+      @RequestParam(required = false) Integer year) {
+    var now = OffsetDateTime.now();
+
+    if (month == null || month < 0 || month >= 12) {
+      month = now.getMonthValue();
+    }
+
+    if (year == null) {
+      year = now.getYear();
+    }
+
+    return ResponseEntity.ok(service.findByAccountIdAndMonth(accountId, month, year, page, itemsPerPage));
   }
 
   @GetMapping("/last")

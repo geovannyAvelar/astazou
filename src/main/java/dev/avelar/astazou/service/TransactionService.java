@@ -47,6 +47,14 @@ public class TransactionService {
         PageRequest.of(page, itemsPerPage, Sort.Direction.DESC, "transaction_date"));
   }
 
+  public Page<Transaction> findByAccountIdAndMonth(Long bankAccountId, Integer month, Integer year, int page,
+      int itemsPerPage) {
+    List<Transaction> transactions =
+        repository.findByAccountIdAndMonth(bankAccountId, month, year, itemsPerPage, page * itemsPerPage);
+    Long count = repository.countByAccountIdAndMonth(bankAccountId, month, year);
+    return new PageImpl<>(transactions, PageRequest.of(page, itemsPerPage), count);
+  }
+
   public Page<Transaction> findLast10(String username) {
     return new PageImpl<>(repository.findLast10(username));
   }

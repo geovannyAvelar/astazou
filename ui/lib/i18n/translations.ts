@@ -85,6 +85,9 @@ export interface Translations {
 
     // Language
     language: string
+
+    month: string
+    year: string
 }
 
 export const translations: Record<Locale, Translations> = {
@@ -169,6 +172,9 @@ export const translations: Record<Locale, Translations> = {
         removeFile: "Remove file",
 
         language: "Language",
+
+        month: "Month",
+        year: "Year"
     },
     pt: {
         brandTagline: "Assuma o controle do seu futuro financeiro",
@@ -251,6 +257,9 @@ export const translations: Record<Locale, Translations> = {
         removeFile: "Remover arquivo",
 
         language: "Idioma",
+
+        month: "month",
+        year: "year"
     },
     es: {
         brandTagline: "Toma el control de tu futuro financiero",
@@ -333,5 +342,8 @@ export const translations: Record<Locale, Translations> = {
         removeFile: "Eliminar archivo",
 
         language: "Idioma",
+
+        month: "Mês",
+        year: "Ano"
     },
 }

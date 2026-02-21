@@ -37,6 +37,26 @@ public interface TransactionRepository extends CrudRepository<Transaction, Long>
 
   @Query("""
         SELECT t.* FROM transactions t
+        WHERE t.bank_account_id = :bankAccountId
+        AND EXTRACT(YEAR FROM t.transaction_date) = :year
+        AND EXTRACT(MONTH FROM t.transaction_date) = :month
+        ORDER BY t.transaction_date DESC
+        LIMIT :limit OFFSET :offset
+      """)
+  List<Transaction> findByAccountIdAndMonth(@Param("bankAccountId") Long bankAccountId, @Param("month") Integer month,
+      @Param("year") Integer year, @Param("limit") int limit, @Param("offset") int offset);
+
+  @Query("""
+        SELECT COUNT(t.id) FROM transactions t
+        WHERE t.bank_account_id = :bankAccountId
+        AND EXTRACT(YEAR FROM t.transaction_date) = :year
+        AND EXTRACT(MONTH FROM t.transaction_date) = :month
+      """)
+  Long countByAccountIdAndMonth(@Param("bankAccountId") Long bankAccountId, @Param("month") Integer month,
+      @Param("year") Integer year);
+
+  @Query("""
+        SELECT t.* FROM transactions t
         JOIN bank_account ba ON t.bank_account_id = ba.id
         WHERE ba.username = :username
         ORDER BY t.transaction_date DESC

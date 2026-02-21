@@ -104,6 +104,10 @@ export function TransactionsContent() {
 
     const [isLoggingOut, setIsLoggingOut] = useState(false)
 
+    // Month and year filter - initialized with current month/year
+    const [month, setMonth] = useState<number>(new Date().getMonth() + 1)
+    const [year, setYear] = useState<number>(new Date().getFullYear())
+
     const displayName = user?.completeUsername || user?.username || "User"
     const initials = displayName
         .split(" ")
@@ -134,10 +138,12 @@ export function TransactionsContent() {
     }, [selectedAccountId])
 
     // Fetch transactions for selected account
-    const fetchTransactions = useCallback(async (accountId: number, page: number = 0) => {
+    const fetchTransactions = useCallback(async (accountId: number, page: number = 0, selectedMonth?: number, selectedYear?: number) => {
         setIsLoadingTransactions(true)
         try {
-            const res = await fetch(`${API_BASE}/transactions/${accountId}?page=${page}&size=${pageSize}`, {
+            const monthParam = selectedMonth ?? month
+            const yearParam = selectedYear ?? year
+            const res = await fetch(`${API_BASE}/transactions/${accountId}?page=${page}&size=${pageSize}&month=${monthParam}&year=${yearParam}`, {
                 credentials: "include"
             })
             if (res.ok) {
@@ -152,7 +158,7 @@ export function TransactionsContent() {
         } finally {
             setIsLoadingTransactions(false)
         }
-    }, [pageSize])
+    }, [pageSize, month, year])
 
     useEffect(() => {
         fetchAccounts()
@@ -163,7 +169,7 @@ export function TransactionsContent() {
             setCurrentPage(0)
             fetchTransactions(selectedAccountId, 0)
         }
-    }, [selectedAccountId, fetchTransactions])
+    }, [selectedAccountId, month, year, fetchTransactions])
 
     function handleDragOver(e: React.DragEvent) {
         e.preventDefault()
@@ -330,22 +336,66 @@ export function TransactionsContent() {
                             <p className="mt-1 text-muted-foreground">{t.transactionsDescription}</p>
                         </div>
 
-                        {/* Account selector */}
+                        {/* Account selector + Month/Year filters */}
                         {!isLoadingAccounts && accounts.length > 0 && (
-                            <div className="flex flex-col gap-1.5">
-                                <Label htmlFor="account-select" className="text-xs text-muted-foreground">{t.selectAccount}</Label>
-                                <select
-                                    id="account-select"
-                                    value={selectedAccountId ?? ""}
-                                    onChange={(e) => setSelectedAccountId(Number(e.target.value))}
-                                    className="h-9 rounded-md border border-input bg-background px-3 text-sm text-foreground ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
-                                >
-                                    {accounts.map((acc) => (
-                                        <option key={acc.id} value={acc.id}>
-                                            {acc.name}
-                                        </option>
-                                    ))}
-                                </select>
+                            <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:gap-3">
+                                <div className="flex flex-col gap-1.5">
+                                    <Label htmlFor="account-select" className="text-xs text-muted-foreground">{t.selectAccount}</Label>
+                                    <select
+                                        id="account-select"
+                                        value={selectedAccountId ?? ""}
+                                        onChange={(e) => setSelectedAccountId(Number(e.target.value))}
+                                        className="h-9 rounded-md border border-input bg-background px-3 text-sm text-foreground ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                                    >
+                                        {accounts.map((acc) => (
+                                            <option key={acc.id} value={acc.id}>
+                                                {acc.name}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+
+                                <div className="flex flex-col gap-1.5">
+                                    <Label htmlFor="month-select" className="text-xs text-muted-foreground">{t.month || 'Month'}</Label>
+                                    <select
+                                        id="month-select"
+                                        value={month}
+                                        onChange={(e) => setMonth(Number(e.target.value))}
+                                        className="h-9 rounded-md border border-input bg-background px-3 text-sm text-foreground ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                                    >
+                                        <option value={1}>January</option>
+                                        <option value={2}>February</option>
+                                        <option value={3}>March</option>
+                                        <option value={4}>April</option>
+                                        <option value={5}>May</option>
+                                        <option value={6}>June</option>
+                                        <option value={7}>July</option>
+                                        <option value={8}>August</option>
+                                        <option value={9}>September</option>
+                                        <option value={10}>October</option>
+                                        <option value={11}>November</option>
+                                        <option value={12}>December</option>
+                                    </select>
+                                </div>
+
+                                <div className="flex flex-col gap-1.5">
+                                    <Label htmlFor="year-select" className="text-xs text-muted-foreground">{t.year || 'Year'}</Label>
+                                    <select
+                                        id="year-select"
+                                        value={year}
+                                        onChange={(e) => setYear(Number(e.target.value))}
+                                        className="h-9 rounded-md border border-input bg-background px-3 text-sm text-foreground ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                                    >
+                                        {[...Array(5)].map((_, i) => {
+                                            const y = new Date().getFullYear() - i
+                                            return (
+                                                <option key={y} value={y}>
+                                                    {y}
+                                                </option>
+                                            )
+                                        })}
+                                    </select>
+                                </div>
                             </div>
                         )}
                     </div>

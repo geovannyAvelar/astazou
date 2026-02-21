@@ -4,6 +4,7 @@ import dev.avelar.astazou.model.Transaction;
 import dev.avelar.astazou.service.TransactionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -25,9 +26,22 @@ public class TransactionController {
   }
 
   @GetMapping("/{account_id}")
-  public ResponseEntity<Page<Transaction>> getTransactions(@PathVariable("account_id") Long accountId,
-      @RequestParam int page, @RequestParam int itemsPerPage) {
-    return ResponseEntity.ok(service.findAll(page, itemsPerPage));
+  public ResponseEntity<Page<Transaction>> getTransactions(
+      @PathVariable("account_id") Long accountId,
+      @RequestParam(required = false, defaultValue = "0") int page,
+      @RequestParam(required = false, defaultValue = "10") int itemsPerPage) {
+    return ResponseEntity.ok(service.findByAccount(accountId, page, itemsPerPage));
+  }
+
+  @GetMapping("/last")
+  public ResponseEntity<Page<Transaction>> getLastTransactions() {
+    Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+
+    if (auth == null) {
+      return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+    }
+
+    return ResponseEntity.ok(service.findLast10(auth.getName()));
   }
 
   @PostMapping(path = "/itau/{account_id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)

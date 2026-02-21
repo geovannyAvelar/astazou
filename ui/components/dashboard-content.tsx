@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect, useCallback } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useAuth } from "@/lib/auth-context"
@@ -29,11 +29,62 @@ import {
   Wallet,
 } from "lucide-react"
 
+const API_BASE = process.env.API_BASE_URL || "http://localhost:8080"
+
+interface Transaction {
+  id: number
+  transactionDate: string
+  description: string
+  amount: number
+  type: string
+  page: number
+  createdAt: string
+  bankAccountId: number
+  sequence: number
+}
+
+interface TransactionsPageResponse {
+  content: Transaction[]
+  totalPages: number
+  totalElements: number
+  number: number
+  size: number
+  first: boolean
+  last: boolean
+  empty: boolean
+  numberOfElements: number
+}
+
+
 export function DashboardContent() {
   const { user, logout } = useAuth()
   const { t } = useI18n()
   const router = useRouter()
   const [isLoggingOut, setIsLoggingOut] = useState(false)
+  const [transactions, setTransactions] = useState<Transaction[]>([])
+  const [isLoadingTransactions, setIsLoadingTransactions] = useState(true)
+
+  // Fetch last 10 transactions
+  const fetchLastTransactions = useCallback(async () => {
+    setIsLoadingTransactions(true)
+    try {
+      const res = await fetch(`${API_BASE}/transactions/last`, {
+        credentials: "include"
+      })
+      if (res.ok) {
+        const data: TransactionsPageResponse = await res.json()
+        setTransactions(data.content ?? [])
+      }
+    } catch (error) {
+      console.error("Failed to fetch transactions:", error)
+    } finally {
+      setIsLoadingTransactions(false)
+    }
+  }, [])
+
+  useEffect(() => {
+    fetchLastTransactions()
+  }, [fetchLastTransactions])
 
   async function handleLogout() {
     setIsLoggingOut(true)
@@ -58,6 +109,23 @@ export function DashboardContent() {
     if (hour < 12) return t.greetingMorning
     if (hour < 17) return t.greetingAfternoon
     return t.greetingEvening
+  }
+
+  function formatCurrency(amount: number) {
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: "USD",
+      minimumFractionDigits: 2,
+    }).format(Math.abs(amount))
+  }
+
+  function formatDate(dateString: string) {
+    const date = new Date(dateString)
+    return new Intl.DateTimeFormat("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    }).format(date)
   }
 
   return (
@@ -172,34 +240,45 @@ export function DashboardContent() {
               <CardDescription>{t.recentTransactionsDescription}</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="flex flex-col gap-4">
-                {mockTransactions.map((tx) => (
-                  <div key={tx.id} className="flex items-center justify-between rounded-lg border p-4">
-                    <div className="flex items-center gap-3">
-                      <div className={`flex size-10 items-center justify-center rounded-full ${
-                        tx.type === "income"
-                          ? "bg-primary/10 text-primary"
-                          : "bg-destructive/10 text-destructive"
+              {isLoadingTransactions ? (
+                <div className="flex items-center justify-center py-8">
+                  <Loader2 className="size-8 animate-spin text-primary" />
+                </div>
+              ) : transactions.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-8 text-center">
+                  <p className="text-sm text-muted-foreground">No transactions yet</p>
+                  <p className="text-xs text-muted-foreground mt-1">Upload a bank statement to get started</p>
+                </div>
+              ) : (
+                <div className="flex flex-col gap-4">
+                  {transactions.map((tx) => (
+                    <div key={tx.id} className="flex items-center justify-between rounded-lg border p-4">
+                      <div className="flex items-center gap-3">
+                        <div className={`flex size-10 items-center justify-center rounded-full ${
+                          tx.amount >= 0
+                            ? "bg-primary/10 text-primary"
+                            : "bg-destructive/10 text-destructive"
+                        }`}>
+                          {tx.amount >= 0 ? (
+                            <ArrowDownRight className="size-5" />
+                          ) : (
+                            <ArrowUpRight className="size-5" />
+                          )}
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium text-foreground">{tx.description}</p>
+                          <p className="text-xs text-muted-foreground">{formatDate(tx.transactionDate)}</p>
+                        </div>
+                      </div>
+                      <span className={`text-sm font-semibold ${
+                        tx.amount >= 0 ? "text-primary" : "text-destructive"
                       }`}>
-                        {tx.type === "income" ? (
-                          <ArrowDownRight className="size-5" />
-                        ) : (
-                          <ArrowUpRight className="size-5" />
-                        )}
-                      </div>
-                      <div>
-                        <p className="text-sm font-medium text-foreground">{tx.description}</p>
-                        <p className="text-xs text-muted-foreground">{tx.date}</p>
-                      </div>
+                        {tx.amount >= 0 ? "+" : "-"}{formatCurrency(tx.amount)}
+                      </span>
                     </div>
-                    <span className={`text-sm font-semibold ${
-                      tx.type === "income" ? "text-primary" : "text-destructive"
-                    }`}>
-                      {tx.type === "income" ? "+" : "-"}${tx.amount}
-                    </span>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>
@@ -243,10 +322,3 @@ function SummaryCard({
   )
 }
 
-const mockTransactions = [
-  { id: 1, description: "Salary Deposit", date: "Feb 20, 2026", amount: "5,250.00", type: "income" as const },
-  { id: 2, description: "Grocery Store", date: "Feb 19, 2026", amount: "142.30", type: "expense" as const },
-  { id: 3, description: "Electric Bill", date: "Feb 18, 2026", amount: "89.00", type: "expense" as const },
-  { id: 4, description: "Freelance Payment", date: "Feb 17, 2026", amount: "1,200.00", type: "income" as const },
-  { id: 5, description: "Restaurant", date: "Feb 16, 2026", amount: "67.50", type: "expense" as const },
-]

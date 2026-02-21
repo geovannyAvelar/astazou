@@ -9,7 +9,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.io.*;
@@ -40,8 +42,13 @@ public class TransactionService {
     this.bankAccountRepository = bankAccountRepository;
   }
 
-  public Page<Transaction> findAll(int page, int itemsPerPage) {
-    return repository.findAll(PageRequest.of(page, itemsPerPage));
+  public Page<Transaction> findByAccount(Long accountId, int page, int itemsPerPage) {
+    return repository.findByBankAccountId(accountId,
+        PageRequest.of(page, itemsPerPage, Sort.Direction.DESC, "transaction_date"));
+  }
+
+  public Page<Transaction> findLast10(String username) {
+    return new PageImpl<>(repository.findLast10(username));
   }
 
   public void save(File pdf, String username, Long bankAccountId) {
@@ -64,7 +71,8 @@ public class TransactionService {
         }
 
         transaction.setBankAccountId(bankAccount.getId());
-        repository.save(transaction);
+
+        repository.upsert(transaction);
       } catch (Exception e) {
         LOGGER.warn("Cannot process transaction. Cause: {}", e.getMessage());
       }
@@ -83,8 +91,8 @@ public class TransactionService {
       outputCsv = new File(csvName);
     }
 
-    ProcessBuilder pb = new ProcessBuilder(pythonInterpreter, itauPdfParserScript, pdf.getAbsolutePath(),
-        outputCsv.getAbsolutePath());
+    ProcessBuilder pb =
+        new ProcessBuilder(pythonInterpreter, itauPdfParserScript, pdf.getAbsolutePath(), outputCsv.getAbsolutePath());
     pb.redirectErrorStream(true);
 
     try {
@@ -123,10 +131,6 @@ public class TransactionService {
         return transactions;
       }
 
-      while (header != null && header.trim().toUpperCase().startsWith("SALDO DO DIA")) {
-        header = br.readLine();
-      }
-
       LocalDate currentDate = null;
       int positionOnDay = 0;
 
@@ -145,6 +149,11 @@ public class TransactionService {
 
         LocalDate date = LocalDate.parse(parts[0], fmt);
         String description = parts[1];
+
+        if (description.toUpperCase().contains("SALDO DO DIA")) {
+          continue;
+        }
+
         BigDecimal amount = new BigDecimal(parts[2]);
         String type = parts[3];
         int page = Integer.parseInt(parts[4]);
@@ -157,14 +166,8 @@ public class TransactionService {
         }
 
         transactions.add(
-            Transaction.builder()
-                .transactionDate(date)
-                .description(description)
-                .amount(amount)
-                .type(type)
-                .page(page)
-                .sequence(positionOnDay)
-                .createdAt(OffsetDateTime.now()).build());
+            Transaction.builder().transactionDate(date).description(description).amount(amount).type(type).page(page)
+                .sequence(positionOnDay).createdAt(OffsetDateTime.now()).build());
       }
     } catch (IOException e) {
       throw new UncheckedIOException(e);

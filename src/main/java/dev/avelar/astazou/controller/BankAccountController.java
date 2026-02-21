@@ -39,7 +39,7 @@ public class BankAccountController {
   }
 
   @GetMapping
-  public ResponseEntity<Page<BankAccount>> findAll(@RequestParam(required = false, defaultValue = "1") int page,
+  public ResponseEntity<Page<BankAccount>> findAll(@RequestParam(required = false, defaultValue = "0") int page,
       @RequestParam(required = false, defaultValue = "10") int itemsPerPage) {
     Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 

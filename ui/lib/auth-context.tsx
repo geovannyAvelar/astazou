@@ -3,7 +3,7 @@
 import { createContext, useContext, useCallback, useEffect, useState, type ReactNode } from "react"
 import type { AuthState, LoginResponse } from "@/lib/auth-types"
 
-const API_BASE = process.env.API_BASE_URL || "http://localhost:8080"
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080"
 
 interface AuthContextType extends AuthState {
   login: (clientId: string, clientSecret: string) => Promise<LoginResponse>

@@ -61,7 +61,7 @@ public class ApiExceptionHandler {
   }
 
   @ExceptionHandler(BadCredentialsException.class)
-  public ResponseEntity<ErrorResponse> badCredentials(HttpMessageNotReadableException ex, HttpServletRequest request) {
+  public ResponseEntity<ErrorResponse> badCredentials(BadCredentialsException ex, HttpServletRequest request) {
     ErrorResponse body = buildResponse(HttpStatus.UNAUTHORIZED, "Unauthorized", request.getRequestURI(), null);
     return ResponseEntity.status(HttpStatus.UNAUTHORIZED).headers(JSON_HEADERS).body(body);
   }

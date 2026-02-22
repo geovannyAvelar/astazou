@@ -98,6 +98,16 @@ export interface Translations {
     delete: string
     updateAccount: string
 
+    // Transform to Transfer
+    transformToTransfer: string
+    transformToTransferDescription: string
+    selectDestinationAccount: string
+    transforming: string
+    transform: string
+    transformSuccess: string
+    transformError: string
+    cannotTransformSameAccount: string
+
     // Edit Account
     editAccount: string
     editAccountDescription: string
@@ -210,6 +220,15 @@ export const translations: Record<Locale, Translations> = {
         delete: "Delete",
         updateAccount: "Update account balance",
 
+        transformToTransfer: "Transform to Transfer",
+        transformToTransferDescription: "Convert this debit transaction into a transfer to another account",
+        selectDestinationAccount: "Destination Account",
+        transforming: "Transforming...",
+        transform: "Transform",
+        transformSuccess: "Transaction transformed to transfer successfully!",
+        transformError: "Failed to transform transaction. Please try again.",
+        cannotTransformSameAccount: "Source and destination accounts must be different.",
+
         editAccount: "Edit Account",
         editAccountDescription: "Update account name and balance",
         currentBalance: "Current Balance",
@@ -318,6 +337,15 @@ export const translations: Record<Locale, Translations> = {
         delete: "Excluir",
         updateAccount: "Atualizar saldo da conta",
 
+        transformToTransfer: "Transformar em Transferência",
+        transformToTransferDescription: "Converter esta transação de débito em transferência para outra conta",
+        selectDestinationAccount: "Conta de Destino",
+        transforming: "Transformando...",
+        transform: "Transformar",
+        transformSuccess: "Transação transformada em transferência com sucesso!",
+        transformError: "Falha ao transformar transação. Tente novamente.",
+        cannotTransformSameAccount: "As contas de origem e destino devem ser diferentes.",
+
         editAccount: "Editar Conta",
         editAccountDescription: "Atualizar nome e saldo da conta",
         currentBalance: "Saldo Atual",
@@ -425,6 +453,15 @@ export const translations: Record<Locale, Translations> = {
         deleting: "Eliminando...",
         delete: "Eliminar",
         updateAccount: "Actualizar saldo de la cuenta",
+
+        transformToTransfer: "Transformar en Transferencia",
+        transformToTransferDescription: "Convertir esta transacción de débito en transferencia a otra cuenta",
+        selectDestinationAccount: "Cuenta de Destino",
+        transforming: "Transformando...",
+        transform: "Transformar",
+        transformSuccess: "Transacción transformada en transferencia exitosamente!",
+        transformError: "Error al transformar transacción. Inténtalo de nuevo.",
+        cannotTransformSameAccount: "Las cuentas de origen y destino deben ser diferentes.",
 
         editAccount: "Editar Cuenta",
         editAccountDescription: "Actualizar nombre y saldo de la cuenta",

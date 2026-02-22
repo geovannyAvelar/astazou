@@ -103,6 +103,54 @@ public class TransactionService {
     repository.delete(transactionId, username);
   }
 
+  @Transactional
+  public void transformToTransfer(Long transactionId, Long destinationAccountId, String username) {
+    Optional<Transaction> transactionOpt = repository.findById(transactionId);
+    if (transactionOpt.isEmpty()) {
+      throw new NotFoundException("Transaction not found");
+    }
+
+    Transaction sourceTransaction = transactionOpt.get();
+
+    Optional<BankAccount> sourceAccountOpt = bankAccountRepository.findById(sourceTransaction.getBankAccountId());
+    if (sourceAccountOpt.isEmpty() || !sourceAccountOpt.get().getUsername().equals(username)) {
+      throw new IllegalStateException("Transaction does not belong to user");
+    }
+
+    if (!"debit".equals(sourceTransaction.getType())) {
+      throw new IllegalStateException("Only debit transactions can be transformed to transfers");
+    }
+
+    Optional<BankAccount> destinationAccountOpt = bankAccountRepository.findById(destinationAccountId);
+    if (destinationAccountOpt.isEmpty() || !destinationAccountOpt.get().getUsername().equals(username)) {
+      throw new IllegalStateException("Destination account not found or does not belong to user");
+    }
+
+    if (sourceTransaction.getBankAccountId().equals(destinationAccountId)) {
+      throw new IllegalStateException("Source and destination accounts must be different");
+    }
+
+    // Create credit transaction on destination account
+    int lastSequence = repository.getLastDaySequence(destinationAccountId, sourceTransaction.getTransactionDate());
+
+    Transaction creditTransaction = Transaction.builder()
+        .transactionDate(sourceTransaction.getTransactionDate())
+        .description("Transfer from " + sourceAccountOpt.get().getName() + ": " + sourceTransaction.getDescription())
+        .amount(sourceTransaction.getAmount().abs())
+        .type("credit")
+        .page(0)
+        .sequence(lastSequence + 1)
+        .createdAt(OffsetDateTime.now())
+        .bankAccountId(destinationAccountId)
+        .build();
+
+    repository.upsert(creditTransaction);
+
+    // Update source transaction type to transfer
+    sourceTransaction.setType("transfer");
+    repository.upsert(sourceTransaction);
+  }
+
   protected void save(List<Transaction> transactions, String username, Long bankAccountId, boolean updateAccount) {
     for (Transaction transaction : transactions) {
       try {

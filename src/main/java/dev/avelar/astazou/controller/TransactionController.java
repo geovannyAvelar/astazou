@@ -2,6 +2,7 @@ package dev.avelar.astazou.controller;
 
 import dev.avelar.astazou.dto.Balance;
 import dev.avelar.astazou.dto.TransactionCreationForm;
+import dev.avelar.astazou.dto.TransformToTransferForm;
 import dev.avelar.astazou.model.Transaction;
 import dev.avelar.astazou.service.TransactionService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -72,6 +73,25 @@ public class TransactionController {
     service.delete(transactionId, username);
 
     return ResponseEntity.ok().build();
+  }
+
+  @PostMapping("/{transaction_id}/transform-to-transfer")
+  public ResponseEntity<Void> transformToTransfer(@PathVariable("transaction_id") Long transactionId,
+      @RequestBody TransformToTransferForm data) {
+    Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+
+    if (auth == null) {
+      return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+    }
+
+    String username = auth.getName();
+
+    try {
+      service.transformToTransfer(transactionId, data.getDestinationAccountId(), username);
+      return ResponseEntity.ok().build();
+    } catch (IllegalStateException e) {
+      return ResponseEntity.badRequest().build();
+    }
   }
 
   @GetMapping("/balance")

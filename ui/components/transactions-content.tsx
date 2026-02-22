@@ -47,6 +47,7 @@ import {
 import {
     ArrowLeft,
     ArrowDownRight,
+    ArrowLeftRight,
     ArrowUpRight,
     DollarSign,
     FileText,
@@ -127,11 +128,10 @@ export function TransactionsContent() {
 
     const [isLoggingOut, setIsLoggingOut] = useState(false)
 
-    // Month and year filter - initialized with current month/year
     const [month, setMonth] = useState<number>(new Date().getMonth() + 1)
     const [year, setYear] = useState<number>(new Date().getFullYear())
 
-    // Create transaction form
+
     const [showCreateDialog, setShowCreateDialog] = useState(false)
     const [isCreating, setIsCreating] = useState(false)
     const [createError, setCreateError] = useState("")
@@ -144,11 +144,18 @@ export function TransactionsContent() {
         updateAccount: true
     })
 
-    // Delete transaction dialog
+
     const [showDeleteDialog, setShowDeleteDialog] = useState(false)
     const [transactionToDelete, setTransactionToDelete] = useState<Transaction | null>(null)
     const [isDeleting, setIsDeleting] = useState(false)
     const [deleteError, setDeleteError] = useState("")
+
+
+    const [showTransformDialog, setShowTransformDialog] = useState(false)
+    const [transactionToTransform, setTransactionToTransform] = useState<Transaction | null>(null)
+    const [destinationAccountId, setDestinationAccountId] = useState<number | null>(null)
+    const [isTransforming, setIsTransforming] = useState(false)
+    const [transformError, setTransformError] = useState("")
 
     const displayName = user?.completeUsername || user?.username || "User"
     const initials = displayName
@@ -362,6 +369,54 @@ export function TransactionsContent() {
         setDeleteError("")
         setTransactionToDelete(tx)
         setShowDeleteDialog(true)
+    }
+
+    function openTransformDialog(tx: Transaction) {
+        setTransformError("")
+        setTransactionToTransform(tx)
+        // Set default to first account that's different from transaction's account
+        const defaultDestination = accounts.find(acc => acc.id !== tx.bankAccountId)
+        setDestinationAccountId(defaultDestination?.id || null)
+        setShowTransformDialog(true)
+    }
+
+    async function handleTransformToTransfer() {
+        if (!transactionToTransform || !destinationAccountId) return
+
+        if (destinationAccountId === transactionToTransform.bankAccountId) {
+            setTransformError(t.cannotTransformSameAccount)
+            return
+        }
+
+        setTransformError("")
+        setIsTransforming(true)
+        try {
+            const res = await fetch(`${API_BASE}/transactions/${transactionToTransform.id}/transform-to-transfer`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    destinationAccountId: destinationAccountId
+                }),
+                credentials: "include"
+            })
+
+            if (res.ok) {
+                setShowTransformDialog(false)
+                setTransactionToTransform(null)
+                setDestinationAccountId(null)
+                if (selectedAccountId) {
+                    fetchTransactions(selectedAccountId, currentPage)
+                }
+            } else {
+                setTransformError(t.transformError)
+            }
+        } catch {
+            setTransformError(t.transformError)
+        } finally {
+            setIsTransforming(false)
+        }
     }
 
     async function handleDeleteTransaction() {
@@ -753,15 +808,28 @@ export function TransactionsContent() {
                                             }`}>
                                                 {tx.amount >= 0 ? "+" : ""}{formatCurrency(tx.amount)}
                                             </p>
-                                            <Button
-                                                variant="ghost"
-                                                size="icon-sm"
-                                                onClick={() => openDeleteDialog(tx)}
-                                                aria-label={t.deleteTransaction || "Delete transaction"}
-                                                className="text-muted-foreground hover:text-destructive"
-                                            >
-                                                <Trash2 className="size-4" />
-                                            </Button>
+                                            <div className="flex gap-1">
+                                                {tx.type === "debit" && accounts.length > 1 && (
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="icon-sm"
+                                                        onClick={() => openTransformDialog(tx)}
+                                                        aria-label={t.transformToTransfer || "Transform to transfer"}
+                                                        className="text-muted-foreground hover:text-primary"
+                                                    >
+                                                        <ArrowLeftRight className="size-4" />
+                                                    </Button>
+                                                )}
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon-sm"
+                                                    onClick={() => openDeleteDialog(tx)}
+                                                    aria-label={t.deleteTransaction || "Delete transaction"}
+                                                    className="text-muted-foreground hover:text-destructive"
+                                                >
+                                                    <Trash2 className="size-4" />
+                                                </Button>
+                                            </div>
                                         </div>
                                     </div>
                                 ))}
@@ -1017,6 +1085,75 @@ export function TransactionsContent() {
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>
+
+            {/* Transform to Transfer Dialog */}
+            <Dialog open={showTransformDialog} onOpenChange={setShowTransformDialog}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>{t.transformToTransfer || 'Transform to Transfer'}</DialogTitle>
+                        <DialogDescription>
+                            {t.transformToTransferDescription || 'Convert this debit transaction into a transfer to another account'}
+                        </DialogDescription>
+                    </DialogHeader>
+
+                    <div className="flex flex-col gap-4 py-4">
+                        {transactionToTransform && (
+                            <div className="rounded-lg border bg-muted/50 p-4">
+                                <p className="text-sm text-muted-foreground mb-1">Current Transaction</p>
+                                <p className="text-sm font-medium">{transactionToTransform.description}</p>
+                                <p className="text-sm text-destructive font-semibold mt-1">
+                                    {formatCurrency(transactionToTransform.amount)}
+                                </p>
+                            </div>
+                        )}
+
+                        <div className="flex flex-col gap-2">
+                            <Label htmlFor="destination-account">{t.selectDestinationAccount || 'Destination Account'}</Label>
+                            <select
+                                id="destination-account"
+                                value={destinationAccountId || ""}
+                                onChange={(e) => setDestinationAccountId(Number(e.target.value))}
+                                className="h-9 rounded-md border border-input bg-background px-3 text-sm text-foreground ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                            >
+                                <option value="" disabled>Select account...</option>
+                                {accounts
+                                    .filter(acc => acc.id !== transactionToTransform?.bankAccountId)
+                                    .map((acc) => (
+                                        <option key={acc.id} value={acc.id}>
+                                            {acc.name}
+                                        </option>
+                                    ))}
+                            </select>
+                        </div>
+
+                        {transformError && (
+                            <p className="text-sm text-destructive">{transformError}</p>
+                        )}
+                    </div>
+
+                    <DialogFooter>
+                        <Button
+                            variant="outline"
+                            onClick={() => setShowTransformDialog(false)}
+                            disabled={isTransforming}
+                        >
+                            {t.cancel || 'Cancel'}
+                        </Button>
+                        <Button
+                            onClick={handleTransformToTransfer}
+                            disabled={isTransforming || !destinationAccountId}
+                            className="gap-2"
+                        >
+                            {isTransforming ? (
+                                <Loader2 className="size-4 animate-spin" />
+                            ) : (
+                                <ArrowLeftRight className="size-4" />
+                            )}
+                            {isTransforming ? (t.transforming || 'Transforming...') : (t.transform || 'Transform')}
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </div>
     )
 }

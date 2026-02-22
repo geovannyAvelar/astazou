@@ -85,7 +85,7 @@ public class TransactionController {
 
     var now = OffsetDateTime.now();
 
-    if (month == null || month < 0 || month >= 12) {
+    if (month == null || month < 1 || month > 12) {
       month = now.getMonthValue();
     }
 

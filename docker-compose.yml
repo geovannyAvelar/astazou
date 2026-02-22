@@ -1,0 +1,68 @@
+version: '3.8'
+
+services:
+  traefik:
+    image: traefik:v3
+    restart: always
+    privileged: true
+    command:
+      - --api.insecure=true
+      - --api.dashboard=true
+      - --providers.docker=true
+      - --providers.docker.exposedbydefault=false
+      - --entrypoints.web.address=:80
+      - --entrypoints.websecure.address=:443
+    ports:
+      - "80:80"
+      - "443:443"
+      - "8080:8080"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks:
+      - astazou-network
+
+  backend:
+    image: ghcr.io/geovannyavelar/astazou-backend
+    env_file:
+      - .env
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://${DB_HOST}:${DB_PORT}/${DB_NAME}
+      - SPRING_DATASOURCE_USERNAME=${DB_USER}
+      - SPRING_DATASOURCE_PASSWORD=${DB_PASSWORD}
+      - SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE}
+      - SERVER_PORT=8080
+    restart: always
+    privileged: true
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.astazou-backend.rule=Host(`${BACKEND_HOST}`)"
+      - "traefik.http.routers.astazou-backend.entrypoints=websecure"
+      - "traefik.http.routers.astazou-backend.tls=true"
+      - "traefik.http.services.astazou-backend.loadbalancer.server.port=8080"
+    networks:
+      - astazou-network
+
+  frontend:
+    image: ghcr.io/geovannyavelar/astazou-frontend
+    env_file:
+      - .env
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
+    depends_on:
+      - backend
+    restart: always
+    privileged: true
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.astazou-frontend.rule=Host(`${FRONTEND_HOST}`)"
+      - "traefik.http.routers.astazou-frontend.entrypoints=websecure"
+      - "traefik.http.routers.astazou-frontend.tls=true"
+      - "traefik.http.services.astazou-frontend.loadbalancer.server.port=3000"
+    networks:
+      - astazou-network
+
+networks:
+  astazou-network:
+    driver: bridge

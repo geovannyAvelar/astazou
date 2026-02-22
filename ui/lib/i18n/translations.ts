@@ -98,6 +98,15 @@ export interface Translations {
     delete: string
     updateAccount: string
 
+    // Edit Account
+    editAccount: string
+    editAccountDescription: string
+    currentBalance: string
+    saving: string
+    save: string
+    accountUpdated: string
+    accountUpdateError: string
+
     // Language
     language: string
 
@@ -201,6 +210,14 @@ export const translations: Record<Locale, Translations> = {
         delete: "Delete",
         updateAccount: "Update account balance",
 
+        editAccount: "Edit Account",
+        editAccountDescription: "Update account name and balance",
+        currentBalance: "Current Balance",
+        saving: "Saving...",
+        save: "Save",
+        accountUpdated: "Account updated successfully!",
+        accountUpdateError: "Failed to update account. Please try again.",
+
         language: "Language",
 
         month: "Month",
@@ -301,6 +318,14 @@ export const translations: Record<Locale, Translations> = {
         delete: "Excluir",
         updateAccount: "Atualizar saldo da conta",
 
+        editAccount: "Editar Conta",
+        editAccountDescription: "Atualizar nome e saldo da conta",
+        currentBalance: "Saldo Atual",
+        saving: "Salvando...",
+        save: "Salvar",
+        accountUpdated: "Conta atualizada com sucesso!",
+        accountUpdateError: "Falha ao atualizar conta. Tente novamente.",
+
         language: "Idioma",
 
         month: "Mês",
@@ -400,6 +425,14 @@ export const translations: Record<Locale, Translations> = {
         deleting: "Eliminando...",
         delete: "Eliminar",
         updateAccount: "Actualizar saldo de la cuenta",
+
+        editAccount: "Editar Cuenta",
+        editAccountDescription: "Actualizar nombre y saldo de la cuenta",
+        currentBalance: "Saldo Actual",
+        saving: "Guardando...",
+        save: "Guardar",
+        accountUpdated: "Cuenta actualizada exitosamente!",
+        accountUpdateError: "Error al actualizar cuenta. Inténtalo de nuevo.",
 
         language: "Idioma",
 

@@ -8,6 +8,7 @@ import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
+import java.util.Optional;
 
 @Repository
 public interface BankAccountRepository extends CrudRepository<BankAccount, Long> {
@@ -21,5 +22,11 @@ public interface BankAccountRepository extends CrudRepository<BankAccount, Long>
   void changeBalance(Long accountId, BigDecimal value);
 
   Page<BankAccount> findByUsername(String username, Pageable pageable);
+
+  @Query("""
+      SELECT * FROM bank_account
+      WHERE id = :id AND username = :username
+      """)
+  Optional<BankAccount> findByIdAndUsername(Long id, String username);
 
 }

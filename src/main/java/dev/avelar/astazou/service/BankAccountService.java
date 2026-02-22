@@ -7,6 +7,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
+
 @Service
 public class BankAccountService {
 
@@ -23,6 +25,14 @@ public class BankAccountService {
 
   public Page<BankAccount> findByUsername(String username, int page, int itemsPerPage) {
     return repository.findByUsername(username, PageRequest.of(page, itemsPerPage));
+  }
+
+  public Optional<BankAccount> findByIdAndUsername(Long id, String username) {
+    return repository.findByIdAndUsername(id, username);
+  }
+
+  public BankAccount update(BankAccount account) {
+    return repository.save(account);
   }
 
 }

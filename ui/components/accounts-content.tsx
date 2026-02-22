@@ -24,9 +24,18 @@ import {
     Landmark,
     Loader2,
     LogOut,
+    Pencil,
     Plus,
     Wallet,
 } from "lucide-react"
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/ui/dialog"
 
 const API_BASE: string = (process.env.NEXT_PUBLIC_API_URL as string) || (process.env.REACT_APP_API_BASE as string) || (process.env.VITE_API_BASE as string) || (process.env.API_BASE as string) || 'http://localhost:8080';
 
@@ -64,6 +73,14 @@ export function AccountsContent() {
     const [formError, setFormError] = useState("")
     const [formSuccess, setFormSuccess] = useState("")
     const [showForm, setShowForm] = useState(false)
+
+    // Edit state
+    const [editingAccount, setEditingAccount] = useState<BankAccount | null>(null)
+    const [editName, setEditName] = useState("")
+    const [editBalance, setEditBalance] = useState("")
+    const [isUpdating, setIsUpdating] = useState(false)
+    const [editError, setEditError] = useState("")
+    const [editSuccess, setEditSuccess] = useState("")
 
     const [isLoggingOut, setIsLoggingOut] = useState(false)
 
@@ -135,6 +152,62 @@ export function AccountsContent() {
             setFormError(t.accountCreateError)
         } finally {
             setIsCreating(false)
+        }
+    }
+
+    function openEditDialog(account: BankAccount) {
+        setEditingAccount(account)
+        setEditName(account.name)
+        setEditBalance(account.balance.toString())
+        setEditError("")
+        setEditSuccess("")
+    }
+
+    function closeEditDialog() {
+        setEditingAccount(null)
+        setEditName("")
+        setEditBalance("")
+        setEditError("")
+        setEditSuccess("")
+    }
+
+    async function handleUpdate(e: React.FormEvent) {
+        e.preventDefault()
+        if (!editingAccount) return
+
+        setEditError("")
+        setEditSuccess("")
+
+        if (!editName.trim()) {
+            setEditError(t.accountNameRequired)
+            return
+        }
+
+        setIsUpdating(true)
+        try {
+            const res = await fetch(`${API_BASE}/bank-accounts/${editingAccount.id}`, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    name: editName.trim(),
+                    balance: editBalance ? parseFloat(editBalance) : 0,
+                }),
+                credentials: "include"
+            })
+
+            if (res.ok) {
+                setEditSuccess(t.accountUpdated)
+                fetchAccounts(page)
+                setTimeout(() => {
+                    closeEditDialog()
+                }, 1000)
+            } else {
+                setEditError(t.accountUpdateError)
+            }
+        } catch {
+            setEditError(t.accountUpdateError)
+        } finally {
+            setIsUpdating(false)
         }
     }
 
@@ -316,6 +389,14 @@ export function AccountsContent() {
                                             <div className="flex size-11 items-center justify-center rounded-lg bg-primary/10 text-primary">
                                                 <Wallet className="size-5" />
                                             </div>
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                className="size-8 text-muted-foreground hover:text-foreground"
+                                                onClick={() => openEditDialog(account)}
+                                            >
+                                                <Pencil className="size-4" />
+                                            </Button>
                                         </div>
                                         <div className="mt-4">
                                             <p className="text-sm text-muted-foreground">{t.accountName}</p>
@@ -369,6 +450,72 @@ export function AccountsContent() {
                     </>
                 )}
             </main>
+
+            {/* Edit Account Dialog */}
+            <Dialog open={!!editingAccount} onOpenChange={(open) => !open && closeEditDialog()}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>{t.editAccount}</DialogTitle>
+                        <DialogDescription>{t.editAccountDescription}</DialogDescription>
+                    </DialogHeader>
+                    <form onSubmit={handleUpdate}>
+                        <div className="flex flex-col gap-4 py-4">
+                            <div className="flex flex-col gap-2">
+                                <Label htmlFor="edit-account-name">{t.accountName}</Label>
+                                <Input
+                                    id="edit-account-name"
+                                    type="text"
+                                    placeholder={t.accountNamePlaceholder}
+                                    value={editName}
+                                    onChange={(e) => setEditName(e.target.value)}
+                                    autoFocus
+                                />
+                            </div>
+                            <div className="flex flex-col gap-2">
+                                <Label htmlFor="edit-balance">{t.currentBalance}</Label>
+                                <div className="relative">
+                                    <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+                                    <Input
+                                        id="edit-balance"
+                                        type="number"
+                                        step="0.01"
+                                        placeholder="0.00"
+                                        value={editBalance}
+                                        onChange={(e) => setEditBalance(e.target.value)}
+                                        className="pl-9"
+                                    />
+                                </div>
+                            </div>
+
+                            {editError && (
+                                <p className="text-sm text-destructive">{editError}</p>
+                            )}
+
+                            {editSuccess && (
+                                <p className="text-sm text-primary">{editSuccess}</p>
+                            )}
+                        </div>
+                        <DialogFooter>
+                            <Button
+                                type="button"
+                                variant="outline"
+                                onClick={closeEditDialog}
+                                disabled={isUpdating}
+                            >
+                                {t.cancel}
+                            </Button>
+                            <Button type="submit" disabled={isUpdating} className="gap-2">
+                                {isUpdating ? (
+                                    <Loader2 className="size-4 animate-spin" />
+                                ) : (
+                                    <Pencil className="size-4" />
+                                )}
+                                {isUpdating ? t.saving : t.save}
+                            </Button>
+                        </DialogFooter>
+                    </form>
+                </DialogContent>
+            </Dialog>
         </div>
     )
 }

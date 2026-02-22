@@ -9,6 +9,7 @@ import { ThemeToggle } from "@/components/theme-toggle"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
+import { Checkbox } from "@/components/ui/checkbox"
 import {
     Dialog,
     DialogContent,
@@ -121,6 +122,7 @@ export function TransactionsContent() {
     const [uploadError, setUploadError] = useState("")
     const [uploadSuccess, setUploadSuccess] = useState("")
     const [showUpload, setShowUpload] = useState(false)
+    const [uploadUpdateAccount, setUploadUpdateAccount] = useState(false)
     const fileInputRef = useRef<HTMLInputElement>(null)
 
     const [isLoggingOut, setIsLoggingOut] = useState(false)
@@ -138,7 +140,8 @@ export function TransactionsContent() {
         description: "",
         amount: "",
         type: "debit",
-        bankAccountId: selectedAccountId || 0
+        bankAccountId: selectedAccountId || 0,
+        updateAccount: true
     })
 
     // Delete transaction dialog
@@ -262,11 +265,14 @@ export function TransactionsContent() {
             const formData = new FormData()
             formData.append("file", file)
 
-            const res = await fetch(`${API_BASE}/transactions/itau/${selectedAccountId}`, {
-                method: "POST",
-                body: formData,
-                credentials: "include"
-            })
+            const res = await fetch(
+                `${API_BASE}/transactions/itau/${selectedAccountId}?updateAccount=${uploadUpdateAccount}`,
+                {
+                    method: "POST",
+                    body: formData,
+                    credentials: "include"
+                }
+            )
 
             if (res.status === 202 || res.ok) {
                 setUploadSuccess(t.uploadSuccess)
@@ -313,7 +319,8 @@ export function TransactionsContent() {
                     description: formData.description,
                     amount: Number(formData.amount),
                     type: formData.type,
-                    bankAccountId: formData.bankAccountId
+                    bankAccountId: formData.bankAccountId,
+                    updateAccount: formData.updateAccount
                 }),
                 credentials: "include"
             })
@@ -325,7 +332,8 @@ export function TransactionsContent() {
                     description: "",
                     amount: "",
                     type: "debit",
-                    bankAccountId: selectedAccountId || 0
+                    bankAccountId: selectedAccountId || 0,
+                    updateAccount: true
                 })
                 // Refresh transactions
                 if (selectedAccountId) {
@@ -644,6 +652,17 @@ export function TransactionsContent() {
                                 <p className="text-sm text-destructive">{uploadError}</p>
                             )}
 
+                            <div className="flex items-center gap-2">
+                                <Checkbox
+                                    id="update-account-upload"
+                                    checked={uploadUpdateAccount}
+                                    onCheckedChange={(value) => setUploadUpdateAccount(value === true)}
+                                />
+                                <Label htmlFor="update-account-upload">
+                                    {t.updateAccount || 'Update account balance'}
+                                </Label>
+                            </div>
+
                             <div className="flex justify-end">
                                 <Button
                                     onClick={handleUpload}
@@ -925,6 +944,20 @@ export function TransactionsContent() {
                                     </option>
                                 ))}
                             </select>
+                        </div>
+
+                        <div className="flex items-center gap-2">
+                            <Checkbox
+                                id="update-account"
+                                checked={formData.updateAccount}
+                                onCheckedChange={(value) => setFormData({
+                                    ...formData,
+                                    updateAccount: value === true
+                                })}
+                            />
+                            <Label htmlFor="update-account">
+                                {t.updateAccount || 'Update account balance'}
+                            </Label>
                         </div>
 
                         {createError && (

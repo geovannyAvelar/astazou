@@ -96,6 +96,7 @@ export interface Translations {
     deleteTransactionDescription: string
     deleting: string
     delete: string
+    updateAccount: string
 
     // Language
     language: string
@@ -198,6 +199,7 @@ export const translations: Record<Locale, Translations> = {
         deleteTransactionDescription: "This action cannot be undone.",
         deleting: "Deleting...",
         delete: "Delete",
+        updateAccount: "Update account balance",
 
         language: "Language",
 
@@ -297,6 +299,7 @@ export const translations: Record<Locale, Translations> = {
         deleteTransactionDescription: "Esta ação não pode ser desfeita.",
         deleting: "Excluindo...",
         delete: "Excluir",
+        updateAccount: "Atualizar saldo da conta",
 
         language: "Idioma",
 
@@ -396,6 +399,7 @@ export const translations: Record<Locale, Translations> = {
         deleteTransactionDescription: "Esta acción no se puede deshacer.",
         deleting: "Eliminando...",
         delete: "Eliminar",
+        updateAccount: "Actualizar saldo de la cuenta",
 
         language: "Idioma",
 

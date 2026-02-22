@@ -37,17 +37,15 @@ public class TransactionController {
     }
 
     var transaction = data.toModel();
-    service.save(transaction, auth.getName());
+    service.save(transaction, auth.getName(), data.getUpdateAccount());
     return ResponseEntity.ok().build();
   }
 
   @GetMapping("/{account_id}")
-  public ResponseEntity<Page<Transaction>> getTransactions(
-      @PathVariable("account_id") Long accountId,
+  public ResponseEntity<Page<Transaction>> getTransactions(@PathVariable("account_id") Long accountId,
       @RequestParam(required = false, defaultValue = "0") int page,
       @RequestParam(required = false, defaultValue = "10") int itemsPerPage,
-      @RequestParam(required = false) Integer month,
-      @RequestParam(required = false) Integer year) {
+      @RequestParam(required = false) Integer month, @RequestParam(required = false) Integer year) {
     var now = OffsetDateTime.now();
 
     if (month == null || month < 0 || month >= 12) {
@@ -111,7 +109,8 @@ public class TransactionController {
 
   @PostMapping(path = "/itau/{account_id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   public ResponseEntity<Void> parseItauCsv(@RequestParam("file") MultipartFile file,
-                                           @PathVariable("account_id") Long accountId) {
+      @PathVariable("account_id") Long accountId,
+      @RequestParam(required = false, defaultValue = "false") boolean updateAccount) {
     if (file == null || file.isEmpty()) {
       return ResponseEntity.badRequest().build();
     }
@@ -125,7 +124,7 @@ public class TransactionController {
     try {
       File tmp = File.createTempFile("itau-", ".pdf");
       file.transferTo(tmp);
-      service.save(tmp, username, accountId);
+      service.save(tmp, username, accountId, updateAccount);
       tmp.delete();
       return ResponseEntity.accepted().build();
     } catch (Exception e) {

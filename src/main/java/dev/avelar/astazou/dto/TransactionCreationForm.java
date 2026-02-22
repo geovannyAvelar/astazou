@@ -23,6 +23,8 @@ public class TransactionCreationForm {
 
   private Long bankAccountId;
 
+  private Boolean updateAccount;
+
   public Transaction toModel() {
     Transaction transaction = new Transaction();
 

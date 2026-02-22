@@ -64,7 +64,7 @@ public class TransactionService {
   }
 
   @Transactional
-  public void save(Transaction transaction, String username) {
+  public void save(Transaction transaction, String username, Boolean updateAccount) {
     Optional<BankAccount> opt = bankAccountRepository.findById(transaction.getBankAccountId());
 
     if (opt.isEmpty()) {
@@ -89,18 +89,21 @@ public class TransactionService {
     transaction.setCreatedAt(OffsetDateTime.now());
 
     repository.upsert(transaction);
-    repository.updateBankAccountBalance(transaction.getAmount().doubleValue(),  transaction.getBankAccountId());
+
+    if (updateAccount != null && updateAccount) {
+      repository.updateBankAccountBalance(transaction.getAmount().doubleValue(),  transaction.getBankAccountId());
+    }
   }
 
-  public void save(File pdf, String username, Long bankAccountId) {
-    save(parseItauPdf(pdf), username, bankAccountId);
+  public void save(File pdf, String username, Long bankAccountId, boolean updateAccount) {
+    save(parseItauPdf(pdf), username, bankAccountId, updateAccount);
   }
 
   public void delete(Long transactionId, String username) {
     repository.delete(transactionId, username);
   }
 
-  protected void save(List<Transaction> transactions, String username, Long bankAccountId) {
+  protected void save(List<Transaction> transactions, String username, Long bankAccountId, boolean updateAccount) {
     for (Transaction transaction : transactions) {
       try {
         Optional<BankAccount> bankAccountOpt = bankAccountRepository.findById(bankAccountId);
@@ -118,7 +121,10 @@ public class TransactionService {
         transaction.setBankAccountId(bankAccount.getId());
 
         repository.upsert(transaction);
-        repository.updateBankAccountBalance(transaction.getAmount().doubleValue(),  transaction.getBankAccountId());
+
+        if (updateAccount) {
+          repository.updateBankAccountBalance(transaction.getAmount().doubleValue(),  transaction.getBankAccountId());
+        }
       } catch (Exception e) {
         LOGGER.warn("Cannot process transaction. Cause: {}", e.getMessage());
       }

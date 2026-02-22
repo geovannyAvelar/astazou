@@ -16,9 +16,17 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import {
   ArrowDownRight,
   ArrowRight,
   ArrowUpRight,
+  Calendar,
   CreditCard,
   DollarSign,
   Landmark,
@@ -70,9 +78,14 @@ export function DashboardContent() {
   const [transactions, setTransactions] = useState<Transaction[]>([])
   const [isLoadingTransactions, setIsLoadingTransactions] = useState(true)
 
+  // Get current month and year
+  const now = new Date()
+  const [selectedMonth, setSelectedMonth] = useState<number>(now.getMonth() + 1) // 1-12
+  const [selectedYear, setSelectedYear] = useState<number>(now.getFullYear())
+
   const fetchBalance = useCallback(async () => {
     try {
-      const res = await fetch(`${API_BASE}/transactions/balance`, {
+      const res = await fetch(`${API_BASE}/transactions/balance?month=${selectedMonth}&year=${selectedYear}`, {
         credentials: "include"
       })
       if (res.ok) {
@@ -82,7 +95,7 @@ export function DashboardContent() {
     } catch (error) {
       console.error("Failed to fetch balance:", error)
     }
-  }, [])
+  }, [selectedMonth, selectedYear])
 
   const fetchLastTransactions = useCallback(async () => {
     setIsLoadingTransactions(true)
@@ -195,12 +208,58 @@ export function DashboardContent() {
 
       <main className="mx-auto max-w-6xl px-4 py-8 lg:px-8">
         <div className="mb-8">
-          <h1 className="text-2xl font-bold text-foreground tracking-tight">
-            {getGreeting()}, {displayName.split(" ")[0]}
-          </h1>
-          <p className="mt-1 text-muted-foreground">
-            {t.dashboardOverview}
-          </p>
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h1 className="text-2xl font-bold text-foreground tracking-tight">
+                {getGreeting()}, {displayName.split(" ")[0]}
+              </h1>
+              <p className="mt-1 text-muted-foreground">
+                {t.dashboardOverview}
+              </p>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <Calendar className="size-4 text-muted-foreground" />
+              <Select
+                value={selectedMonth.toString()}
+                onValueChange={(value) => setSelectedMonth(parseInt(value))}
+              >
+                <SelectTrigger className="w-[140px]">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="1">January</SelectItem>
+                  <SelectItem value="2">February</SelectItem>
+                  <SelectItem value="3">March</SelectItem>
+                  <SelectItem value="4">April</SelectItem>
+                  <SelectItem value="5">May</SelectItem>
+                  <SelectItem value="6">June</SelectItem>
+                  <SelectItem value="7">July</SelectItem>
+                  <SelectItem value="8">August</SelectItem>
+                  <SelectItem value="9">September</SelectItem>
+                  <SelectItem value="10">October</SelectItem>
+                  <SelectItem value="11">November</SelectItem>
+                  <SelectItem value="12">December</SelectItem>
+                </SelectContent>
+              </Select>
+
+              <Select
+                value={selectedYear.toString()}
+                onValueChange={(value) => setSelectedYear(parseInt(value))}
+              >
+                <SelectTrigger className="w-[100px]">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {Array.from({ length: 10 }, (_, i) => now.getFullYear() - i).map((year) => (
+                    <SelectItem key={year} value={year.toString()}>
+                      {year}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
         </div>
 
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">

@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect } from "react"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import { useAuth } from "@/lib/auth-context"
 import { useI18n } from "@/lib/i18n/i18n-context"
 import { TransactionsContent } from "@/components/transactions-content"
@@ -11,6 +11,8 @@ export default function TransactionsPage() {
     const { isAuthenticated, isLoading } = useAuth()
     const { t } = useI18n()
     const router = useRouter()
+    const searchParams = useSearchParams()
+    const accountId = searchParams.get("accountId")
 
     useEffect(() => {
         if (!isLoading && !isAuthenticated) {
@@ -33,5 +35,5 @@ export default function TransactionsPage() {
         return null
     }
 
-    return <TransactionsContent />
+    return <TransactionsContent preselectedAccountId={accountId ? Number(accountId) : undefined} />
 }

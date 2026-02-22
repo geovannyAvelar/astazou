@@ -102,7 +102,7 @@ interface TransactionsPageResponse {
     numberOfElements: number
 }
 
-export function TransactionsContent() {
+export function TransactionsContent({ preselectedAccountId }: { preselectedAccountId?: number }) {
     const { user, logout } = useAuth()
     const { t } = useI18n()
 
@@ -212,6 +212,16 @@ export function TransactionsContent() {
     useEffect(() => {
         fetchAccounts()
     }, [fetchAccounts])
+
+    // Set preselected account when accounts are loaded
+    useEffect(() => {
+        if (preselectedAccountId && accounts.length > 0) {
+            const accountExists = accounts.find(acc => acc.id === preselectedAccountId)
+            if (accountExists && selectedAccountId !== preselectedAccountId) {
+                setSelectedAccountId(preselectedAccountId)
+            }
+        }
+    }, [preselectedAccountId, accounts, selectedAccountId])
 
     useEffect(() => {
         if (selectedAccountId) {
@@ -526,7 +536,7 @@ export function TransactionsContent() {
                     </Link>
                 </div>
 
-                {/* Page heading + account selector + upload button */}
+                {/* Page heading + month/year filters + action buttons */}
                 <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
                     <div className="flex flex-col gap-3">
                         <div>
@@ -536,24 +546,9 @@ export function TransactionsContent() {
                             <p className="mt-1 text-muted-foreground">{t.transactionsDescription}</p>
                         </div>
 
-                        {/* Account selector + Month/Year filters */}
-                        {!isLoadingAccounts && accounts.length > 0 && (
+                        {/* Month/Year filters */}
+                        {selectedAccountId && (
                             <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:gap-3">
-                                <div className="flex flex-col gap-1.5">
-                                    <Label htmlFor="account-select" className="text-xs text-muted-foreground">{t.selectAccount}</Label>
-                                    <select
-                                        id="account-select"
-                                        value={selectedAccountId ?? ""}
-                                        onChange={(e) => setSelectedAccountId(Number(e.target.value))}
-                                        className="h-9 rounded-md border border-input bg-background px-3 text-sm text-foreground ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
-                                    >
-                                        {accounts.map((acc) => (
-                                            <option key={acc.id} value={acc.id}>
-                                                {acc.name}
-                                            </option>
-                                        ))}
-                                    </select>
-                                </div>
 
                                 <div className="flex flex-col gap-1.5">
                                     <Label htmlFor="month-select" className="text-xs text-muted-foreground">{t.month || 'Month'}</Label>

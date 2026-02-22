@@ -409,7 +409,7 @@ export function AccountsContent() {
                                             </p>
                                         </div>
                                         <Link
-                                            href="/transactions"
+                                            href={`/transactions?accountId=${account.id}`}
                                             className="mt-4 inline-flex items-center gap-1.5 text-xs font-medium text-primary hover:underline"
                                         >
                                             <FileText className="size-3.5" />

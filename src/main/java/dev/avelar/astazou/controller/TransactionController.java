@@ -1,6 +1,7 @@
 package dev.avelar.astazou.controller;
 
 import dev.avelar.astazou.dto.Balance;
+import dev.avelar.astazou.dto.TransactionCreationForm;
 import dev.avelar.astazou.model.Transaction;
 import dev.avelar.astazou.service.TransactionService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,6 +26,19 @@ public class TransactionController {
   @Autowired
   public TransactionController(TransactionService service) {
     this.service = service;
+  }
+
+  @PostMapping
+  public ResponseEntity<Void> create(@RequestBody TransactionCreationForm data) {
+    Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+
+    if (auth == null) {
+      return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+    }
+
+    var transaction = data.toModel();
+    service.save(transaction, auth.getName());
+    return ResponseEntity.ok().build();
   }
 
   @GetMapping("/{account_id}")

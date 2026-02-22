@@ -9,6 +9,7 @@ import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Repository
@@ -25,13 +26,17 @@ public interface TransactionRepository extends CrudRepository<Transaction, Long>
           description = EXCLUDED.description,
           amount = EXCLUDED.amount,
           type = EXCLUDED.type,
-          page = EXCLUDED.page;
-      
-      UPDATE bank_account acc
-          SET acc.balance = acc.balance + :#{#transaction.amount}
-          WHERE acc.id = :#{#transaction.bankAccountId};
+          page = EXCLUDED.page
       """)
   void upsert(@Param("transaction") Transaction transaction);
+
+  @Modifying
+  @Query(value = """
+     UPDATE bank_account
+     SET balance = balance + :amount
+     WHERE id = :accountId
+    """)
+  void updateBankAccountBalance(@Param("amount") Double amount, @Param("accountId") Long accountId);
 
   Page<Transaction> findByBankAccountId(Long bankAccountId, Pageable pageable);
 
@@ -85,5 +90,12 @@ public interface TransactionRepository extends CrudRepository<Transaction, Long>
         LIMIT 10
       """)
   List<Transaction> findLast10(String username);
+
+  @Query("""
+      SELECT COALESCE(MAX(t.sequence), 0) 
+      FROM transactions t
+      WHERE t.bank_account_id = :accountId AND t.transaction_date = :day
+      """)
+  int getLastDaySequence(Long accountId, LocalDate day);
 
 }

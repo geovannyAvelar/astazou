@@ -1,6 +1,7 @@
 package dev.avelar.astazou.service;
 
 import dev.avelar.astazou.dto.Balance;
+import dev.avelar.astazou.exception.NotFoundException;
 import dev.avelar.astazou.model.BankAccount;
 import dev.avelar.astazou.model.Transaction;
 import dev.avelar.astazou.repository.BankAccountRepository;
@@ -12,8 +13,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.*;
 import java.math.BigDecimal;
@@ -62,6 +63,35 @@ public class TransactionService {
     return new PageImpl<>(repository.findLast10(username));
   }
 
+  @Transactional
+  public void save(Transaction transaction, String username) {
+    Optional<BankAccount> opt = bankAccountRepository.findById(transaction.getBankAccountId());
+
+    if (opt.isEmpty()) {
+      throw new NotFoundException("Cannot find an account with this ID");
+    }
+
+    BankAccount bankAccount = opt.get();
+    if (!bankAccount.getUsername().contains(username)) {
+      throw new IllegalStateException("Cannot create a transaction without account ownership");
+    }
+
+    int lastSequence = repository.getLastDaySequence(bankAccount.getId(), transaction.getTransactionDate());
+    transaction.setSequence(lastSequence + 1);
+    transaction.setPage(0);
+
+    if (transaction.getAmount().compareTo(BigDecimal.ZERO) < 0) {
+      transaction.setType("debit");
+    } else {
+      transaction.setType("credit");
+    }
+
+    transaction.setCreatedAt(OffsetDateTime.now());
+
+    repository.upsert(transaction);
+    repository.updateBankAccountBalance(transaction.getAmount().doubleValue(),  transaction.getBankAccountId());
+  }
+
   public void save(File pdf, String username, Long bankAccountId) {
     save(parseItauPdf(pdf), username, bankAccountId);
   }
@@ -84,6 +114,7 @@ public class TransactionService {
         transaction.setBankAccountId(bankAccount.getId());
 
         repository.upsert(transaction);
+        repository.updateBankAccountBalance(transaction.getAmount().doubleValue(),  transaction.getBankAccountId());
       } catch (Exception e) {
         LOGGER.warn("Cannot process transaction. Cause: {}", e.getMessage());
       }

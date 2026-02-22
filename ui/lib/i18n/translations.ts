@@ -82,6 +82,15 @@ export interface Translations {
     pdfOnly: string
     fileSelected: string
     removeFile: string
+    createTransaction: string
+    createTransactionDescription: string
+    transactionDescriptionPlaceholder: string
+    transactionType: string
+    debit: string
+    credit: string
+    bankAccount: string
+    cancel: string
+    create: string
 
     // Language
     language: string
@@ -170,6 +179,15 @@ export const translations: Record<Locale, Translations> = {
         pdfOnly: "PDF files only",
         fileSelected: "File selected",
         removeFile: "Remove file",
+        createTransaction: "Create Transaction",
+        createTransactionDescription: "Add a new transaction manually",
+        transactionDescriptionPlaceholder: "Enter description...",
+        transactionType: "Type",
+        debit: "Debit",
+        credit: "Credit",
+        bankAccount: "Bank Account",
+        cancel: "Cancel",
+        create: "Create",
 
         language: "Language",
 
@@ -255,11 +273,20 @@ export const translations: Record<Locale, Translations> = {
         pdfOnly: "Apenas arquivos PDF",
         fileSelected: "Arquivo selecionado",
         removeFile: "Remover arquivo",
+        createTransaction: "Criar Transação",
+        createTransactionDescription: "Adicionar uma nova transação manualmente",
+        transactionDescriptionPlaceholder: "Digite a descrição...",
+        transactionType: "Tipo",
+        debit: "Débito",
+        credit: "Crédito",
+        bankAccount: "Conta Bancária",
+        cancel: "Cancelar",
+        create: "Criar",
 
         language: "Idioma",
 
-        month: "month",
-        year: "year"
+        month: "Mês",
+        year: "Ano"
     },
     es: {
         brandTagline: "Toma el control de tu futuro financiero",
@@ -340,10 +367,19 @@ export const translations: Record<Locale, Translations> = {
         pdfOnly: "Solo archivos PDF",
         fileSelected: "Archivo seleccionado",
         removeFile: "Eliminar archivo",
+        createTransaction: "Crear Transacción",
+        createTransactionDescription: "Agregar una nueva transacción manualmente",
+        transactionDescriptionPlaceholder: "Ingresa descripción...",
+        transactionType: "Tipo",
+        debit: "Débito",
+        credit: "Crédito",
+        bankAccount: "Cuenta Bancaria",
+        cancel: "Cancelar",
+        create: "Crear",
 
         language: "Idioma",
 
-        month: "Mês",
-        year: "Ano"
+        month: "Mes",
+        year: "Año"
     },
 }

@@ -8,6 +8,15 @@ import { LanguageSwitcher } from "@/components/language-switcher"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
+import { Input } from "@/components/ui/input"
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/ui/dialog"
 import {
     Card,
     CardContent,
@@ -32,6 +41,7 @@ import {
     FileText,
     Loader2,
     LogOut,
+    Plus,
     Upload,
     X,
 } from "lucide-react"
@@ -108,6 +118,18 @@ export function TransactionsContent() {
     const [month, setMonth] = useState<number>(new Date().getMonth() + 1)
     const [year, setYear] = useState<number>(new Date().getFullYear())
 
+    // Create transaction form
+    const [showCreateDialog, setShowCreateDialog] = useState(false)
+    const [isCreating, setIsCreating] = useState(false)
+    const [createError, setCreateError] = useState("")
+    const [formData, setFormData] = useState({
+        transactionDate: new Date().toISOString().split('T')[0],
+        description: "",
+        amount: "",
+        type: "debit",
+        bankAccountId: selectedAccountId || 0
+    })
+
     const displayName = user?.completeUsername || user?.username || "User"
     const initials = displayName
         .split(" ")
@@ -170,6 +192,12 @@ export function TransactionsContent() {
             fetchTransactions(selectedAccountId, 0)
         }
     }, [selectedAccountId, month, year, fetchTransactions])
+
+    useEffect(() => {
+        if (selectedAccountId) {
+            setFormData(prev => ({ ...prev, bankAccountId: selectedAccountId }))
+        }
+    }, [selectedAccountId])
 
     function handleDragOver(e: React.DragEvent) {
         e.preventDefault()
@@ -237,6 +265,62 @@ export function TransactionsContent() {
             setUploadError(t.uploadError)
         } finally {
             setIsUploading(false)
+        }
+    }
+
+    async function handleCreateTransaction() {
+        setCreateError("")
+
+        if (!formData.description.trim()) {
+            setCreateError("Description is required")
+            return
+        }
+        if (!formData.amount || Number(formData.amount) === 0) {
+            setCreateError("Amount is required")
+            return
+        }
+        if (!formData.bankAccountId) {
+            setCreateError("Bank account is required")
+            return
+        }
+
+        setIsCreating(true)
+        try {
+            const res = await fetch(`${API_BASE}/transactions`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    transactionDate: formData.transactionDate,
+                    description: formData.description,
+                    amount: Number(formData.amount),
+                    type: formData.type,
+                    bankAccountId: formData.bankAccountId
+                }),
+                credentials: "include"
+            })
+
+            if (res.ok) {
+                setShowCreateDialog(false)
+                setFormData({
+                    transactionDate: new Date().toISOString().split('T')[0],
+                    description: "",
+                    amount: "",
+                    type: "debit",
+                    bankAccountId: selectedAccountId || 0
+                })
+                // Refresh transactions
+                if (selectedAccountId) {
+                    fetchTransactions(selectedAccountId, currentPage)
+                }
+            } else {
+                setCreateError("Failed to create transaction")
+            }
+        } catch {
+            setCreateError("Failed to create transaction")
+        } finally {
+            setIsCreating(false)
         }
     }
 
@@ -400,17 +484,28 @@ export function TransactionsContent() {
                         )}
                     </div>
 
-                    <Button
-                        onClick={() => {
-                            setShowUpload(!showUpload)
-                            setUploadError("")
-                            setUploadSuccess("")
-                        }}
-                        className="gap-2 self-start"
-                    >
-                        <Upload className="size-4" />
-                        {t.uploadPdf}
-                    </Button>
+                    <div className="flex gap-2 self-start">
+                        <Button
+                            onClick={() => setShowCreateDialog(true)}
+                            disabled={!selectedAccountId}
+                            className="gap-2"
+                        >
+                            <Plus className="size-4" />
+                            {t.createTransaction || 'Create Transaction'}
+                        </Button>
+                        <Button
+                            onClick={() => {
+                                setShowUpload(!showUpload)
+                                setUploadError("")
+                                setUploadSuccess("")
+                            }}
+                            variant="outline"
+                            className="gap-2"
+                        >
+                            <Upload className="size-4" />
+                            {t.uploadPdf}
+                        </Button>
+                    </div>
                 </div>
 
                 {/* Upload success message */}
@@ -694,6 +789,107 @@ export function TransactionsContent() {
                     </Card>
                 )}
             </main>
+
+            {/* Create Transaction Dialog */}
+            <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>{t.createTransaction || 'Create Transaction'}</DialogTitle>
+                        <DialogDescription>
+                            {t.createTransactionDescription || 'Add a new transaction manually'}
+                        </DialogDescription>
+                    </DialogHeader>
+
+                    <div className="flex flex-col gap-4 py-4">
+                        <div className="flex flex-col gap-2">
+                            <Label htmlFor="transaction-date">{t.transactionDate || 'Date'}</Label>
+                            <Input
+                                id="transaction-date"
+                                type="date"
+                                value={formData.transactionDate}
+                                onChange={(e) => setFormData({ ...formData, transactionDate: e.target.value })}
+                            />
+                        </div>
+
+                        <div className="flex flex-col gap-2">
+                            <Label htmlFor="description">{t.transactionDescription || 'Description'}</Label>
+                            <Input
+                                id="description"
+                                placeholder={t.transactionDescriptionPlaceholder || 'Enter description...'}
+                                value={formData.description}
+                                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                            />
+                        </div>
+
+                        <div className="flex flex-col gap-2">
+                            <Label htmlFor="amount">{t.transactionAmount || 'Amount'}</Label>
+                            <Input
+                                id="amount"
+                                type="number"
+                                step="0.01"
+                                placeholder="0.00"
+                                value={formData.amount}
+                                onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
+                            />
+                        </div>
+
+                        <div className="flex flex-col gap-2">
+                            <Label htmlFor="type">{t.transactionType || 'Type'}</Label>
+                            <select
+                                id="type"
+                                value={formData.type}
+                                onChange={(e) => setFormData({ ...formData, type: e.target.value })}
+                                className="h-9 rounded-md border border-input bg-background px-3 text-sm text-foreground ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                            >
+                                <option value="debit">{t.debit || 'Debit'}</option>
+                                <option value="credit">{t.credit || 'Credit'}</option>
+                            </select>
+                        </div>
+
+                        <div className="flex flex-col gap-2">
+                            <Label htmlFor="account">{t.bankAccount || 'Bank Account'}</Label>
+                            <select
+                                id="account"
+                                value={formData.bankAccountId}
+                                onChange={(e) => setFormData({ ...formData, bankAccountId: Number(e.target.value) })}
+                                className="h-9 rounded-md border border-input bg-background px-3 text-sm text-foreground ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                            >
+                                {accounts.map((acc) => (
+                                    <option key={acc.id} value={acc.id}>
+                                        {acc.name}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+
+                        {createError && (
+                            <p className="text-sm text-destructive">{createError}</p>
+                        )}
+                    </div>
+
+                    <DialogFooter>
+                        <Button
+                            variant="outline"
+                            onClick={() => setShowCreateDialog(false)}
+                            disabled={isCreating}
+                        >
+                            {t.cancel || 'Cancel'}
+                        </Button>
+                        <Button
+                            onClick={handleCreateTransaction}
+                            disabled={isCreating}
+                            className="gap-2"
+                        >
+                            {isCreating ? (
+                                <Loader2 className="size-4 animate-spin" />
+                            ) : (
+                                <Plus className="size-4" />
+                            )}
+                            {isCreating ? (t.creating || 'Creating...') : (t.create || 'Create')}
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </div>
     )
 }

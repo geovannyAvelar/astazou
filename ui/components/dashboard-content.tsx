@@ -144,12 +144,12 @@ export function DashboardContent() {
     return t.greetingEvening
   }
 
-  function formatCurrency(amount: number) {
+  function formatCurrency(amount: number, useAbsolute = false) {
     return new Intl.NumberFormat("en-US", {
       style: "currency",
       currency: "USD",
       minimumFractionDigits: 2,
-    }).format(Math.abs(amount))
+    }).format(useAbsolute ? Math.abs(amount) : amount)
   }
 
   function formatDate(dateString: string) {
@@ -267,6 +267,7 @@ export function DashboardContent() {
             title={t.totalBalance}
             value={balance ? formatCurrency(balance.amount) : "$0.00"}
             icon={<Wallet className="size-5" />}
+            valueClassName={balance && balance.amount < 0 ? "text-destructive" : "text-foreground"}
           />
           <SummaryCard
             title={t.monthlyIncome}
@@ -339,7 +340,7 @@ export function DashboardContent() {
                       <span className={`text-sm font-semibold ${
                         tx.amount >= 0 ? "text-primary" : "text-destructive"
                       }`}>
-                        {tx.amount >= 0 ? "+" : "-"}{formatCurrency(tx.amount)}
+                        {tx.amount >= 0 ? "+" : "-"}{formatCurrency(tx.amount, true)}
                       </span>
                     </div>
                   ))}
@@ -357,10 +358,12 @@ function SummaryCard({
   title,
   value,
   icon,
+  valueClassName,
 }: {
   title: string
   value: string
   icon: React.ReactNode
+  valueClassName?: string
 }) {
   return (
     <Card>
@@ -372,7 +375,7 @@ function SummaryCard({
         </div>
         <div className="mt-3">
           <p className="text-sm text-muted-foreground">{title}</p>
-          <p className="text-2xl font-bold text-foreground tracking-tight">{value}</p>
+          <p className={`text-2xl font-bold tracking-tight ${valueClassName || "text-foreground"}`}>{value}</p>
         </div>
       </CardContent>
     </Card>

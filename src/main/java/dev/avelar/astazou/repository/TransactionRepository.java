@@ -98,4 +98,14 @@ public interface TransactionRepository extends CrudRepository<Transaction, Long>
       """)
   int getLastDaySequence(Long accountId, LocalDate day);
 
+  @Modifying
+  @Query("""
+    DELETE FROM transactions t 
+    USING bank_account ba 
+    WHERE t.bank_account_id = ba.id AND 
+            t.id = :transactionId AND 
+                ba.username = :username
+    """)
+  void delete(Long transactionId, String username);
+
 }

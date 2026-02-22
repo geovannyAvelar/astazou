@@ -96,6 +96,10 @@ public class TransactionService {
     save(parseItauPdf(pdf), username, bankAccountId);
   }
 
+  public void delete(Long transactionId, String username) {
+    repository.delete(transactionId, username);
+  }
+
   protected void save(List<Transaction> transactions, String username, Long bankAccountId) {
     for (Transaction transaction : transactions) {
       try {

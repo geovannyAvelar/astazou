@@ -18,6 +18,16 @@ import {
     DialogTitle,
 } from "@/components/ui/dialog"
 import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
+import {
     Card,
     CardContent,
     CardDescription,
@@ -42,6 +52,7 @@ import {
     Loader2,
     LogOut,
     Plus,
+    Trash2,
     Upload,
     X,
 } from "lucide-react"
@@ -129,6 +140,12 @@ export function TransactionsContent() {
         type: "debit",
         bankAccountId: selectedAccountId || 0
     })
+
+    // Delete transaction dialog
+    const [showDeleteDialog, setShowDeleteDialog] = useState(false)
+    const [transactionToDelete, setTransactionToDelete] = useState<Transaction | null>(null)
+    const [isDeleting, setIsDeleting] = useState(false)
+    const [deleteError, setDeleteError] = useState("")
 
     const displayName = user?.completeUsername || user?.username || "User"
     const initials = displayName
@@ -330,6 +347,42 @@ export function TransactionsContent() {
             await logout()
         } finally {
             setIsLoggingOut(false)
+        }
+    }
+
+    function openDeleteDialog(tx: Transaction) {
+        setDeleteError("")
+        setTransactionToDelete(tx)
+        setShowDeleteDialog(true)
+    }
+
+    async function handleDeleteTransaction() {
+        if (!transactionToDelete) return
+
+        setDeleteError("")
+        setIsDeleting(true)
+        try {
+            const res = await fetch(`${API_BASE}/transactions/${transactionToDelete.id}`, {
+                method: "DELETE",
+                credentials: "include"
+            })
+
+            if (res.ok) {
+                setShowDeleteDialog(false)
+                setTransactionToDelete(null)
+                if (selectedAccountId) {
+                    const nextPage = transactions.length === 1 && currentPage > 0
+                        ? currentPage - 1
+                        : currentPage
+                    fetchTransactions(selectedAccountId, nextPage)
+                }
+            } else {
+                setDeleteError("Failed to delete transaction")
+            }
+        } catch {
+            setDeleteError("Failed to delete transaction")
+        } finally {
+            setIsDeleting(false)
         }
     }
 
@@ -647,17 +700,18 @@ export function TransactionsContent() {
                         </CardHeader>
                         <CardContent>
                             {/* Table header */}
-                            <div className="hidden sm:grid sm:grid-cols-[1fr_2fr_1fr] gap-4 border-b pb-3 mb-2">
+                            <div className="hidden sm:grid sm:grid-cols-[1fr_2fr_1fr_auto] gap-4 border-b pb-3 mb-2">
                                 <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">{t.transactionDate}</p>
                                 <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">{t.transactionDescription}</p>
                                 <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider text-right">{t.transactionAmount}</p>
+                                <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider text-right">{t.actions || 'Actions'}</span>
                             </div>
 
                             <div className="flex flex-col gap-1">
                                 {transactions.map((tx) => (
                                     <div
                                         key={tx.id}
-                                        className="flex flex-col gap-1 rounded-lg border p-4 sm:grid sm:grid-cols-[1fr_2fr_1fr] sm:items-center sm:gap-4 sm:border-0 sm:p-3 sm:hover:bg-muted/50 sm:transition-colors"
+                                        className="flex flex-col gap-3 rounded-lg border p-4 sm:grid sm:grid-cols-[1fr_2fr_1fr_auto] sm:items-center sm:gap-4 sm:border-0 sm:p-3 sm:hover:bg-muted/50 sm:transition-colors"
                                     >
                                         <p className="text-sm text-muted-foreground">{formatDate(tx.transactionDate)}</p>
                                         <div className="flex items-center gap-2">
@@ -674,11 +728,22 @@ export function TransactionsContent() {
                                             </div>
                                             <p className="text-sm font-medium text-foreground">{tx.description}</p>
                                         </div>
-                                        <p className={`text-sm font-semibold text-right ${
-                                            tx.amount >= 0 ? "text-primary" : "text-destructive"
-                                        }`}>
-                                            {tx.amount >= 0 ? "+" : ""}{formatCurrency(tx.amount)}
-                                        </p>
+                                        <div className="flex items-center justify-between sm:justify-end gap-3">
+                                            <p className={`text-sm font-semibold ${
+                                                tx.amount >= 0 ? "text-primary" : "text-destructive"
+                                            }`}>
+                                                {tx.amount >= 0 ? "+" : ""}{formatCurrency(tx.amount)}
+                                            </p>
+                                            <Button
+                                                variant="ghost"
+                                                size="icon-sm"
+                                                onClick={() => openDeleteDialog(tx)}
+                                                aria-label={t.deleteTransaction || "Delete transaction"}
+                                                className="text-muted-foreground hover:text-destructive"
+                                            >
+                                                <Trash2 className="size-4" />
+                                            </Button>
+                                        </div>
                                     </div>
                                 ))}
                             </div>
@@ -890,6 +955,35 @@ export function TransactionsContent() {
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
+
+            {/* Delete Confirmation Dialog */}
+            <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>{t.deleteTransaction || 'Delete transaction'}</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            {t.deleteTransactionDescription || 'This action cannot be undone.'}
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+
+                    {deleteError && (
+                        <p className="text-sm text-destructive">{deleteError}</p>
+                    )}
+
+                    <AlertDialogFooter>
+                        <AlertDialogCancel disabled={isDeleting}>
+                            {t.cancel || 'Cancel'}
+                        </AlertDialogCancel>
+                        <AlertDialogAction
+                            onClick={handleDeleteTransaction}
+                            className="bg-destructive text-white hover:bg-destructive/90"
+                            disabled={isDeleting}
+                        >
+                            {isDeleting ? (t.deleting || 'Deleting...') : (t.delete || 'Delete')}
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </div>
     )
 }

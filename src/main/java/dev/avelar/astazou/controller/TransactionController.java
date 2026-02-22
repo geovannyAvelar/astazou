@@ -61,6 +61,21 @@ public class TransactionController {
     return ResponseEntity.ok(service.findByAccountIdAndMonth(accountId, month, year, page, itemsPerPage));
   }
 
+  @DeleteMapping("/{transaction_id}")
+  public ResponseEntity<Void> delete(@PathVariable("transaction_id") Long transactionId) {
+    Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+
+    if (auth == null) {
+      return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+    }
+
+    String username = auth.getName();
+
+    service.delete(transactionId, username);
+
+    return ResponseEntity.ok().build();
+  }
+
   @GetMapping("/balance")
   public ResponseEntity<Balance> calculateBalanceMonth(@RequestParam(required = false) Integer month,
       @RequestParam(required = false) Integer year) {

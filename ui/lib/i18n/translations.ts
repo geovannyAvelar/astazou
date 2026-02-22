@@ -91,6 +91,11 @@ export interface Translations {
     bankAccount: string
     cancel: string
     create: string
+    actions: string
+    deleteTransaction: string
+    deleteTransactionDescription: string
+    deleting: string
+    delete: string
 
     // Language
     language: string
@@ -188,6 +193,11 @@ export const translations: Record<Locale, Translations> = {
         bankAccount: "Bank Account",
         cancel: "Cancel",
         create: "Create",
+        actions: "Actions",
+        deleteTransaction: "Delete transaction",
+        deleteTransactionDescription: "This action cannot be undone.",
+        deleting: "Deleting...",
+        delete: "Delete",
 
         language: "Language",
 
@@ -282,6 +292,11 @@ export const translations: Record<Locale, Translations> = {
         bankAccount: "Conta Bancária",
         cancel: "Cancelar",
         create: "Criar",
+        actions: "Ações",
+        deleteTransaction: "Excluir transação",
+        deleteTransactionDescription: "Esta ação não pode ser desfeita.",
+        deleting: "Excluindo...",
+        delete: "Excluir",
 
         language: "Idioma",
 
@@ -376,6 +391,11 @@ export const translations: Record<Locale, Translations> = {
         bankAccount: "Cuenta Bancaria",
         cancel: "Cancelar",
         create: "Crear",
+        actions: "Acciones",
+        deleteTransaction: "Eliminar transacción",
+        deleteTransactionDescription: "Esta acción no se puede deshacer.",
+        deleting: "Eliminando...",
+        delete: "Eliminar",
 
         language: "Idioma",
 

@@ -1,13 +1,13 @@
 "use client"
 
-import { useEffect } from "react"
+import { Suspense, useEffect } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { useAuth } from "@/lib/auth-context"
 import { useI18n } from "@/lib/i18n/i18n-context"
 import { TransactionsContent } from "@/components/transactions-content"
 import { Loader2 } from "lucide-react"
 
-export default function TransactionsPage() {
+function TransactionsPageContent() {
     const { isAuthenticated, isLoading } = useAuth()
     const { t } = useI18n()
     const router = useRouter()
@@ -36,4 +36,21 @@ export default function TransactionsPage() {
     }
 
     return <TransactionsContent preselectedAccountId={accountId ? Number(accountId) : undefined} />
+}
+
+export default function TransactionsPage() {
+    return (
+        <Suspense
+            fallback={
+                <main className="flex min-h-svh items-center justify-center bg-background">
+                    <div className="flex flex-col items-center gap-3">
+                        <Loader2 className="size-8 animate-spin text-primary" />
+                        <p className="text-sm text-muted-foreground">Loading...</p>
+                    </div>
+                </main>
+            }
+        >
+            <TransactionsPageContent />
+        </Suspense>
+    )
 }

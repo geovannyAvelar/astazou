@@ -46,8 +46,18 @@ public class TransactionService {
 
   public Page<Transaction> findByAccountIdAndMonth(Long bankAccountId, Integer month, Integer year, int page,
       int itemsPerPage) {
+    if (itemsPerPage <= 0) {
+      itemsPerPage = 10;
+    }
+
+    var offset = page * itemsPerPage;
+
+    if (offset < 0) {
+      offset = 0;
+    }
+
     List<Transaction> transactions =
-        repository.findByAccountIdAndMonth(bankAccountId, month, year, itemsPerPage, page * itemsPerPage);
+        repository.findByAccountIdAndMonth(bankAccountId, month, year, itemsPerPage, offset);
     Long count = repository.countByAccountIdAndMonth(bankAccountId, month, year);
     return new PageImpl<>(transactions, PageRequest.of(page, itemsPerPage), count);
   }
@@ -91,7 +101,7 @@ public class TransactionService {
     repository.upsert(transaction);
 
     if (updateAccount != null && updateAccount) {
-      repository.updateBankAccountBalance(transaction.getAmount().doubleValue(),  transaction.getBankAccountId());
+      repository.updateBankAccountBalance(transaction.getAmount().doubleValue(), transaction.getBankAccountId());
     }
   }
 
@@ -133,16 +143,10 @@ public class TransactionService {
     // Create credit transaction on destination account
     int lastSequence = repository.getLastDaySequence(destinationAccountId, sourceTransaction.getTransactionDate());
 
-    Transaction creditTransaction = Transaction.builder()
-        .transactionDate(sourceTransaction.getTransactionDate())
+    Transaction creditTransaction = Transaction.builder().transactionDate(sourceTransaction.getTransactionDate())
         .description("Transfer from " + sourceAccountOpt.get().getName() + ": " + sourceTransaction.getDescription())
-        .amount(sourceTransaction.getAmount().abs())
-        .type("credit")
-        .page(0)
-        .sequence(lastSequence + 1)
-        .createdAt(OffsetDateTime.now())
-        .bankAccountId(destinationAccountId)
-        .build();
+        .amount(sourceTransaction.getAmount().abs()).type("credit").page(0).sequence(lastSequence + 1)
+        .createdAt(OffsetDateTime.now()).bankAccountId(destinationAccountId).build();
 
     repository.upsert(creditTransaction);
 
@@ -171,7 +175,7 @@ public class TransactionService {
         repository.upsert(transaction);
 
         if (updateAccount) {
-          repository.updateBankAccountBalance(transaction.getAmount().doubleValue(),  transaction.getBankAccountId());
+          repository.updateBankAccountBalance(transaction.getAmount().doubleValue(), transaction.getBankAccountId());
         }
       } catch (Exception e) {
         LOGGER.warn("Cannot process transaction. Cause: {}", e.getMessage());

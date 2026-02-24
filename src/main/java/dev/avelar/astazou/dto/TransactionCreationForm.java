@@ -30,6 +30,7 @@ public class TransactionCreationForm {
 
     transaction.setTransactionDate(transactionDate);
     transaction.setDescription(description);
+    transaction.setType(type);
     transaction.setBankAccountId(bankAccountId);
     transaction.setAmount(amount);
 

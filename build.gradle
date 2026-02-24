@@ -40,6 +40,7 @@ dependencies {
 	implementation 'org.springframework.cloud:spring-cloud-starter-openfeign'
 	compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
+    implementation 'com.webcohesion.ofx4j:ofx4j:1.39'
 	developmentOnly 'org.springframework.boot:spring-boot-devtools'
     compileOnly 'com.h2database:h2'
 	runtimeOnly 'io.micrometer:micrometer-registry-prometheus'

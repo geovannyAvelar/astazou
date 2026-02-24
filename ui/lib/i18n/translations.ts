@@ -122,6 +122,28 @@ export interface Translations {
 
     month: string
     year: string
+
+    // Credit Cards
+    creditCards: string
+    creditCardsDescription: string
+    createCreditCard: string
+    creditCardName: string
+    creditCardNamePlaceholder: string
+    creditCardNumber: string
+    creditCardNumberPlaceholder: string
+    creditCardBrand: string
+    creditCardBrandPlaceholder: string
+    creditCardCreated: string
+    creditCardCreateError: string
+    creditCardNameRequired: string
+    creditCardNumber4Digits: string
+    noCreditCards: string
+    noCreditCardsDescription: string
+    creditCardTransactions: string
+    creditCardTransactionsDescription: string
+    statementMonth: string
+    selectMonth: string
+    creditCardStatement: string
 }
 
 export const translations: Record<Locale, Translations> = {
@@ -240,7 +262,28 @@ export const translations: Record<Locale, Translations> = {
         language: "Language",
 
         month: "Month",
-        year: "Year"
+        year: "Year",
+
+        creditCards: "Credit Cards",
+        creditCardsDescription: "Manage your credit cards and view statements.",
+        createCreditCard: "Create Credit Card",
+        creditCardName: "Card Name",
+        creditCardNamePlaceholder: "e.g. Personal, Business...",
+        creditCardNumber: "Last 4 Digits",
+        creditCardNumberPlaceholder: "Enter last 4 digits",
+        creditCardBrand: "Card Brand",
+        creditCardBrandPlaceholder: "e.g. Visa, Mastercard...",
+        creditCardCreated: "Credit card created successfully!",
+        creditCardCreateError: "Failed to create credit card. Please try again.",
+        creditCardNameRequired: "Please enter a card name.",
+        creditCardNumber4Digits: "Please enter 4 digits.",
+        noCreditCards: "No credit cards yet",
+        noCreditCardsDescription: "Create your first credit card to get started.",
+        creditCardTransactions: "Card Transactions",
+        creditCardTransactionsDescription: "View your credit card statement and transactions.",
+        statementMonth: "Statement Month",
+        selectMonth: "Select month and year...",
+        creditCardStatement: "Statement"
     },
     pt: {
         brandTagline: "Assuma o controle do seu futuro financeiro",
@@ -357,7 +400,28 @@ export const translations: Record<Locale, Translations> = {
         language: "Idioma",
 
         month: "Mês",
-        year: "Ano"
+        year: "Ano",
+
+        creditCards: "Cartões de Crédito",
+        creditCardsDescription: "Gerencie seus cartões de crédito e visualize extratos.",
+        createCreditCard: "Criar Cartão de Crédito",
+        creditCardName: "Nome do Cartão",
+        creditCardNamePlaceholder: "ex. Pessoal, Comercial...",
+        creditCardNumber: "Últimos 4 Dígitos",
+        creditCardNumberPlaceholder: "Digite os últimos 4 dígitos",
+        creditCardBrand: "Bandeira do Cartão",
+        creditCardBrandPlaceholder: "ex. Visa, Mastercard...",
+        creditCardCreated: "Cartão de crédito criado com sucesso!",
+        creditCardCreateError: "Falha ao criar cartão de crédito. Tente novamente.",
+        creditCardNameRequired: "Por favor, insira o nome do cartão.",
+        creditCardNumber4Digits: "Por favor, insira 4 dígitos.",
+        noCreditCards: "Nenhum cartão de crédito ainda",
+        noCreditCardsDescription: "Crie seu primeiro cartão de crédito para começar.",
+        creditCardTransactions: "Transações do Cartão",
+        creditCardTransactionsDescription: "Visualize o extrato e transações do seu cartão de crédito.",
+        statementMonth: "Mês do Extrato",
+        selectMonth: "Selecione mês e ano...",
+        creditCardStatement: "Extrato"
     },
     es: {
         brandTagline: "Toma el control de tu futuro financiero",
@@ -474,6 +538,27 @@ export const translations: Record<Locale, Translations> = {
         language: "Idioma",
 
         month: "Mes",
-        year: "Año"
+        year: "Año",
+
+        creditCards: "Tarjetas de Crédito",
+        creditCardsDescription: "Administra tus tarjetas de crédito y visualiza extractos.",
+        createCreditCard: "Crear Tarjeta de Crédito",
+        creditCardName: "Nombre de la Tarjeta",
+        creditCardNamePlaceholder: "ej. Personal, Comercial...",
+        creditCardNumber: "Últimos 4 Dígitos",
+        creditCardNumberPlaceholder: "Ingresa los últimos 4 dígitos",
+        creditCardBrand: "Marca de la Tarjeta",
+        creditCardBrandPlaceholder: "ej. Visa, Mastercard...",
+        creditCardCreated: "Tarjeta de crédito creada exitosamente!",
+        creditCardCreateError: "Error al crear tarjeta de crédito. Inténtalo de nuevo.",
+        creditCardNameRequired: "Por favor, ingresa el nombre de la tarjeta.",
+        creditCardNumber4Digits: "Por favor, ingresa 4 dígitos.",
+        noCreditCards: "Sin tarjetas de crédito aún",
+        noCreditCardsDescription: "Crea tu primera tarjeta de crédito para comenzar.",
+        creditCardTransactions: "Transacciones de la Tarjeta",
+        creditCardTransactionsDescription: "Visualiza el extracto y transacciones de tu tarjeta de crédito.",
+        statementMonth: "Mes del Extracto",
+        selectMonth: "Selecciona mes y año...",
+        creditCardStatement: "Extracto"
     },
 }

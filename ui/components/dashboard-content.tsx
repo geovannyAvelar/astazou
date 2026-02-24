@@ -300,6 +300,25 @@ export function DashboardContent() {
           </Link>
         </div>
 
+        <div className="mt-4">
+          <Link href="/credit-cards" className="group">
+            <Card className="transition-shadow hover:shadow-md">
+              <CardContent className="flex items-center justify-between pt-6">
+                <div className="flex items-center gap-4">
+                  <div className="flex size-12 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                    <CreditCard className="size-6" />
+                  </div>
+                  <div>
+                    <p className="text-base font-semibold text-foreground">{t.creditCards}</p>
+                    <p className="text-sm text-muted-foreground">{t.creditCardsDescription}</p>
+                  </div>
+                </div>
+                <ArrowRight className="size-5 text-muted-foreground transition-transform group-hover:translate-x-1" />
+              </CardContent>
+            </Card>
+          </Link>
+        </div>
+
         <div className="mt-8">
           <Card>
             <CardHeader>

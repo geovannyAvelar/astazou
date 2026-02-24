@@ -148,7 +148,7 @@ public class TransactionController {
       tmp.delete();
       return ResponseEntity.accepted().build();
     } catch (Exception e) {
-      return ResponseEntity.status(500).build();
+      throw new IllegalStateException(e);
     }
   }
 

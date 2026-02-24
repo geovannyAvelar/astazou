@@ -18,6 +18,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select"
+import { CreditCardUpload } from "@/components/credit-card-upload"
 import {
     ArrowLeft,
     CreditCard,
@@ -167,6 +168,27 @@ export function CreditCardTransactionsContent({ cardId }: CardTransactionsConten
 
     const totalAmount = transactions.reduce((sum, t) => sum + t.amount, 0)
 
+    const handleRefresh = () => {
+        // Refetch transactions for current month/year
+        if (selectedMonth && selectedYear) {
+            const month = parseInt(selectedMonth)
+            const year = parseInt(selectedYear)
+
+            setIsLoadingTransactions(true)
+            fetch(
+                `${API_BASE}/credit-cards/transactions/${cardId}/${month}/${year}`,
+                { credentials: "include" }
+            )
+                .then(res => res.ok ? res.json() : null)
+                .then(data => {
+                    const transactionsList = Array.isArray(data) ? data : data?.content || []
+                    setTransactions(transactionsList)
+                })
+                .catch(err => console.error(err))
+                .finally(() => setIsLoadingTransactions(false))
+        }
+    }
+
     return (
         <div className="min-h-svh bg-background">
             <header className="sticky top-0 z-10 border-b bg-card/80 backdrop-blur-sm">
@@ -237,6 +259,15 @@ export function CreditCardTransactionsContent({ cardId }: CardTransactionsConten
                                 </h1>
                                 <p className="mt-1 text-muted-foreground">{t.creditCardTransactionsDescription}</p>
                             </div>
+                        </div>
+
+                        {/* Upload Section */}
+                        <div className="mb-8">
+                            <CreditCardUpload
+                                cardId={cardId}
+                                cardName={card.name}
+                                onUploadSuccess={handleRefresh}
+                            />
                         </div>
 
                         {/* Month/Year Selection */}

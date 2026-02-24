@@ -9,6 +9,7 @@ import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.OffsetDateTime;
 
 @NoArgsConstructor
@@ -29,5 +30,14 @@ public class CreditCardTransaction {
 
   @Column("transaction_date")
   private OffsetDateTime transactionDate;
+
+  @Column("statement_date")
+  private LocalDate statementDate;
+
+  @Column("credit_card")
+  private Long creditCardId;
+
+  @Column("created_at")
+  private OffsetDateTime createdAt;
 
 }

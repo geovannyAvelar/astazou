@@ -1,11 +1,14 @@
 package dev.avelar.astazou.repository;
 
 import dev.avelar.astazou.model.CreditCardTransaction;
-import org.springframework.data.domain.Page;
+import org.springframework.data.jdbc.repository.query.Modifying;
 import org.springframework.data.jdbc.repository.query.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.OffsetDateTime;
 import java.util.List;
 
 @Repository
@@ -23,5 +26,14 @@ public interface CreditCardTransactionRepository extends CrudRepository<CreditCa
             ORDER BY t.statement_date DESC
           """)
   List<CreditCardTransaction> getTransactions(String username, Long creditCardId, int month, int year);
+
+  @Modifying
+  @Query("""
+            INSERT INTO credit_card_transactions
+            (id, amount, description, credit_card, statement_date, transaction_date, created_at)
+            VALUES (:id, :amount, :description, :creditCardId, :statementDate, :transactionDate, :createdAt)
+          """)
+  void insertTransaction(String id, BigDecimal amount, String description, Long creditCardId,
+                         LocalDate statementDate, OffsetDateTime transactionDate, OffsetDateTime createdAt);
 
 }

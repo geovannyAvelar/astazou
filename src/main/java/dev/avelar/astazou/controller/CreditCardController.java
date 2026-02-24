@@ -7,11 +7,14 @@ import dev.avelar.astazou.service.CreditCardService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
 import java.util.List;
 
 @RestController
@@ -90,6 +93,38 @@ public class CreditCardController {
     var transactions = service.getTransactionsByStatement(cardId, username, month, year);
 
     return ResponseEntity.ok(transactions);
+  }
+
+  @PostMapping(path = "/ofx/{cardId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+  public ResponseEntity<Void> parseOfxFile(@RequestParam("file") MultipartFile file,
+      @PathVariable("cardId") Long cardId) {
+    if (file == null || file.isEmpty()) {
+      return ResponseEntity.badRequest().build();
+    }
+
+    Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+    if (auth == null || !auth.isAuthenticated() || "anonymousUser".equals(auth.getPrincipal())) {
+      return ResponseEntity.status(401).build();
+    }
+
+    String username = auth.getName();
+
+    // Verify the card belongs to the user
+    CreditCard card = service.findByIdAndUsername(cardId, username);
+    if (card == null) {
+      return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+    }
+
+    try {
+      File tmp = File.createTempFile("ofx-", ".txt");
+      file.transferTo(tmp);
+      service.parseAndSaveOfxFile(tmp, cardId);
+      //noinspection ResultOfMethodCallIgnored
+      tmp.delete();
+      return ResponseEntity.accepted().build();
+    } catch (Exception e) {
+      return ResponseEntity.status(500).build();
+    }
   }
 
 }

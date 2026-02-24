@@ -212,7 +212,8 @@ public class TransactionService {
 
       int exit = p.waitFor();
       if (exit != 0) {
-        throw new RuntimeException("Python parser exited with code " + exit);
+        System.out.println(String.join(System.lineSeparator(), logRows));
+        throw new RuntimeException("Parser exited with code " + exit);
       }
 
       return parseItauCsv(outputCsv);

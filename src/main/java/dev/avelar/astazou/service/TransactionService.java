@@ -100,8 +100,6 @@ public class TransactionService {
 
     repository.upsert(transaction);
 
-    repository.upsert(transaction);
-
     if (updateAccount != null && updateAccount) {
       repository.updateBankAccountBalance(transaction.getAmount().doubleValue(), transaction.getBankAccountId());
     }

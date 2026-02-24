@@ -12,6 +12,7 @@ RUN ln -s /usr/bin/python3 /usr/bin/python || true
 
 COPY scripts/python/parse_itau_history_pdf.py /app/scripts/parse_itau_history_pdf.py
 COPY scripts/python/requirements.txt /app/requirements.txt
+
 RUN python3 -m venv /opt/venv \
     && /opt/venv/bin/pip install --upgrade pip setuptools wheel \
     && /opt/venv/bin/pip install -r /app/requirements.txt \

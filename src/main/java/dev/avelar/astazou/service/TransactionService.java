@@ -212,7 +212,7 @@ public class TransactionService {
 
       int exit = p.waitFor();
       if (exit != 0) {
-        System.out.println(String.join(System.lineSeparator(), logRows));
+        LOGGER.error(String.join(System.lineSeparator(), logRows));
         throw new RuntimeException("Parser exited with code " + exit);
       }
 

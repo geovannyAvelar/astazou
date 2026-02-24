@@ -89,14 +89,16 @@ public class TransactionService {
     int lastSequence = repository.getLastDaySequence(bankAccount.getId(), transaction.getTransactionDate());
     transaction.setSequence(lastSequence + 1);
     transaction.setPage(0);
+    transaction.setCreatedAt(OffsetDateTime.now());
 
-    if (transaction.getAmount().compareTo(BigDecimal.ZERO) < 0) {
-      transaction.setType("debit");
-    } else {
-      transaction.setType("credit");
+    if ("debit".equalsIgnoreCase(transaction.getType())) {
+      BigDecimal amt = transaction.getAmount();
+      if (amt != null && amt.compareTo(BigDecimal.ZERO) >= 0) {
+        transaction.setAmount(amt.negate());
+      }
     }
 
-    transaction.setCreatedAt(OffsetDateTime.now());
+    repository.upsert(transaction);
 
     repository.upsert(transaction);
 

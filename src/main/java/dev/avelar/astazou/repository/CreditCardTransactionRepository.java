@@ -32,6 +32,7 @@ public interface CreditCardTransactionRepository extends CrudRepository<CreditCa
             INSERT INTO credit_card_transactions
             (id, amount, description, credit_card, statement_date, transaction_date, created_at)
             VALUES (:id, :amount, :description, :creditCardId, :statementDate, :transactionDate, :createdAt)
+            ON CONFLICT (id) DO NOTHING
           """)
   void insertTransaction(String id, BigDecimal amount, String description, Long creditCardId,
                          LocalDate statementDate, OffsetDateTime transactionDate, OffsetDateTime createdAt);

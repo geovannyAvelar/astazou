@@ -75,7 +75,7 @@ public interface TransactionRepository extends CrudRepository<Transaction, Long>
         SELECT COALESCE(SUM(ABS(t.amount)), 0) FROM transactions t
         JOIN bank_account ba ON t.bank_account_id = ba.id
         WHERE ba.username = :username
-        AND (t.type = 'debit' or t.type = 'transfer')
+        AND (t.type = 'debit')
         AND EXTRACT(YEAR FROM t.transaction_date) = :year
         AND EXTRACT(MONTH FROM t.transaction_date) = :month
       """)

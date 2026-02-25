@@ -140,17 +140,22 @@ public class TransactionService {
       throw new IllegalStateException("Source and destination accounts must be different");
     }
 
-    // Create credit transaction on destination account
     int lastSequence = repository.getLastDaySequence(destinationAccountId, sourceTransaction.getTransactionDate());
 
-    Transaction creditTransaction = Transaction.builder().transactionDate(sourceTransaction.getTransactionDate())
+    // @formatter:off
+    Transaction creditTransaction = Transaction.builder()
+        .transactionDate(sourceTransaction.getTransactionDate())
         .description("Transfer from " + sourceAccountOpt.get().getName() + ": " + sourceTransaction.getDescription())
-        .amount(sourceTransaction.getAmount().abs()).type("credit").page(0).sequence(lastSequence + 1)
-        .createdAt(OffsetDateTime.now()).bankAccountId(destinationAccountId).build();
+        .amount(sourceTransaction.getAmount().abs())
+        .type("transfer_credit")
+        .page(0)
+        .sequence(lastSequence + 1)
+        .createdAt(OffsetDateTime.now())
+        .bankAccountId(destinationAccountId).build();
+    // @formatter:on
 
     repository.upsert(creditTransaction);
 
-    // Update source transaction type to transfer
     sourceTransaction.setType("transfer");
     repository.upsert(sourceTransaction);
   }

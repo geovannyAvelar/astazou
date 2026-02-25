@@ -49,7 +49,7 @@ public class TransactionController {
       @RequestParam(required = false) Integer month, @RequestParam(required = false) Integer year) {
     var now = OffsetDateTime.now();
 
-    if (month == null || month < 0 || month >= 12) {
+    if (month == null || month < 0 || month > 12) {
       month = now.getMonthValue();
     }
 

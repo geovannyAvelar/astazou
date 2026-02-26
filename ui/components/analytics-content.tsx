@@ -97,14 +97,24 @@ export function AnalyticsContent() {
         }).format(value)
     }
 
-    const chartData = summary.map(item => ({
+    // Get current month for filtering
+    const now = new Date()
+    const currentMonth = selectedYear === now.getFullYear() ? now.getMonth() + 1 : 12
+
+    // Filter out future months
+    const filteredSummary = summary.filter(item => item.month <= currentMonth)
+
+    const chartData = filteredSummary.map(item => ({
         month: MONTH_NAMES[item.month - 1],
-        income: item.income,
-        expenses: item.expenses,
+        Income: Math.abs(item.income),
+        Expenses: Math.abs(item.expenses),
     }))
 
-    const totalIncome = summary.reduce((sum, item) => sum + item.income, 0)
-    const totalExpenses = summary.reduce((sum, item) => sum + item.expenses, 0)
+    console.log('Chart data:', chartData)
+    console.log('Summary data:', summary)
+
+    const totalIncome = filteredSummary.reduce((sum, item) => sum + item.income, 0)
+    const totalExpenses = filteredSummary.reduce((sum, item) => sum + item.expenses, 0)
     const netSavings = totalIncome - totalExpenses
 
     return (
@@ -254,6 +264,11 @@ export function AnalyticsContent() {
                             <div className="flex items-center justify-center py-16">
                                 <Loader2 className="size-8 animate-spin text-primary" />
                             </div>
+                        ) : chartData.length === 0 ? (
+                            <div className="flex flex-col items-center justify-center py-16 text-center">
+                                <p className="text-sm text-muted-foreground">No data available</p>
+                                <p className="text-xs text-muted-foreground mt-1">Upload transactions to see your financial trends</p>
+                            </div>
                         ) : (
                             <div className="h-96 w-full">
                                 <ResponsiveContainer width="100%" height="100%">
@@ -267,7 +282,10 @@ export function AnalyticsContent() {
                                         <YAxis
                                             className="text-xs"
                                             tick={{ fill: 'hsl(var(--muted-foreground))' }}
-                                            tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`}
+                                            tickFormatter={(value) => {
+                                                if (value >= 1000) return `$${(value / 1000).toFixed(0)}k`
+                                                return `$${value.toFixed(0)}`
+                                            }}
                                         />
                                         <Tooltip
                                             contentStyle={{
@@ -284,19 +302,21 @@ export function AnalyticsContent() {
                                         />
                                         <Line
                                             type="monotone"
-                                            dataKey="income"
-                                            stroke="hsl(var(--primary))"
+                                            dataKey="Income"
+                                            stroke="#22c55e"
                                             strokeWidth={2}
                                             name="Income"
-                                            dot={{ fill: 'hsl(var(--primary))' }}
+                                            dot={{ fill: '#22c55e' }}
+                                            activeDot={{ r: 8 }}
                                         />
                                         <Line
                                             type="monotone"
-                                            dataKey="expenses"
-                                            stroke="hsl(var(--destructive))"
+                                            dataKey="Expenses"
+                                            stroke="#ef4444"
                                             strokeWidth={2}
                                             name="Expenses"
-                                            dot={{ fill: 'hsl(var(--destructive))' }}
+                                            dot={{ fill: '#ef4444' }}
+                                            activeDot={{ r: 8 }}
                                         />
                                     </LineChart>
                                 </ResponsiveContainer>

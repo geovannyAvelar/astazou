@@ -62,6 +62,27 @@ public class TransactionService {
     return new PageImpl<>(transactions, PageRequest.of(page, itemsPerPage), count);
   }
 
+  public Page<Transaction> search(String username, Long bankAccountId, String query, LocalDate startDate, LocalDate endDate, int page, int itemsPerPage) {
+    if (itemsPerPage <= 0) {
+      itemsPerPage = 10;
+    }
+
+    var offset = page * itemsPerPage;
+
+    if (offset < 0) {
+      offset = 0;
+    }
+
+    if (query == null || query.trim().isEmpty()) {
+      query = "";
+    }
+
+    List<Transaction> transactions =
+        repository.searchTransactions(username, bankAccountId, query, startDate, endDate, itemsPerPage, offset);
+    Long count = repository.countSearchTransactions(username, bankAccountId, query, startDate, endDate);
+    return new PageImpl<>(transactions, PageRequest.of(page, itemsPerPage), count);
+  }
+
   public Balance calculateMonthBalance(String username, Integer month, Integer year) {
     Double income = repository.calculateIncomeByUsernameAndMonth(username, month, year);
     Double expenses = repository.calculateExpenseByUsernameAndMonth(username, month, year);

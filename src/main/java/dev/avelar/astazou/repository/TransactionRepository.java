@@ -108,4 +108,33 @@ public interface TransactionRepository extends CrudRepository<Transaction, Long>
     """)
   void delete(Long transactionId, String username);
 
+  @Query("""
+        SELECT t.* FROM transactions t
+        JOIN bank_account ba ON t.bank_account_id = ba.id
+        WHERE ba.username = :username
+          AND t.bank_account_id = :bankAccountId
+          AND (:searchQuery = '' OR t.description_search @@ plainto_tsquery('english', :searchQuery))
+          AND t.transaction_date >= :startDate
+          AND t.transaction_date <= :endDate
+        ORDER BY t.transaction_date DESC
+        LIMIT :limit OFFSET :offset
+      """)
+  List<Transaction> searchTransactions(@Param("username") String username,
+      @Param("bankAccountId") Long bankAccountId, @Param("searchQuery") String searchQuery,
+      @Param("startDate") LocalDate startDate, @Param("endDate") LocalDate endDate,
+      @Param("limit") int limit, @Param("offset") int offset);
+
+  @Query("""
+        SELECT COUNT(t.id) FROM transactions t
+        JOIN bank_account ba ON t.bank_account_id = ba.id
+        WHERE ba.username = :username
+          AND t.bank_account_id = :bankAccountId
+          AND (:searchQuery = '' OR t.description_search @@ plainto_tsquery('english', :searchQuery))
+          AND t.transaction_date >= :startDate
+          AND t.transaction_date <= :endDate
+      """)
+  Long countSearchTransactions(@Param("username") String username,
+      @Param("bankAccountId") Long bankAccountId, @Param("searchQuery") String searchQuery,
+      @Param("startDate") LocalDate startDate, @Param("endDate") LocalDate endDate);
+
 }

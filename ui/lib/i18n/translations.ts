@@ -98,6 +98,16 @@ export interface Translations {
     delete: string
     updateAccount: string
 
+    // Search
+    search: string
+    searchTransactions: string
+    searchPlaceholder: string
+    dateRange: string
+    from: string
+    to: string
+    noSearchResults: string
+    noSearchResultsDescription: string
+
     // Transform to Transfer
     transformToTransfer: string
     transformToTransferDescription: string
@@ -242,6 +252,17 @@ export const translations: Record<Locale, Translations> = {
         delete: "Delete",
         updateAccount: "Update account balance",
 
+        // Search
+        search: "Search",
+        searchTransactions: "Search Transactions",
+        searchPlaceholder: "Search by description...",
+        dateRange: "Date Range",
+        from: "From",
+        to: "To",
+        noSearchResults: "No transactions found",
+        noSearchResultsDescription: "Try adjusting your search terms or date range",
+
+        // Transform to Transfer
         transformToTransfer: "Transform to Transfer",
         transformToTransferDescription: "Convert this debit transaction into a transfer to another account",
         selectDestinationAccount: "Destination Account",
@@ -380,7 +401,18 @@ export const translations: Record<Locale, Translations> = {
         delete: "Excluir",
         updateAccount: "Atualizar saldo da conta",
 
-        transformToTransfer: "Transformar em Transferência",
+        // Search
+        search: "Pesquisar",
+        searchTransactions: "Pesquisar Transacoes",
+        searchPlaceholder: "Pesquisar por descricao...",
+        dateRange: "Intervalo de Datas",
+        from: "De",
+        to: "Ate",
+        noSearchResults: "Nenhuma transacao encontrada",
+        noSearchResultsDescription: "Tente ajustar seus termos de pesquisa ou intervalo de datas",
+
+        // Transform to Transfer
+        transformToTransfer: "Transformar em Transferencia",
         transformToTransferDescription: "Converter esta transação de débito em transferência para outra conta",
         selectDestinationAccount: "Conta de Destino",
         transforming: "Transformando...",
@@ -518,6 +550,17 @@ export const translations: Record<Locale, Translations> = {
         delete: "Eliminar",
         updateAccount: "Actualizar saldo de la cuenta",
 
+        // Search
+        search: "Buscar",
+        searchTransactions: "Buscar Transacciones",
+        searchPlaceholder: "Buscar por descripcion...",
+        dateRange: "Rango de Fechas",
+        from: "Desde",
+        to: "Hasta",
+        noSearchResults: "No se encontraron transacciones",
+        noSearchResultsDescription: "Intenta ajustar tus terminos de busqueda o rango de fechas",
+
+        // Transform to Transfer
         transformToTransfer: "Transformar en Transferencia",
         transformToTransferDescription: "Convertir esta transacción de débito en transferencia a otra cuenta",
         selectDestinationAccount: "Cuenta de Destino",
@@ -528,8 +571,8 @@ export const translations: Record<Locale, Translations> = {
         cannotTransformSameAccount: "Las cuentas de origen y destino deben ser diferentes.",
 
         editAccount: "Editar Cuenta",
-        editAccountDescription: "Actualizar nombre y saldo de la cuenta",
-        currentBalance: "Saldo Actual",
+        editAccountDescription: "Atualizar nome e saldo da conta",
+        currentBalance: "Saldo Atual",
         saving: "Guardando...",
         save: "Guardar",
         accountUpdated: "Cuenta actualizada exitosamente!",

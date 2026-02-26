@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
+import java.time.LocalDate;
 import java.time.OffsetDateTime;
 
 @RestController
@@ -150,6 +151,32 @@ public class TransactionController {
     } catch (Exception e) {
       throw new IllegalStateException(e);
     }
+  }
+
+  @GetMapping("/search/{account_id}")
+  public ResponseEntity<Page<Transaction>> search(@PathVariable("account_id") Long accountId,
+      @RequestParam(required = false, defaultValue = "") String query,
+      @RequestParam(required = false) LocalDate startDate,
+      @RequestParam(required = false) LocalDate endDate,
+      @RequestParam(required = false, defaultValue = "0") int page,
+      @RequestParam(required = false, defaultValue = "10") int itemsPerPage) {
+    Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+
+    if (auth == null) {
+      return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+    }
+
+    String username = auth.getName();
+
+    // Default date range: last 3 months if not specified
+    if (endDate == null) {
+      endDate = LocalDate.now();
+    }
+    if (startDate == null) {
+      startDate = endDate.minusMonths(3);
+    }
+
+    return ResponseEntity.ok(service.search(username, accountId, query, startDate, endDate, page, itemsPerPage));
   }
 
 }

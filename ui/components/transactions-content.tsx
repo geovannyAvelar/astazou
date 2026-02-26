@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { Checkbox } from "@/components/ui/checkbox"
+import { TransactionSearch } from "@/components/transaction-search"
 import {
     Dialog,
     DialogContent,
@@ -157,6 +158,13 @@ export function TransactionsContent({ preselectedAccountId }: { preselectedAccou
     const [isTransforming, setIsTransforming] = useState(false)
     const [transformError, setTransformError] = useState("")
 
+    const [isSearching, setIsSearching] = useState(false)
+    const [searchQuery, setSearchQuery] = useState("")
+    const [searchStartDate, setSearchStartDate] = useState("")
+    const [searchEndDate, setSearchEndDate] = useState("")
+
+    const isSearchMode = Boolean(searchQuery || searchStartDate || searchEndDate)
+
     const displayName = user?.completeUsername || user?.username || "User"
     const initials = displayName
         .split(" ")
@@ -209,6 +217,34 @@ export function TransactionsContent({ preselectedAccountId }: { preselectedAccou
         }
     }, [pageSize, month, year])
 
+    const fetchSearchResults = useCallback(async (accountId: number, page: number = 0) => {
+        setIsLoadingTransactions(true)
+        try {
+            const params = new URLSearchParams()
+            if (searchQuery) params.append("query", searchQuery)
+            if (searchStartDate) params.append("startDate", searchStartDate)
+            if (searchEndDate) params.append("endDate", searchEndDate)
+            params.append("page", String(page))
+            params.append("itemsPerPage", String(pageSize))
+
+            const res = await fetch(`${API_BASE}/transactions/search/${accountId}?${params.toString()}`, {
+                credentials: "include"
+            })
+
+            if (res.ok) {
+                const data: TransactionsPageResponse = await res.json()
+                setTransactions(data.content ?? [])
+                setTotalPages(data.totalPages ?? 0)
+                setTotalElements(data.totalElements ?? 0)
+                setCurrentPage(data.number ?? 0)
+            }
+        } catch {
+            // silently fail
+        } finally {
+            setIsLoadingTransactions(false)
+        }
+    }, [pageSize, searchQuery, searchStartDate, searchEndDate])
+
     useEffect(() => {
         fetchAccounts()
     }, [fetchAccounts])
@@ -226,9 +262,13 @@ export function TransactionsContent({ preselectedAccountId }: { preselectedAccou
     useEffect(() => {
         if (selectedAccountId) {
             setCurrentPage(0)
-            fetchTransactions(selectedAccountId, 0)
+            if (isSearchMode) {
+                fetchSearchResults(selectedAccountId, 0)
+            } else {
+                fetchTransactions(selectedAccountId, 0)
+            }
         }
-    }, [selectedAccountId, month, year, fetchTransactions])
+    }, [selectedAccountId, month, year, isSearchMode, fetchTransactions, fetchSearchResults])
 
     useEffect(() => {
         if (selectedAccountId) {
@@ -417,7 +457,11 @@ export function TransactionsContent({ preselectedAccountId }: { preselectedAccou
                 setTransactionToTransform(null)
                 setDestinationAccountId(null)
                 if (selectedAccountId) {
-                    fetchTransactions(selectedAccountId, currentPage)
+                    if (isSearchMode) {
+                        fetchSearchResults(selectedAccountId, currentPage)
+                    } else {
+                        fetchTransactions(selectedAccountId, currentPage)
+                    }
                 }
             } else {
                 setTransformError(t.transformError)
@@ -447,7 +491,11 @@ export function TransactionsContent({ preselectedAccountId }: { preselectedAccou
                     const nextPage = transactions.length === 1 && currentPage > 0
                         ? currentPage - 1
                         : currentPage
-                    fetchTransactions(selectedAccountId, nextPage)
+                    if (isSearchMode) {
+                        fetchSearchResults(selectedAccountId, nextPage)
+                    } else {
+                        fetchTransactions(selectedAccountId, nextPage)
+                    }
                 }
             } else {
                 setDeleteError("Failed to delete transaction")
@@ -456,6 +504,51 @@ export function TransactionsContent({ preselectedAccountId }: { preselectedAccou
             setDeleteError("Failed to delete transaction")
         } finally {
             setIsDeleting(false)
+        }
+    }
+
+    async function handleSearch(query: string, startDate: string, endDate: string) {
+        if (!selectedAccountId) return
+
+        if (!query && !startDate && !endDate) {
+            setSearchQuery("")
+            setSearchStartDate("")
+            setSearchEndDate("")
+            setIsSearching(false)
+            setCurrentPage(0)
+            fetchTransactions(selectedAccountId, 0)
+            return
+        }
+
+        setSearchQuery(query)
+        setSearchStartDate(startDate)
+        setSearchEndDate(endDate)
+        setIsSearching(true)
+        setCurrentPage(0)
+
+        try {
+            const params = new URLSearchParams()
+            if (query) params.append("query", query)
+            if (startDate) params.append("startDate", startDate)
+            if (endDate) params.append("endDate", endDate)
+            params.append("page", "0")
+            params.append("itemsPerPage", String(pageSize))
+
+            const res = await fetch(`${API_BASE}/transactions/search/${selectedAccountId}?${params.toString()}`, {
+                credentials: "include"
+            })
+
+            if (res.ok) {
+                const data: TransactionsPageResponse = await res.json()
+                setTransactions(data.content ?? [])
+                setTotalPages(data.totalPages ?? 0)
+                setTotalElements(data.totalElements ?? 0)
+                setCurrentPage(data.number ?? 0)
+            }
+        } catch {
+            // silently fail
+        } finally {
+            setIsSearching(false)
         }
     }
 
@@ -731,6 +824,14 @@ export function TransactionsContent({ preselectedAccountId }: { preselectedAccou
                     </Card>
                 )}
 
+                {/* Search */}
+                {selectedAccountId && (
+                    <TransactionSearch
+                        onSearch={handleSearch}
+                        isLoading={isSearching || isLoadingTransactions}
+                    />
+                )}
+
                 {/* Transactions list */}
                 {isLoadingAccounts || isLoadingTransactions ? (
                     <div className="flex items-center justify-center py-16">
@@ -755,8 +856,14 @@ export function TransactionsContent({ preselectedAccountId }: { preselectedAccou
                             <div className="flex size-16 items-center justify-center rounded-full bg-muted mb-4">
                                 <FileText className="size-8 text-muted-foreground" />
                             </div>
-                            <h3 className="text-lg font-semibold text-foreground">{t.noTransactions}</h3>
-                            <p className="mt-1 text-sm text-muted-foreground">{t.noTransactionsDescription}</p>
+                            <h3 className="text-lg font-semibold text-foreground">
+                                {isSearchMode ? (t.noSearchResults || "No transactions found") : t.noTransactions}
+                            </h3>
+                            <p className="mt-1 text-sm text-muted-foreground">
+                                {isSearchMode
+                                    ? (t.noSearchResultsDescription || "Try adjusting your search terms or date range")
+                                    : t.noTransactionsDescription}
+                            </p>
                         </CardContent>
                     </Card>
                 ) : (
@@ -842,7 +949,11 @@ export function TransactionsContent({ preselectedAccountId }: { preselectedAccou
                                                 <PaginationPrevious
                                                     onClick={() => {
                                                         if (currentPage > 0 && selectedAccountId) {
-                                                            fetchTransactions(selectedAccountId, currentPage - 1)
+                                                            if (isSearchMode) {
+                                                                fetchSearchResults(selectedAccountId, currentPage - 1)
+                                                            } else {
+                                                                fetchTransactions(selectedAccountId, currentPage - 1)
+                                                            }
                                                         }
                                                     }}
                                                     className={currentPage === 0 ? "pointer-events-none opacity-50" : "cursor-pointer"}
@@ -854,7 +965,9 @@ export function TransactionsContent({ preselectedAccountId }: { preselectedAccou
                                                 <>
                                                     <PaginationItem>
                                                         <PaginationLink
-                                                            onClick={() => selectedAccountId && fetchTransactions(selectedAccountId, 0)}
+                                                            onClick={() => selectedAccountId && (isSearchMode
+                                                                ? fetchSearchResults(selectedAccountId, 0)
+                                                                : fetchTransactions(selectedAccountId, 0))}
                                                             className="cursor-pointer"
                                                         >
                                                             1
@@ -872,7 +985,9 @@ export function TransactionsContent({ preselectedAccountId }: { preselectedAccou
                                             {currentPage > 0 && (
                                                 <PaginationItem>
                                                     <PaginationLink
-                                                        onClick={() => selectedAccountId && fetchTransactions(selectedAccountId, currentPage - 1)}
+                                                        onClick={() => selectedAccountId && (isSearchMode
+                                                            ? fetchSearchResults(selectedAccountId, currentPage - 1)
+                                                            : fetchTransactions(selectedAccountId, currentPage - 1))}
                                                         className="cursor-pointer"
                                                     >
                                                         {currentPage}
@@ -891,7 +1006,9 @@ export function TransactionsContent({ preselectedAccountId }: { preselectedAccou
                                             {currentPage < totalPages - 1 && (
                                                 <PaginationItem>
                                                     <PaginationLink
-                                                        onClick={() => selectedAccountId && fetchTransactions(selectedAccountId, currentPage + 1)}
+                                                        onClick={() => selectedAccountId && (isSearchMode
+                                                            ? fetchSearchResults(selectedAccountId, currentPage + 1)
+                                                            : fetchTransactions(selectedAccountId, currentPage + 1))}
                                                         className="cursor-pointer"
                                                     >
                                                         {currentPage + 2}
@@ -909,7 +1026,9 @@ export function TransactionsContent({ preselectedAccountId }: { preselectedAccou
                                                     )}
                                                     <PaginationItem>
                                                         <PaginationLink
-                                                            onClick={() => selectedAccountId && fetchTransactions(selectedAccountId, totalPages - 1)}
+                                                            onClick={() => selectedAccountId && (isSearchMode
+                                                                ? fetchSearchResults(selectedAccountId, totalPages - 1)
+                                                                : fetchTransactions(selectedAccountId, totalPages - 1))}
                                                             className="cursor-pointer"
                                                         >
                                                             {totalPages}
@@ -922,7 +1041,11 @@ export function TransactionsContent({ preselectedAccountId }: { preselectedAccou
                                                 <PaginationNext
                                                     onClick={() => {
                                                         if (currentPage < totalPages - 1 && selectedAccountId) {
-                                                            fetchTransactions(selectedAccountId, currentPage + 1)
+                                                            if (isSearchMode) {
+                                                                fetchSearchResults(selectedAccountId, currentPage + 1)
+                                                            } else {
+                                                                fetchTransactions(selectedAccountId, currentPage + 1)
+                                                            }
                                                         }
                                                     }}
                                                     className={currentPage >= totalPages - 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}

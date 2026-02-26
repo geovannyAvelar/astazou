@@ -26,6 +26,7 @@ import {
     AlertDialogDescription,
     AlertDialogHeader,
     AlertDialogTitle,
+    AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 import { CreditCardUpload } from "@/components/credit-card-upload"
 import {
@@ -74,6 +75,7 @@ export function CreditCardTransactionsContent({ cardId }: CardTransactionsConten
     const [isLoggingOut, setIsLoggingOut] = useState(false)
     const [isDeletingTransaction, setIsDeletingTransaction] = useState(false)
     const [transactionToDelete, setTransactionToDelete] = useState<CreditCardTransaction | null>(null)
+    const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
 
     const displayName = user?.completeUsername || user?.username || "User"
     const initials = displayName
@@ -168,6 +170,7 @@ export function CreditCardTransactionsContent({ cardId }: CardTransactionsConten
                 // Remove transaction from state
                 setTransactions(prev => prev.filter(t => t.id !== transactionToDelete.id))
                 setTransactionToDelete(null)
+                setIsDeleteDialogOpen(false)
             }
         } catch {
             // silently fail
@@ -402,50 +405,55 @@ export function CreditCardTransactionsContent({ cardId }: CardTransactionsConten
                                                             {transaction.amount >= 0 ? '+' : ''}{formatCurrency(transaction.amount)}
                                                         </p>
                                                     </div>
-                                                    <AlertDialog>
-                                                        <Button
-                                                            variant="ghost"
-                                                            size="sm"
-                                                            className="text-destructive hover:text-destructive hover:bg-destructive/10 opacity-0 group-hover:opacity-100 transition-opacity"
-                                                            onClick={() => setTransactionToDelete(transaction)}
-                                                        >
-                                                            <Trash2 className="size-4" />
-                                                        </Button>
-                                                        {transactionToDelete?.id === transaction.id && (
-                                                            <AlertDialogContent>
-                                                                <AlertDialogHeader>
-                                                                    <AlertDialogTitle>{t.deleteTransaction || 'Delete transaction'}</AlertDialogTitle>
-                                                                    <AlertDialogDescription>
-                                                                        {t.deleteTransactionDescription || 'This action cannot be undone.'}
-                                                                    </AlertDialogDescription>
-                                                                </AlertDialogHeader>
-                                                                <div className="bg-muted p-3 rounded-lg mb-4">
-                                                                    <p className="text-sm font-medium text-foreground">{transaction.description}</p>
-                                                                    <p className={`text-sm font-semibold ${transaction.amount >= 0 ? 'text-primary' : 'text-destructive'}`}>
-                                                                        {transaction.amount >= 0 ? '+' : ''}{formatCurrency(transaction.amount)}
-                                                                    </p>
-                                                                </div>
-                                                                <div className="flex gap-2 justify-end">
-                                                                    <AlertDialogCancel onClick={() => setTransactionToDelete(null)}>
-                                                                        {t.cancel}
-                                                                    </AlertDialogCancel>
-                                                                    <AlertDialogAction
-                                                                        onClick={handleDeleteTransaction}
-                                                                        disabled={isDeletingTransaction}
-                                                                        className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                                                                    >
-                                                                        {isDeletingTransaction ? (
-                                                                            <>
-                                                                                <Loader2 className="size-4 animate-spin mr-2" />
-                                                                                {t.deleting || 'Deleting...'}
-                                                                            </>
-                                                                        ) : (
-                                                                            t.delete || 'Delete'
-                                                                        )}
-                                                                    </AlertDialogAction>
-                                                                </div>
-                                                            </AlertDialogContent>
-                                                        )}
+                                                    <AlertDialog open={isDeleteDialogOpen && transactionToDelete?.id === transaction.id} onOpenChange={(open) => {
+                                                        setIsDeleteDialogOpen(open)
+                                                        if (!open) {
+                                                            setTransactionToDelete(null)
+                                                        }
+                                                    }}>
+                                                        <AlertDialogTrigger asChild>
+                                                            <Button
+                                                                variant="ghost"
+                                                                size="sm"
+                                                                className="text-destructive hover:text-destructive hover:bg-destructive/10 opacity-0 group-hover:opacity-100 transition-opacity"
+                                                                onClick={() => setTransactionToDelete(transaction)}
+                                                            >
+                                                                <Trash2 className="size-4" />
+                                                            </Button>
+                                                        </AlertDialogTrigger>
+                                                        <AlertDialogContent>
+                                                            <AlertDialogHeader>
+                                                                <AlertDialogTitle>{t.deleteTransaction || 'Delete transaction'}</AlertDialogTitle>
+                                                                <AlertDialogDescription>
+                                                                    {t.deleteTransactionDescription || 'This action cannot be undone.'}
+                                                                </AlertDialogDescription>
+                                                            </AlertDialogHeader>
+                                                            <div className="bg-muted p-3 rounded-lg mb-4">
+                                                                <p className="text-sm font-medium text-foreground">{transaction.description}</p>
+                                                                <p className={`text-sm font-semibold ${transaction.amount >= 0 ? 'text-primary' : 'text-destructive'}`}>
+                                                                    {transaction.amount >= 0 ? '+' : ''}{formatCurrency(transaction.amount)}
+                                                                </p>
+                                                            </div>
+                                                            <div className="flex gap-2 justify-end">
+                                                                <AlertDialogCancel>
+                                                                    {t.cancel}
+                                                                </AlertDialogCancel>
+                                                                <AlertDialogAction
+                                                                    onClick={handleDeleteTransaction}
+                                                                    disabled={isDeletingTransaction}
+                                                                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                                                >
+                                                                    {isDeletingTransaction ? (
+                                                                        <>
+                                                                            <Loader2 className="size-4 animate-spin mr-2" />
+                                                                            {t.deleting || 'Deleting...'}
+                                                                        </>
+                                                                    ) : (
+                                                                        t.delete || 'Delete'
+                                                                    )}
+                                                                </AlertDialogAction>
+                                                            </div>
+                                                        </AlertDialogContent>
                                                     </AlertDialog>
                                                 </div>
                                             </div>

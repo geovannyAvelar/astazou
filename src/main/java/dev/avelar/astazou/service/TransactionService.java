@@ -281,7 +281,8 @@ public class TransactionService {
         LocalDate date = LocalDate.parse(parts[0], fmt);
         String description = parts[1];
 
-        if (description.toUpperCase().contains("SALDO DO DIA")) {
+        if (description.toUpperCase().contains("SALDO DO DIA") ||
+            description.toUpperCase().contains("SALDO TOTAL DISPONÃVEL DIA")) {
           continue;
         }
 

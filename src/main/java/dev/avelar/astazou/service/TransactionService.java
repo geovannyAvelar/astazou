@@ -259,6 +259,11 @@ public class TransactionService {
 
         LocalDate date = LocalDate.parse(parts[0], fmt);
         String description = parts[1];
+
+        if (description.toUpperCase().contains("SALDO DO DIA")) {
+          continue;
+        }
+
         BigDecimal amount = new BigDecimal(parts[2]);
         String type = parts[3];
         int page = Integer.parseInt(parts[4]);

@@ -75,10 +75,6 @@ public class CreditCardService {
 
     int savedCount = 0;
     for (CreditCardTransaction transaction : transactions) {
-      if (transaction.getDescription().toUpperCase().contains("PAGAMENTO RECEBIDO")) {
-        continue;
-      }
-
       try {
         LOGGER.debug("Saving transaction: {} - {} - {} - CardID: {}",
           transaction.getId(),

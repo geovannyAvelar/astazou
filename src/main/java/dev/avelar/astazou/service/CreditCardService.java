@@ -233,4 +233,27 @@ public class CreditCardService {
     }
   }
 
+  @Transactional
+  public void deleteTransaction(String transactionId, String username) {
+    Objects.requireNonNull(transactionId, "Transaction ID is null");
+    Objects.requireNonNull(username, "Username is null");
+
+    // Get the transaction
+    var transaction = transactionRepository.findById(transactionId);
+    if (transaction.isEmpty()) {
+      throw new IllegalArgumentException("Transaction not found");
+    }
+
+    // Verify the transaction belongs to a card owned by the user
+    var creditCardId = transaction.get().getCreditCardId();
+    var creditCard = repository.findByIdAndUsername(creditCardId, username);
+    if (creditCard == null) {
+      throw new IllegalArgumentException("Unauthorized to delete this transaction");
+    }
+
+    // Delete the transaction
+    transactionRepository.deleteById(transactionId);
+    LOGGER.info("Deleted credit card transaction with ID: {}", transactionId);
+  }
+
 }

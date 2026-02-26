@@ -127,4 +127,22 @@ public class CreditCardController {
     }
   }
 
+  @DeleteMapping("/transactions/{transactionId}")
+  public ResponseEntity<Void> deleteTransaction(@PathVariable String transactionId) {
+    Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+
+    if (auth == null) {
+      return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+    }
+
+    String username = auth.getName();
+
+    try {
+      service.deleteTransaction(transactionId, username);
+      return ResponseEntity.ok().build();
+    } catch (IllegalArgumentException e) {
+      return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+    }
+  }
+
 }

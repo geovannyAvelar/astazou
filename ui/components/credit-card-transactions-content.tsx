@@ -18,6 +18,15 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select"
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 import { CreditCardUpload } from "@/components/credit-card-upload"
 import {
     ArrowLeft,
@@ -25,6 +34,7 @@ import {
     DollarSign,
     Loader2,
     LogOut,
+    Trash2,
     TrendingDown,
     TrendingUp,
 } from "lucide-react"
@@ -62,6 +72,8 @@ export function CreditCardTransactionsContent({ cardId }: CardTransactionsConten
     const [selectedYear, setSelectedYear] = useState<string>("")
 
     const [isLoggingOut, setIsLoggingOut] = useState(false)
+    const [isDeletingTransaction, setIsDeletingTransaction] = useState(false)
+    const [transactionToDelete, setTransactionToDelete] = useState<CreditCardTransaction | null>(null)
 
     const displayName = user?.completeUsername || user?.username || "User"
     const initials = displayName
@@ -136,6 +148,31 @@ export function CreditCardTransactionsContent({ cardId }: CardTransactionsConten
             await logout()
         } finally {
             setIsLoggingOut(false)
+        }
+    }
+
+    async function handleDeleteTransaction() {
+        if (!transactionToDelete) return
+
+        setIsDeletingTransaction(true)
+        try {
+            const res = await fetch(
+                `${API_BASE}/credit-cards/transactions/${transactionToDelete.id}`,
+                {
+                    method: "DELETE",
+                    credentials: "include"
+                }
+            )
+
+            if (res.ok) {
+                // Remove transaction from state
+                setTransactions(prev => prev.filter(t => t.id !== transactionToDelete.id))
+                setTransactionToDelete(null)
+            }
+        } catch {
+            // silently fail
+        } finally {
+            setIsDeletingTransaction(false)
         }
     }
 
@@ -359,10 +396,57 @@ export function CreditCardTransactionsContent({ cardId }: CardTransactionsConten
                                                         </p>
                                                     </div>
                                                 </div>
-                                                <div className="text-right">
-                                                    <p className={`text-lg font-semibold tracking-tight ${transaction.amount >= 0 ? 'text-primary' : 'text-destructive'}`}>
-                                                        {transaction.amount >= 0 ? '+' : ''}{formatCurrency(transaction.amount)}
-                                                    </p>
+                                                <div className="flex items-center gap-3">
+                                                    <div className="text-right">
+                                                        <p className={`text-lg font-semibold tracking-tight ${transaction.amount >= 0 ? 'text-primary' : 'text-destructive'}`}>
+                                                            {transaction.amount >= 0 ? '+' : ''}{formatCurrency(transaction.amount)}
+                                                        </p>
+                                                    </div>
+                                                    <AlertDialog>
+                                                        <Button
+                                                            variant="ghost"
+                                                            size="sm"
+                                                            className="text-destructive hover:text-destructive hover:bg-destructive/10 opacity-0 group-hover:opacity-100 transition-opacity"
+                                                            onClick={() => setTransactionToDelete(transaction)}
+                                                        >
+                                                            <Trash2 className="size-4" />
+                                                        </Button>
+                                                        {transactionToDelete?.id === transaction.id && (
+                                                            <AlertDialogContent>
+                                                                <AlertDialogHeader>
+                                                                    <AlertDialogTitle>{t.deleteTransaction || 'Delete transaction'}</AlertDialogTitle>
+                                                                    <AlertDialogDescription>
+                                                                        {t.deleteTransactionDescription || 'This action cannot be undone.'}
+                                                                    </AlertDialogDescription>
+                                                                </AlertDialogHeader>
+                                                                <div className="bg-muted p-3 rounded-lg mb-4">
+                                                                    <p className="text-sm font-medium text-foreground">{transaction.description}</p>
+                                                                    <p className={`text-sm font-semibold ${transaction.amount >= 0 ? 'text-primary' : 'text-destructive'}`}>
+                                                                        {transaction.amount >= 0 ? '+' : ''}{formatCurrency(transaction.amount)}
+                                                                    </p>
+                                                                </div>
+                                                                <div className="flex gap-2 justify-end">
+                                                                    <AlertDialogCancel onClick={() => setTransactionToDelete(null)}>
+                                                                        {t.cancel}
+                                                                    </AlertDialogCancel>
+                                                                    <AlertDialogAction
+                                                                        onClick={handleDeleteTransaction}
+                                                                        disabled={isDeletingTransaction}
+                                                                        className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                                                    >
+                                                                        {isDeletingTransaction ? (
+                                                                            <>
+                                                                                <Loader2 className="size-4 animate-spin mr-2" />
+                                                                                {t.deleting || 'Deleting...'}
+                                                                            </>
+                                                                        ) : (
+                                                                            t.delete || 'Delete'
+                                                                        )}
+                                                                    </AlertDialogAction>
+                                                                </div>
+                                                            </AlertDialogContent>
+                                                        )}
+                                                    </AlertDialog>
                                                 </div>
                                             </div>
                                         </CardContent>

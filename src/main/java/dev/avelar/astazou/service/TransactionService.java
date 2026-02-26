@@ -1,6 +1,7 @@
 package dev.avelar.astazou.service;
 
 import dev.avelar.astazou.dto.Balance;
+import dev.avelar.astazou.dto.MonthlySummaryDto;
 import dev.avelar.astazou.exception.NotFoundException;
 import dev.avelar.astazou.model.BankAccount;
 import dev.avelar.astazou.model.Transaction;
@@ -179,6 +180,27 @@ public class TransactionService {
 
     sourceTransaction.setType("transfer");
     repository.upsert(sourceTransaction);
+  }
+
+  public List<MonthlySummaryDto> getMonthlySummary(String username, int year) {
+    var rows = repository.getMonthlySummary(username, year);
+
+    var map = new java.util.HashMap<Integer, MonthlySummaryDto>();
+    for (var row : rows) {
+      map.put(row.month(), row);
+    }
+
+    var result = new java.util.ArrayList<MonthlySummaryDto>(12);
+    for (int month = 1; month <= 12; month++) {
+      var row = map.get(month);
+      if (row == null) {
+        result.add(new MonthlySummaryDto(month, 0.0, 0.0));
+      } else {
+        result.add(row);
+      }
+    }
+
+    return result;
   }
 
   protected void save(List<Transaction> transactions, String username, Long bankAccountId, boolean updateAccount) {

@@ -1,6 +1,7 @@
 package dev.avelar.astazou.controller;
 
 import dev.avelar.astazou.dto.Balance;
+import dev.avelar.astazou.dto.MonthlySummaryDto;
 import dev.avelar.astazou.dto.TransactionCreationForm;
 import dev.avelar.astazou.dto.TransformToTransferForm;
 import dev.avelar.astazou.model.Transaction;
@@ -177,6 +178,24 @@ public class TransactionController {
     }
 
     return ResponseEntity.ok(service.search(username, accountId, query, startDate, endDate, page, itemsPerPage));
+  }
+
+  @GetMapping("/summary")
+  public ResponseEntity<java.util.List<MonthlySummaryDto>> getMonthlySummary(
+      @RequestParam(required = false) Integer year) {
+    Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+
+    if (auth == null) {
+      return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+    }
+
+    var now = OffsetDateTime.now();
+
+    if (year == null) {
+      year = now.getYear();
+    }
+
+    return ResponseEntity.ok(service.getMonthlySummary(auth.getName(), year));
   }
 
 }

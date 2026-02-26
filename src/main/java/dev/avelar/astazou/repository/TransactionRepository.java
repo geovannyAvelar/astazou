@@ -137,4 +137,17 @@ public interface TransactionRepository extends CrudRepository<Transaction, Long>
       @Param("bankAccountId") Long bankAccountId, @Param("searchQuery") String searchQuery,
       @Param("startDate") LocalDate startDate, @Param("endDate") LocalDate endDate);
 
+  @Query("""
+        SELECT EXTRACT(MONTH FROM t.transaction_date) AS month,
+               COALESCE(SUM(CASE WHEN t.type = 'credit' THEN t.amount ELSE 0 END), 0) AS income,
+               COALESCE(SUM(CASE WHEN t.type = 'debit' THEN ABS(t.amount) ELSE 0 END), 0) AS expenses
+        FROM transactions t
+        JOIN bank_account ba ON t.bank_account_id = ba.id
+        WHERE ba.username = :username
+          AND EXTRACT(YEAR FROM t.transaction_date) = :year
+        GROUP BY month
+        ORDER BY month
+      """)
+  List<dev.avelar.astazou.dto.MonthlySummaryDto> getMonthlySummary(String username, int year);
+
 }

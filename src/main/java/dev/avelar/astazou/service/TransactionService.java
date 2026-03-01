@@ -131,6 +131,124 @@ public class TransactionService {
     save(parseItauPdf(pdf), username, bankAccountId, updateAccount);
   }
 
+  @Transactional
+  public void saveOfx(File ofxFile, String username, Long bankAccountId, boolean updateAccount) {
+    Objects.requireNonNull(ofxFile, "OFX file is null");
+    LOGGER.info("Starting OFX file parsing for bank account ID: {}", bankAccountId);
+    List<Transaction> transactions = parseOfxFile(ofxFile);
+    LOGGER.info("Parsed {} transactions from OFX file", transactions.size());
+    save(transactions, username, bankAccountId, updateAccount);
+  }
+
+  protected List<Transaction> parseOfxFile(File ofxFile) {
+    Objects.requireNonNull(ofxFile, "OFX file is null");
+    List<Transaction> transactions = new ArrayList<>();
+
+    try (BufferedReader br = new BufferedReader(new FileReader(ofxFile))) {
+      String line;
+      LocalDate currentDate = null;
+      int positionOnDay = 0;
+
+      while ((line = br.readLine()) != null) {
+        line = line.trim();
+        if (line.startsWith("<STMTTRN>")) {
+          Transaction tx = parseOfxTransaction(br);
+          if (tx != null) {
+            if (!tx.getTransactionDate().equals(currentDate)) {
+              currentDate = tx.getTransactionDate();
+              positionOnDay = 1;
+            } else {
+              positionOnDay++;
+            }
+            tx.setSequence(positionOnDay);
+            tx.setPage(0);
+            tx.setCreatedAt(OffsetDateTime.now());
+            transactions.add(tx);
+          }
+        }
+      }
+    } catch (IOException e) {
+      throw new UncheckedIOException(e);
+    }
+
+    return transactions;
+  }
+
+  private Transaction parseOfxTransaction(BufferedReader br) throws IOException {
+    String trnType = null;
+    String dtPosted = null;
+    String trnAmt = null;
+    String memo = null;
+    String line;
+
+    while ((line = br.readLine()) != null) {
+      line = line.trim();
+      if (line.startsWith("</STMTTRN>")) break;
+      if (line.startsWith("<TRNTYPE>")) trnType = extractOfxValue(line, "<TRNTYPE>", "</TRNTYPE>");
+      else if (line.startsWith("<DTPOSTED>")) dtPosted = extractOfxValue(line, "<DTPOSTED>", "</DTPOSTED>");
+      else if (line.startsWith("<TRNAMT>")) trnAmt = extractOfxValue(line, "<TRNAMT>", "</TRNAMT>");
+      else if (line.startsWith("<MEMO>")) memo = extractOfxValue(line, "<MEMO>", "</MEMO>");
+      else if (line.startsWith("<NAME>") && memo == null) memo = extractOfxValue(line, "<NAME>", "</NAME>");
+    }
+
+    if (dtPosted == null || trnAmt == null) {
+      LOGGER.warn("Skipping OFX transaction - missing required fields. Type: {}, Date: {}, Amount: {}",
+          trnType, dtPosted, trnAmt);
+      return null;
+    }
+
+    try {
+      LocalDate transactionDate = parseOfxDate(dtPosted);
+      BigDecimal amount = new BigDecimal(trnAmt);
+      String type;
+      if (amount.compareTo(BigDecimal.ZERO) >= 0) {
+        type = "credit";
+      } else {
+        type = "debit";
+      }
+
+      return Transaction.builder()
+          .transactionDate(transactionDate)
+          .description(memo != null ? memo : (trnType != null ? trnType : "Transaction"))
+          .amount(amount)
+          .type(type)
+          .build();
+    } catch (Exception e) {
+      LOGGER.error("Cannot parse OFX transaction. Date: {}, Amount: {}. Error: {}", dtPosted, trnAmt, e.getMessage());
+      return null;
+    }
+  }
+
+  private String extractOfxValue(String line, String startTag, String endTag) {
+    int startIndex = line.indexOf(startTag);
+    int endIndex = line.indexOf(endTag);
+    if (startIndex == -1) {
+      // self-closing / no closing tag: value starts after startTag
+      startIndex = line.indexOf(startTag);
+      if (startIndex == -1) return null;
+      String value = line.substring(startIndex + startTag.length()).trim();
+      return value.isEmpty() ? null : value;
+    }
+    if (endIndex == -1) {
+      String value = line.substring(startIndex + startTag.length()).trim();
+      return value.isEmpty() ? null : value;
+    }
+    return line.substring(startIndex + startTag.length(), endIndex).trim();
+  }
+
+  private LocalDate parseOfxDate(String dateStr) {
+    if (dateStr == null || dateStr.length() < 8) return LocalDate.now();
+    try {
+      int year = Integer.parseInt(dateStr.substring(0, 4));
+      int month = Integer.parseInt(dateStr.substring(4, 6));
+      int day = Integer.parseInt(dateStr.substring(6, 8));
+      return LocalDate.of(year, month, day);
+    } catch (Exception e) {
+      LOGGER.warn("Cannot parse OFX date: {}. Cause: {}", dateStr, e.getMessage());
+      return LocalDate.now();
+    }
+  }
+
   public void delete(Long transactionId, String username) {
     repository.delete(transactionId, username);
   }

@@ -154,6 +154,32 @@ public class TransactionController {
     }
   }
 
+  @PostMapping(path = "/ofx/{account_id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+  public ResponseEntity<Void> parseOfxFile(@RequestParam("file") MultipartFile file,
+      @PathVariable("account_id") Long accountId,
+      @RequestParam(required = false, defaultValue = "false") boolean updateAccount) {
+    if (file == null || file.isEmpty()) {
+      return ResponseEntity.badRequest().build();
+    }
+
+    Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+    if (auth == null || !auth.isAuthenticated() || "anonymousUser".equals(auth.getPrincipal())) {
+      return ResponseEntity.status(401).build();
+    }
+    String username = auth.getName();
+
+    try {
+      File tmp = File.createTempFile("ofx-", ".ofx");
+      file.transferTo(tmp);
+      service.saveOfx(tmp, username, accountId, updateAccount);
+      //noinspection ResultOfMethodCallIgnored
+      tmp.delete();
+      return ResponseEntity.accepted().build();
+    } catch (Exception e) {
+      return ResponseEntity.status(500).build();
+    }
+  }
+
   @GetMapping("/search/{account_id}")
   public ResponseEntity<Page<Transaction>> search(@PathVariable("account_id") Long accountId,
       @RequestParam(required = false, defaultValue = "") String query,

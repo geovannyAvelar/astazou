@@ -154,6 +154,15 @@ export interface Translations {
     statementMonth: string
     selectMonth: string
     creditCardStatement: string
+
+    // OFX Upload for bank accounts
+    uploadOfx: string
+    uploadOfxDescription: string
+    ofxOnly: string
+    uploadOfxSuccess: string
+    uploadMode: string
+    uploadModePdf: string
+    uploadModeOfx: string
 }
 
 export const translations: Record<Locale, Translations> = {
@@ -304,7 +313,15 @@ export const translations: Record<Locale, Translations> = {
         creditCardTransactionsDescription: "View your credit card statement and transactions.",
         statementMonth: "Statement Month",
         selectMonth: "Select month and year...",
-        creditCardStatement: "Statement"
+        creditCardStatement: "Statement",
+
+        uploadOfx: "Import OFX",
+        uploadOfxDescription: "Upload an OFX bank statement file to import transactions automatically.",
+        ofxOnly: "OFX files only (.ofx, .txt)",
+        uploadOfxSuccess: "OFX file uploaded successfully! Transactions are being processed.",
+        uploadMode: "Import type",
+        uploadModePdf: "Itaú PDF",
+        uploadModeOfx: "OFX File",
     },
     pt: {
         brandTagline: "Assuma o controle do seu futuro financeiro",
@@ -453,7 +470,15 @@ export const translations: Record<Locale, Translations> = {
         creditCardTransactionsDescription: "Visualize o extrato e transações do seu cartão de crédito.",
         statementMonth: "Mês do Extrato",
         selectMonth: "Selecione mês e ano...",
-        creditCardStatement: "Extrato"
+        creditCardStatement: "Extrato",
+
+        uploadOfx: "Importar OFX",
+        uploadOfxDescription: "Envie um arquivo OFX de extrato bancário para importar transações automaticamente.",
+        ofxOnly: "Apenas arquivos OFX (.ofx, .txt)",
+        uploadOfxSuccess: "Arquivo OFX enviado com sucesso! As transações estão sendo processadas.",
+        uploadMode: "Tipo de importação",
+        uploadModePdf: "PDF Itaú",
+        uploadModeOfx: "Arquivo OFX",
     },
     es: {
         brandTagline: "Toma el control de tu futuro financiero",
@@ -602,6 +627,14 @@ export const translations: Record<Locale, Translations> = {
         creditCardTransactionsDescription: "Visualiza el extracto y transacciones de tu tarjeta de crédito.",
         statementMonth: "Mes del Extracto",
         selectMonth: "Selecciona mes y año...",
-        creditCardStatement: "Extracto"
+        creditCardStatement: "Extracto",
+
+        uploadOfx: "Importar OFX",
+        uploadOfxDescription: "Sube un archivo OFX de extracto bancario para importar transacciones automáticamente.",
+        ofxOnly: "Solo archivos OFX (.ofx, .txt)",
+        uploadOfxSuccess: "Archivo OFX subido exitosamente! Las transacciones se están procesando.",
+        uploadMode: "Tipo de importación",
+        uploadModePdf: "PDF Itaú",
+        uploadModeOfx: "Archivo OFX",
     },
 }

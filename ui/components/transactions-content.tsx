@@ -125,6 +125,7 @@ export function TransactionsContent({ preselectedAccountId }: { preselectedAccou
     const [uploadSuccess, setUploadSuccess] = useState("")
     const [showUpload, setShowUpload] = useState(false)
     const [uploadUpdateAccount, setUploadUpdateAccount] = useState(false)
+    const [uploadMode, setUploadMode] = useState<"pdf" | "ofx">("pdf")
     const fileInputRef = useRef<HTMLInputElement>(null)
 
     const [isLoggingOut, setIsLoggingOut] = useState(false)
@@ -290,17 +291,35 @@ export function TransactionsContent({ preselectedAccountId }: { preselectedAccou
         e.preventDefault()
         setIsDragging(false)
         const droppedFile = e.dataTransfer.files[0]
-        if (droppedFile && droppedFile.type === "application/pdf") {
-            setFile(droppedFile)
-            setUploadError("")
+        if (!droppedFile) return
+        if (uploadMode === "pdf") {
+            if (droppedFile.type === "application/pdf") {
+                setFile(droppedFile)
+                setUploadError("")
+            }
+        } else {
+            const name = droppedFile.name.toLowerCase()
+            if (name.endsWith(".ofx") || name.endsWith(".txt")) {
+                setFile(droppedFile)
+                setUploadError("")
+            }
         }
     }
 
     function handleFileSelect(e: React.ChangeEvent<HTMLInputElement>) {
         const selectedFile = e.target.files?.[0]
-        if (selectedFile && selectedFile.type === "application/pdf") {
-            setFile(selectedFile)
-            setUploadError("")
+        if (!selectedFile) return
+        if (uploadMode === "pdf") {
+            if (selectedFile.type === "application/pdf") {
+                setFile(selectedFile)
+                setUploadError("")
+            }
+        } else {
+            const name = selectedFile.name.toLowerCase()
+            if (name.endsWith(".ofx") || name.endsWith(".txt")) {
+                setFile(selectedFile)
+                setUploadError("")
+            }
         }
     }
 
@@ -322,17 +341,18 @@ export function TransactionsContent({ preselectedAccountId }: { preselectedAccou
             const formData = new FormData()
             formData.append("file", file)
 
-            const res = await fetch(
-                `${API_BASE}/transactions/itau/${selectedAccountId}?updateAccount=${uploadUpdateAccount}`,
-                {
-                    method: "POST",
-                    body: formData,
-                    credentials: "include"
-                }
-            )
+            const url = uploadMode === "ofx"
+                ? `${API_BASE}/transactions/ofx/${selectedAccountId}?updateAccount=${uploadUpdateAccount}`
+                : `${API_BASE}/transactions/itau/${selectedAccountId}?updateAccount=${uploadUpdateAccount}`
+
+            const res = await fetch(url, {
+                method: "POST",
+                body: formData,
+                credentials: "include"
+            })
 
             if (res.status === 202 || res.ok) {
-                setUploadSuccess(t.uploadSuccess)
+                setUploadSuccess(uploadMode === "ofx" ? t.uploadOfxSuccess : t.uploadSuccess)
                 setFile(null)
                 if (fileInputRef.current) fileInputRef.current.value = ""
                 setShowUpload(false)
@@ -702,6 +722,8 @@ export function TransactionsContent({ preselectedAccountId }: { preselectedAccou
                                 setShowUpload(!showUpload)
                                 setUploadError("")
                                 setUploadSuccess("")
+                                setFile(null)
+                                if (fileInputRef.current) fileInputRef.current.value = ""
                             }}
                             variant="outline"
                             className="gap-2"
@@ -723,10 +745,47 @@ export function TransactionsContent({ preselectedAccountId }: { preselectedAccou
                 {showUpload && (
                     <Card className="mb-8">
                         <CardHeader>
-                            <CardTitle className="text-lg">{t.uploadPdf}</CardTitle>
-                            <CardDescription>{t.uploadPdfDescription}</CardDescription>
+                            <CardTitle className="text-lg">
+                                {uploadMode === "ofx" ? t.uploadOfx : t.uploadPdf}
+                            </CardTitle>
+                            <CardDescription>
+                                {uploadMode === "ofx" ? t.uploadOfxDescription : t.uploadPdfDescription}
+                            </CardDescription>
                         </CardHeader>
                         <CardContent className="flex flex-col gap-4">
+                            {/* Mode toggle */}
+                            <div className="flex flex-col gap-1.5">
+                                <Label className="text-xs text-muted-foreground">{t.uploadMode}</Label>
+                                <div className="flex gap-2">
+                                    <Button
+                                        type="button"
+                                        size="sm"
+                                        variant={uploadMode === "pdf" ? "default" : "outline"}
+                                        onClick={() => {
+                                            setUploadMode("pdf")
+                                            setFile(null)
+                                            setUploadError("")
+                                            if (fileInputRef.current) fileInputRef.current.value = ""
+                                        }}
+                                    >
+                                        {t.uploadModePdf}
+                                    </Button>
+                                    <Button
+                                        type="button"
+                                        size="sm"
+                                        variant={uploadMode === "ofx" ? "default" : "outline"}
+                                        onClick={() => {
+                                            setUploadMode("ofx")
+                                            setFile(null)
+                                            setUploadError("")
+                                            if (fileInputRef.current) fileInputRef.current.value = ""
+                                        }}
+                                    >
+                                        {t.uploadModeOfx}
+                                    </Button>
+                                </div>
+                            </div>
+
                             {/* Drop zone */}
                             <div
                                 onDragOver={handleDragOver}
@@ -753,12 +812,14 @@ export function TransactionsContent({ preselectedAccountId }: { preselectedAccou
                                         {t.dragAndDropOr}{" "}
                                         <span className="font-medium text-primary">{t.browseFiles}</span>
                                     </p>
-                                    <p className="mt-2 text-xs text-muted-foreground">{t.pdfOnly}</p>
+                                    <p className="mt-2 text-xs text-muted-foreground">
+                                        {uploadMode === "ofx" ? t.ofxOnly : t.pdfOnly}
+                                    </p>
                                 </div>
                                 <input
                                     ref={fileInputRef}
                                     type="file"
-                                    accept="application/pdf"
+                                    accept={uploadMode === "ofx" ? ".ofx,.txt" : "application/pdf"}
                                     onChange={handleFileSelect}
                                     className="sr-only"
                                     aria-label={t.browseFiles}
@@ -817,7 +878,7 @@ export function TransactionsContent({ preselectedAccountId }: { preselectedAccou
                                     ) : (
                                         <Upload className="size-4" />
                                     )}
-                                    {isUploading ? t.uploading : t.uploadPdf}
+                                    {isUploading ? t.uploading : (uploadMode === "ofx" ? t.uploadOfx : t.uploadPdf)}
                                 </Button>
                             </div>
                         </CardContent>

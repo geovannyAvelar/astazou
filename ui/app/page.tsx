@@ -36,21 +36,21 @@ export default function LoginPage() {
   return (
     <main className="flex min-h-svh">
       {/* Left panel - Branding */}
-      <div className="hidden lg:flex lg:w-1/2 flex-col justify-between bg-primary p-12">
+      <div className="hidden lg:flex lg:w-1/2 flex-col justify-between bg-primary p-12 text-white">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="flex size-10 items-center justify-center rounded-lg bg-primary-foreground/20 text-primary-foreground">
+            <div className="flex size-10 items-center justify-center rounded-lg bg-white/20 text-white">
               <Image src="/logo.png" alt="Astazou logo" width={28} height={28} className="object-contain" />
             </div>
-            <span className="text-xl font-bold text-primary-foreground tracking-tight">Astazou</span>
+            <span className="text-xl font-bold text-white tracking-tight">Astazou</span>
           </div>
         </div>
 
         <div className="flex flex-col gap-8">
-          <h2 className="text-4xl font-bold text-primary-foreground leading-tight text-balance">
+          <h2 className="text-4xl font-bold text-white leading-tight text-balance">
             {t.brandTagline}
           </h2>
-          <p className="text-lg text-primary-foreground/80 leading-relaxed max-w-md">
+          <p className="text-lg text-white/80 leading-relaxed max-w-md">
             {t.brandDescription}
           </p>
 
@@ -70,7 +70,7 @@ export default function LoginPage() {
           </div>
         </div>
 
-        <p className="text-sm text-primary-foreground/60">
+        <p className="text-sm text-white/60">
           {t.trustedBy}
         </p>
       </div>
@@ -106,8 +106,8 @@ export default function LoginPage() {
 
 function FeatureItem({ icon, text }: { icon: React.ReactNode; text: string }) {
   return (
-    <div className="flex items-center gap-3 text-primary-foreground/90">
-      <div className="flex size-9 items-center justify-center rounded-lg bg-primary-foreground/15">
+    <div className="flex items-center gap-3 text-white/90">
+      <div className="flex size-9 items-center justify-center rounded-lg bg-white/15">
         {icon}
       </div>
       <span className="text-sm font-medium">{text}</span>

@@ -422,7 +422,8 @@ public class TransactionService {
         String description = parts[1];
 
         if (description.toUpperCase().contains("SALDO DO DIA") ||
-            description.toUpperCase().contains("SALDO TOTAL DISPONÃVEL DIA")) {
+            description.toUpperCase().contains("SALDO TOTAL DISPONÃVEL DIA") ||
+            description.toUpperCase().contains("SALDO ANTERIOR")) {
           continue;
         }
 

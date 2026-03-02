@@ -177,7 +177,7 @@ export const translations: Record<Locale, Translations> = {
         featureBalanceTracking: "Real-time balance tracking",
         featureSpendingAnalytics: "Spending analytics and insights",
         featureSecurity: "Bank-grade security",
-        trustedBy: "Trusted by thousands of users worldwide",
+        trustedBy: "Made by avelar.dev",
 
         loginTitle: "Welcome back",
         loginDescription: "Sign in to your account to continue",
@@ -337,7 +337,7 @@ export const translations: Record<Locale, Translations> = {
         featureBalanceTracking: "Acompanhamento de saldo em tempo real",
         featureSpendingAnalytics: "Análise de gastos e insights",
         featureSecurity: "Segurança de nível bancário",
-        trustedBy: "Confiado por milhares de usuários no mundo todo",
+        trustedBy: "Feito por avelar.dev",
 
         loginTitle: "Bem-vindo de volta",
         loginDescription: "Entre na sua conta para continuar",
@@ -497,7 +497,7 @@ export const translations: Record<Locale, Translations> = {
         featureBalanceTracking: "Seguimiento de saldo en tiempo real",
         featureSpendingAnalytics: "Análisis de gastos e información",
         featureSecurity: "Seguridad de nivel bancario",
-        trustedBy: "Confiado por miles de usuarios en todo el mundo",
+        trustedBy: "Hecho por avelar.dev",
 
         loginTitle: "Bienvenido de vuelta",
         loginDescription: "Inicia sesión en tu cuenta para continuar",

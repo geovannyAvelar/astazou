@@ -12,4 +12,5 @@ export interface AuthState {
   isAuthenticated: boolean
   isLoading: boolean
   user: LoginResponse | null
+  logoutReason?: "inactivity" | null
 }

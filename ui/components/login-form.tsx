@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, type FormEvent } from "react"
+import { useState, useEffect, type FormEvent } from "react"
 import { useRouter } from "next/navigation"
 import { useAuth } from "@/lib/auth-context"
 import { useI18n } from "@/lib/i18n/i18n-context"
@@ -14,7 +14,8 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
-import { AlertCircle, Eye, EyeOff, Loader2, Lock, User } from "lucide-react"
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
+import { AlertCircle, Clock, Eye, EyeOff, Loader2, Lock, User } from "lucide-react"
 
 export function LoginForm() {
   const [clientId, setClientId] = useState("")
@@ -22,13 +23,23 @@ export function LoginForm() {
   const [showSecret, setShowSecret] = useState(false)
   const [error, setError] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const { login } = useAuth()
+  const { login, logoutReason, clearLogoutReason } = useAuth()
   const { t } = useI18n()
   const router = useRouter()
+
+  // Clear the session-expired banner once the user starts typing
+  useEffect(() => {
+    if (logoutReason) {
+      const clear = () => clearLogoutReason()
+      window.addEventListener("keydown", clear, { once: true })
+      return () => window.removeEventListener("keydown", clear)
+    }
+  }, [logoutReason, clearLogoutReason])
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault()
     setError("")
+    clearLogoutReason()
 
     if (!clientId.trim() || !clientSecret.trim()) {
       setError(t.loginErrorEmpty)
@@ -59,6 +70,14 @@ export function LoginForm() {
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="flex flex-col gap-5">
+          {logoutReason === "inactivity" && (
+            <Alert variant="destructive">
+              <Clock className="size-4" />
+              <AlertTitle>{t.sessionExpiredTitle}</AlertTitle>
+              <AlertDescription>{t.sessionExpiredMessage}</AlertDescription>
+            </Alert>
+          )}
+
           {error && (
             <div className="flex items-start gap-3 rounded-lg bg-destructive/10 p-3 text-sm text-destructive" role="alert">
               <AlertCircle className="mt-0.5 size-4 shrink-0" />

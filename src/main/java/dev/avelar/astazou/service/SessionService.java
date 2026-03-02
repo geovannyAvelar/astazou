@@ -108,6 +108,26 @@ public class SessionService {
     return repository.findByToken(value);
   }
 
+  public Session renew(String tokenValue) {
+    Optional<Session> opt = repository.findByToken(tokenValue);
+    if (opt.isEmpty()) {
+      return null;
+    }
+
+    Session session = opt.get();
+
+    if (session.getExpiresAt().isBefore(OffsetDateTime.now())) {
+      return null;
+    }
+
+    session.setExpiresAt(OffsetDateTime.now().plusMinutes(expirationTime));
+    session.setExpiresIn(expirationTime);
+    session.markNotNew();
+    repository.save(session);
+
+    return session;
+  }
+
   public void revoke(Session token) {
     repository.delete(token);
   }

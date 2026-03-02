@@ -95,6 +95,32 @@ public class AuthController {
     return ResponseEntity.ok(res);
   }
 
+  @PostMapping("/renew")
+  public ResponseEntity<?> renew(
+      @CookieValue(value = "SESSION", required = false) String sessionToken) {
+    if (sessionToken == null || sessionToken.isBlank()) {
+      return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+    }
+
+    Session session = service.renew(sessionToken);
+
+    if (session == null) {
+      return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+    }
+
+    ResponseCookie cookie = ResponseCookie.from("SESSION", session.getToken())
+        .httpOnly(true)
+        .secure(true)
+        .path("/")
+        .maxAge(Duration.ofMinutes(session.getExpiresIn()))
+        .sameSite("Strict")
+        .build();
+
+    return ResponseEntity.ok()
+        .header(HttpHeaders.SET_COOKIE, cookie.toString())
+        .build();
+  }
+
   @PostMapping("/revoke")
   public ResponseEntity<?> revoke(
       @CookieValue(value = "SESSION", required = false) String sessionToken) {

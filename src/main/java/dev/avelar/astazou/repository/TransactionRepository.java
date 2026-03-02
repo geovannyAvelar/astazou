@@ -1,8 +1,7 @@
 package dev.avelar.astazou.repository;
 
+import dev.avelar.astazou.dto.MonthlySummaryDto;
 import dev.avelar.astazou.model.Transaction;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.jdbc.repository.query.Modifying;
 import org.springframework.data.jdbc.repository.query.Query;
 import org.springframework.data.repository.CrudRepository;
@@ -37,8 +36,6 @@ public interface TransactionRepository extends CrudRepository<Transaction, Long>
      WHERE id = :accountId
     """)
   void updateBankAccountBalance(@Param("amount") Double amount, @Param("accountId") Long accountId);
-
-  Page<Transaction> findByBankAccountId(Long bankAccountId, Pageable pageable);
 
   @Query("""
         SELECT t.* FROM transactions t
@@ -148,6 +145,6 @@ public interface TransactionRepository extends CrudRepository<Transaction, Long>
         GROUP BY month
         ORDER BY month
       """)
-  List<dev.avelar.astazou.dto.MonthlySummaryDto> getMonthlySummary(String username, int year);
+  List<MonthlySummaryDto> getMonthlySummary(String username, int year);
 
 }

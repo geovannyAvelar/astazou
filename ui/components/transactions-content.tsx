@@ -202,7 +202,7 @@ export function TransactionsContent({ preselectedAccountId }: { preselectedAccou
         try {
             const monthParam = selectedMonth ?? month
             const yearParam = selectedYear ?? year
-            const res = await fetch(`${API_BASE}/transactions/${accountId}?page=${page}&size=${pageSize}&month=${monthParam}&year=${yearParam}`, {
+            const res = await fetch(`${API_BASE}/transactions/${accountId}?page=${page}&itemsPerPage=${pageSize}&month=${monthParam}&year=${yearParam}`, {
                 credentials: "include"
             })
             if (res.ok) {

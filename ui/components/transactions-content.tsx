@@ -117,7 +117,7 @@ export function TransactionsContent({ preselectedAccountId }: { preselectedAccou
     const [currentPage, setCurrentPage] = useState(0)
     const [totalPages, setTotalPages] = useState(0)
     const [totalElements, setTotalElements] = useState(0)
-    const [pageSize] = useState(10)
+    const [pageSize, setPageSize] = useState(10)
 
     const [file, setFile] = useState<File | null>(null)
     const [isDragging, setIsDragging] = useState(false)
@@ -271,6 +271,19 @@ export function TransactionsContent({ preselectedAccountId }: { preselectedAccou
             }
         }
     }, [selectedAccountId, month, year, isSearchMode, fetchTransactions, fetchSearchResults])
+
+    // Refetch when pageSize changes
+    useEffect(() => {
+        if (selectedAccountId) {
+            setCurrentPage(0)
+            if (isSearchMode) {
+                fetchSearchResults(selectedAccountId, 0)
+            } else {
+                fetchTransactions(selectedAccountId, 0)
+            }
+        }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [pageSize])
 
     useEffect(() => {
         if (selectedAccountId) {
@@ -1004,7 +1017,19 @@ export function TransactionsContent({ preselectedAccountId }: { preselectedAccou
 
                             {/* Pagination */}
                             {totalPages > 1 && (
-                                <div className="mt-6 flex items-center justify-between border-t pt-4">
+                                <div className="mt-6 flex flex-wrap items-center justify-between gap-4 border-t pt-4">
+                                    <div className="flex items-center gap-2">
+                                        <span className="text-sm text-muted-foreground">{t.pageSize}:</span>
+                                        <select
+                                            value={pageSize}
+                                            onChange={(e) => setPageSize(Number(e.target.value))}
+                                            className="h-8 rounded-md border border-input bg-background px-2 text-sm text-foreground ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                                        >
+                                            {[10, 20, 50, 100].map((s) => (
+                                                <option key={s} value={s}>{s}</option>
+                                            ))}
+                                        </select>
+                                    </div>
                                     <p className="text-sm text-muted-foreground">
                                         {t.page} {currentPage + 1} {t.of} {totalPages} ({totalElements} total)
                                     </p>

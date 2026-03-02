@@ -66,6 +66,7 @@ export function AccountsContent() {
     const [totalPages, setTotalPages] = useState(1)
     const [isFirst, setIsFirst] = useState(true)
     const [isLast, setIsLast] = useState(true)
+    const [pageSize, setPageSize] = useState(10)
 
     // Form state
     const [name, setName] = useState("")
@@ -96,7 +97,7 @@ export function AccountsContent() {
     const fetchAccounts = useCallback(async (pageNum: number) => {
         setIsLoadingAccounts(true)
         try {
-            const res = await fetch(`${API_BASE}/bank-accounts?page=${pageNum}&itemsPerPage=10`, {
+            const res = await fetch(`${API_BASE}/bank-accounts?page=${pageNum}&itemsPerPage=${pageSize}`, {
                 credentials: "include"
             })
             if (res.ok) {
@@ -111,11 +112,17 @@ export function AccountsContent() {
         } finally {
             setIsLoadingAccounts(false)
         }
-    }, [])
+    }, [pageSize])
 
     useEffect(() => {
         fetchAccounts(page)
     }, [page, fetchAccounts])
+
+    useEffect(() => {
+        setPage(0)
+        fetchAccounts(0)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [pageSize])
 
     async function handleCreate(e: React.FormEvent) {
         e.preventDefault()
@@ -421,33 +428,47 @@ export function AccountsContent() {
                             ))}
                         </div>
 
-                        {totalPages > 1 && (
-                            <div className="mt-8 flex items-center justify-center gap-4">
-                                <Button
-                                    variant="outline"
-                                    size="sm"
-                                    disabled={isFirst}
-                                    onClick={() => setPage((p) => Math.max(1, p - 1))}
-                                    className="gap-1"
+                        <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
+                            <div className="flex items-center gap-2">
+                                <span className="text-sm text-muted-foreground">{t.pageSize}:</span>
+                                <select
+                                    value={pageSize}
+                                    onChange={(e) => setPageSize(Number(e.target.value))}
+                                    className="h-8 rounded-md border border-input bg-background px-2 text-sm text-foreground ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
                                 >
-                                    <ChevronLeft className="size-4" />
-                                    {t.previous}
-                                </Button>
-                                <span className="text-sm text-muted-foreground">
-                  {t.page} {page} {t.of} {totalPages}
-                </span>
-                                <Button
-                                    variant="outline"
-                                    size="sm"
-                                    disabled={isLast}
-                                    onClick={() => setPage((p) => p + 1)}
-                                    className="gap-1"
-                                >
-                                    {t.next}
-                                    <ChevronRight className="size-4" />
-                                </Button>
+                                    {[10, 20, 50, 100].map((s) => (
+                                        <option key={s} value={s}>{s}</option>
+                                    ))}
+                                </select>
                             </div>
-                        )}
+                            {totalPages > 1 && (
+                                <>
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        disabled={isFirst}
+                                        onClick={() => setPage((p) => Math.max(1, p - 1))}
+                                        className="gap-1"
+                                    >
+                                        <ChevronLeft className="size-4" />
+                                        {t.previous}
+                                    </Button>
+                                    <span className="text-sm text-muted-foreground">
+                                        {t.page} {page} {t.of} {totalPages}
+                                    </span>
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        disabled={isLast}
+                                        onClick={() => setPage((p) => p + 1)}
+                                        className="gap-1"
+                                    >
+                                        {t.next}
+                                        <ChevronRight className="size-4" />
+                                    </Button>
+                                </>
+                            )}
+                        </div>
                     </>
                 )}
             </main>

@@ -57,6 +57,7 @@ export interface Translations {
     of: string
     previous: string
     next: string
+    pageSize: string
 
     // Transactions
     transactions: string
@@ -225,6 +226,7 @@ export const translations: Record<Locale, Translations> = {
         of: "of",
         previous: "Previous",
         next: "Next",
+        pageSize: "Rows per page",
 
         transactions: "Transactions",
         transactionsDescription: "View and import transactions for your accounts.",
@@ -385,6 +387,7 @@ export const translations: Record<Locale, Translations> = {
         of: "de",
         previous: "Anterior",
         next: "Próxima",
+        pageSize: "Linhas por página",
 
         transactions: "Transações",
         transactionsDescription: "Veja e importe transações das suas contas.",
@@ -545,6 +548,7 @@ export const translations: Record<Locale, Translations> = {
         of: "de",
         previous: "Anterior",
         next: "Siguiente",
+        pageSize: "Filas por página",
 
         transactions: "Transacciones",
         transactionsDescription: "Ver e importar transacciones de tus cuentas.",

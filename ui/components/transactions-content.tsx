@@ -889,8 +889,11 @@ export function TransactionsContent({ preselectedAccountId }: { preselectedAccou
                 {/* Search */}
                 {selectedAccountId && (
                     <TransactionSearch
+                        key={`${year}-${month}`}
                         onSearch={handleSearch}
                         isLoading={isSearching || isLoadingTransactions}
+                        defaultStartDate={new Date(year, month - 1, 1).toISOString().split('T')[0]}
+                        defaultEndDate={new Date(year, month, 0).toISOString().split('T')[0]}
                     />
                 )}
 

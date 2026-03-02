@@ -17,12 +17,17 @@ import { useI18n } from "@/lib/i18n/i18n-context"
 interface TransactionSearchProps {
     onSearch: (query: string, startDate: string, endDate: string) => void
     isLoading: boolean
+    defaultStartDate?: string
+    defaultEndDate?: string
 }
 
-export function TransactionSearch({ onSearch, isLoading }: TransactionSearchProps) {
+export function TransactionSearch({ onSearch, isLoading, defaultStartDate, defaultEndDate }: TransactionSearchProps) {
     const { t } = useI18n()
 
     const getDefaultDates = useCallback(() => {
+        if (defaultStartDate && defaultEndDate) {
+            return { startDateStr: defaultStartDate, endDateStr: defaultEndDate }
+        }
         const today = new Date()
         const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1)
         const lastDayOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0)
@@ -31,7 +36,7 @@ export function TransactionSearch({ onSearch, isLoading }: TransactionSearchProp
         const startDateStr = firstDayOfMonth.toISOString().split('T')[0]
 
         return { startDateStr, endDateStr }
-    }, [])
+    }, [defaultStartDate, defaultEndDate])
 
     const [query, setQuery] = useState("")
     const [startDate, setStartDate] = useState(() => getDefaultDates().startDateStr)

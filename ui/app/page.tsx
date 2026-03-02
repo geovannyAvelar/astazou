@@ -39,10 +39,8 @@ export default function LoginPage() {
       <div className="hidden lg:flex lg:w-1/2 flex-col justify-between bg-primary p-12 text-white">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="flex size-10 items-center justify-center rounded-lg bg-white/20 text-white">
-              <Image src="/logo.png" alt="Astazou logo" width={28} height={28} className="object-contain" />
-            </div>
-            <span className="text-xl font-bold text-white tracking-tight">Astazou</span>
+            <Image src="/logo.png" alt="Astazou logo" width={60} height={60} className="object-contain" />
+            <span className="text-2xl font-bold text-white tracking-tight">Astazou</span>
           </div>
         </div>
 
@@ -86,10 +84,8 @@ export default function LoginPage() {
           <div className="w-full max-w-md">
             {/* Mobile branding */}
             <div className="mb-8 flex flex-col items-center gap-3 lg:hidden">
-              <div className="flex size-12 items-center justify-center rounded-xl bg-primary text-primary-foreground">
-                <Image src="/logo.png" alt="Astazou logo" width={32} height={32} className="object-contain" />
-              </div>
-              <span className="text-xl font-bold text-foreground tracking-tight">Astazou</span>
+              <Image src="/logo.png" alt="Astazou logo" width={72} height={72} className="object-contain" />
+              <span className="text-2xl font-bold text-foreground tracking-tight">Astazou</span>
             </div>
 
             <LoginForm />

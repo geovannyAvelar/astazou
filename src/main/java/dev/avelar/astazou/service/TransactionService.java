@@ -267,8 +267,11 @@ public class TransactionService {
       throw new IllegalStateException("Transaction does not belong to user");
     }
 
-    if (!"debit".equals(sourceTransaction.getType())) {
-      throw new IllegalStateException("Only debit transactions can be transformed to transfers");
+    boolean isDebit = "debit".equals(sourceTransaction.getType());
+    boolean isCredit = "credit".equals(sourceTransaction.getType());
+
+    if (!isDebit && !isCredit) {
+      throw new IllegalStateException("Only debit or credit transactions can be transformed to transfers");
     }
 
     Optional<BankAccount> destinationAccountOpt = bankAccountRepository.findById(destinationAccountId);
@@ -282,21 +285,41 @@ public class TransactionService {
 
     int lastSequence = repository.getLastDaySequence(destinationAccountId, sourceTransaction.getTransactionDate());
 
-    // @formatter:off
-    Transaction creditTransaction = Transaction.builder()
-        .transactionDate(sourceTransaction.getTransactionDate())
-        .description("Transfer from " + sourceAccountOpt.get().getName() + ": " + sourceTransaction.getDescription())
-        .amount(sourceTransaction.getAmount().abs())
-        .type("transfer_credit")
-        .page(0)
-        .sequence(lastSequence + 1)
-        .createdAt(OffsetDateTime.now())
-        .bankAccountId(destinationAccountId).build();
-    // @formatter:on
+    if (isDebit) {
+      // @formatter:off
+      Transaction creditTransaction = Transaction.builder()
+          .transactionDate(sourceTransaction.getTransactionDate())
+          .description("Transfer from " + sourceAccountOpt.get().getName() + ": " + sourceTransaction.getDescription())
+          .amount(sourceTransaction.getAmount().abs())
+          .type("transfer_credit")
+          .page(0)
+          .sequence(lastSequence + 1)
+          .createdAt(OffsetDateTime.now())
+          .bankAccountId(destinationAccountId).build();
+      // @formatter:on
 
-    repository.upsert(creditTransaction);
+      repository.upsert(creditTransaction);
 
-    sourceTransaction.setType("transfer");
+      sourceTransaction.setType("transfer");
+    } else {
+      // isCredit: generate a debit on the destination account
+      // @formatter:off
+      Transaction debitTransaction = Transaction.builder()
+          .transactionDate(sourceTransaction.getTransactionDate())
+          .description("Transfer to " + sourceAccountOpt.get().getName() + ": " + sourceTransaction.getDescription())
+          .amount(sourceTransaction.getAmount().abs().negate())
+          .type("transfer_debit")
+          .page(0)
+          .sequence(lastSequence + 1)
+          .createdAt(OffsetDateTime.now())
+          .bankAccountId(destinationAccountId).build();
+      // @formatter:on
+
+      repository.upsert(debitTransaction);
+
+      sourceTransaction.setType("transfer_credit");
+    }
+
     repository.upsert(sourceTransaction);
   }
 

@@ -112,6 +112,7 @@ export interface Translations {
     // Transform to Transfer
     transformToTransfer: string
     transformToTransferDescription: string
+    transformToTransferDescriptionCredit: string
     selectDestinationAccount: string
     transforming: string
     transform: string
@@ -280,6 +281,7 @@ export const translations: Record<Locale, Translations> = {
         // Transform to Transfer
         transformToTransfer: "Transform to Transfer",
         transformToTransferDescription: "Convert this debit transaction into a transfer to another account",
+        transformToTransferDescriptionCredit: "Convert this credit transaction into a transfer to another account",
         selectDestinationAccount: "Destination Account",
         transforming: "Transforming...",
         transform: "Transform",
@@ -441,6 +443,7 @@ export const translations: Record<Locale, Translations> = {
         // Transform to Transfer
         transformToTransfer: "Transformar em Transferencia",
         transformToTransferDescription: "Converter esta transação de débito em transferência para outra conta",
+        transformToTransferDescriptionCredit: "Converter esta transação de crédito em transferência para outra conta",
         selectDestinationAccount: "Conta de Destino",
         transforming: "Transformando...",
         transform: "Transformar",
@@ -602,6 +605,7 @@ export const translations: Record<Locale, Translations> = {
         // Transform to Transfer
         transformToTransfer: "Transformar en Transferencia",
         transformToTransferDescription: "Convertir esta transacción de débito en transferencia a otra cuenta",
+        transformToTransferDescriptionCredit: "Convertir esta transacción de crédito en transferencia a otra cuenta",
         selectDestinationAccount: "Cuenta de Destino",
         transforming: "Transformando...",
         transform: "Transformar",

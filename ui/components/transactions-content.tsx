@@ -989,7 +989,7 @@ export function TransactionsContent({ preselectedAccountId }: { preselectedAccou
                                                 {tx.amount >= 0 ? "+" : ""}{formatCurrency(tx.amount)}
                                             </p>
                                             <div className="flex gap-1">
-                                                {tx.type === "debit" && accounts.length > 1 && (
+                                                {(tx.type === "debit" || tx.type === "credit") && accounts.length > 1 && (
                                                     <Button
                                                         variant="ghost"
                                                         size="icon-sm"
@@ -1300,7 +1300,9 @@ export function TransactionsContent({ preselectedAccountId }: { preselectedAccou
                     <DialogHeader>
                         <DialogTitle>{t.transformToTransfer || 'Transform to Transfer'}</DialogTitle>
                         <DialogDescription>
-                            {t.transformToTransferDescription || 'Convert this debit transaction into a transfer to another account'}
+                            {transactionToTransform?.type === "credit"
+                                ? (t.transformToTransferDescriptionCredit || 'Convert this credit transaction into a transfer to another account')
+                                : (t.transformToTransferDescription || 'Convert this debit transaction into a transfer to another account')}
                         </DialogDescription>
                     </DialogHeader>
 
@@ -1309,8 +1311,8 @@ export function TransactionsContent({ preselectedAccountId }: { preselectedAccou
                             <div className="rounded-lg border bg-muted/50 p-4">
                                 <p className="text-sm text-muted-foreground mb-1">Current Transaction</p>
                                 <p className="text-sm font-medium">{transactionToTransform.description}</p>
-                                <p className="text-sm text-destructive font-semibold mt-1">
-                                    {formatCurrency(transactionToTransform.amount)}
+                                <p className={`text-sm font-semibold mt-1 ${transactionToTransform.amount >= 0 ? "text-primary" : "text-destructive"}`}>
+                                    {transactionToTransform.amount >= 0 ? "+" : ""}{formatCurrency(transactionToTransform.amount)}
                                 </p>
                             </div>
                         )}

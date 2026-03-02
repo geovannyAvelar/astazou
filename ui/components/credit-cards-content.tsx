@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react"
 import Link from "next/link"
+import Image from "next/image"
 import { useAuth } from "@/lib/auth-context"
 import { useI18n } from "@/lib/i18n/i18n-context"
 import { LanguageSwitcher } from "@/components/language-switcher"
@@ -169,7 +170,7 @@ export function CreditCardsContent() {
                 <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4 lg:px-8">
                     <div className="flex items-center gap-3">
                         <div className="flex size-9 items-center justify-center rounded-lg bg-primary text-primary-foreground font-bold text-sm">
-                            <DollarSign className="size-5" />
+                            <Image src="/logo.png" alt="Astazou logo" width={24} height={24} className="object-contain" />
                         </div>
                         <span className="text-lg font-bold text-foreground tracking-tight">Astazou</span>
                     </div>

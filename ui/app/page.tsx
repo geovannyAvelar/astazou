@@ -36,7 +36,7 @@ export default function LoginPage() {
   return (
     <main className="flex min-h-svh">
       {/* Left panel - Branding */}
-      <div className="hidden lg:flex lg:w-1/2 flex-col justify-between bg-primary p-12 text-white">
+      <div className="hidden lg:flex lg:w-1/2 flex-col justify-between bg-primary p-12 text-white green-dark">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <Image src="/logo.png" alt="Astazou logo" width={60} height={60} className="object-contain" />

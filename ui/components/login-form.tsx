@@ -130,7 +130,7 @@ export function LoginForm() {
 
           <Button
             type="submit"
-            className="h-11 w-full text-base font-semibold mt-1 text-white"
+            className="h-11 w-full text-base font-semibold mt-1 text-white green-dark"
             disabled={isSubmitting}
           >
             {isSubmitting ? (

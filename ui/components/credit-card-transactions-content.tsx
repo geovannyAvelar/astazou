@@ -196,9 +196,9 @@ export function CreditCardTransactionsContent({ cardId }: CardTransactionsConten
         }).format(date)
     }
 
-    const months = Array.from({ length: 12 }, (_, i) => ({
+    const months = t.months.map((label, i) => ({
         value: String(i + 1).padStart(2, '0'),
-        label: new Date(2000, i).toLocaleDateString("en-US", { month: "long" })
+        label,
     }))
 
     const currentYear = new Date().getFullYear()

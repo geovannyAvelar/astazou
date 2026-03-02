@@ -134,6 +134,7 @@ export interface Translations {
 
     month: string
     year: string
+    months: [string, string, string, string, string, string, string, string, string, string, string, string]
 
     // Credit Cards
     creditCards: string
@@ -301,6 +302,7 @@ export const translations: Record<Locale, Translations> = {
 
         month: "Month",
         year: "Year",
+        months: ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"],
 
         creditCards: "Credit Cards",
         creditCardsDescription: "Manage your credit cards and view statements.",
@@ -463,6 +465,7 @@ export const translations: Record<Locale, Translations> = {
 
         month: "Mês",
         year: "Ano",
+        months: ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"],
 
         creditCards: "Cartões de Crédito",
         creditCardsDescription: "Gerencie seus cartões de crédito e visualize extratos.",
@@ -625,6 +628,7 @@ export const translations: Record<Locale, Translations> = {
 
         month: "Mes",
         year: "Año",
+        months: ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"],
 
         creditCards: "Tarjetas de Crédito",
         creditCardsDescription: "Administra tus tarjetas de crédito y visualiza extractos.",

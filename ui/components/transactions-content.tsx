@@ -685,18 +685,9 @@ export function TransactionsContent({ preselectedAccountId }: { preselectedAccou
                                         onChange={(e) => setMonth(Number(e.target.value))}
                                         className="h-9 rounded-md border border-input bg-background px-3 text-sm text-foreground ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
                                     >
-                                        <option value={1}>January</option>
-                                        <option value={2}>February</option>
-                                        <option value={3}>March</option>
-                                        <option value={4}>April</option>
-                                        <option value={5}>May</option>
-                                        <option value={6}>June</option>
-                                        <option value={7}>July</option>
-                                        <option value={8}>August</option>
-                                        <option value={9}>September</option>
-                                        <option value={10}>October</option>
-                                        <option value={11}>November</option>
-                                        <option value={12}>December</option>
+                                        {t.months.map((name, i) => (
+                                            <option key={i + 1} value={i + 1}>{name}</option>
+                                        ))}
                                     </select>
                                 </div>
 

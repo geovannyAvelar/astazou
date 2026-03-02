@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react"
 import Link from "next/link"
 import Image from "next/image"
+import { useTheme } from "next-themes"
 import { useAuth } from "@/lib/auth-context"
 import { useI18n } from "@/lib/i18n/i18n-context"
 import { LanguageSwitcher } from "@/components/language-switcher"
@@ -48,6 +49,16 @@ const MONTH_NAMES = [
 export function AnalyticsContent() {
     const { user, logout } = useAuth()
     const { t } = useI18n()
+    const { resolvedTheme } = useTheme()
+    const isDark = resolvedTheme === "dark"
+
+    const chartColors = {
+        tickFill: isDark ? "#a1a1aa" : "#71717a",
+        gridStroke: isDark ? "#3f3f46" : "#e4e4e7",
+        tooltipBg: isDark ? "#18181b" : "#ffffff",
+        tooltipBorder: isDark ? "#3f3f46" : "#e4e4e7",
+        tooltipFg: isDark ? "#fafafa" : "#09090b",
+    }
     const [isLoggingOut, setIsLoggingOut] = useState(false)
     const [summary, setSummary] = useState<MonthlySummary[]>([])
     const [isLoading, setIsLoading] = useState(true)
@@ -274,15 +285,17 @@ export function AnalyticsContent() {
                             <div className="h-96 w-full">
                                 <ResponsiveContainer width="100%" height="100%">
                                     <LineChart data={chartData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
-                                        <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                                        <CartesianGrid strokeDasharray="3 3" stroke={chartColors.gridStroke} />
                                         <XAxis
                                             dataKey="month"
-                                            className="text-xs"
-                                            tick={{ fill: 'hsl(var(--muted-foreground))' }}
+                                            tick={{ fill: chartColors.tickFill, fontSize: 12 }}
+                                            axisLine={{ stroke: chartColors.gridStroke }}
+                                            tickLine={{ stroke: chartColors.gridStroke }}
                                         />
                                         <YAxis
-                                            className="text-xs"
-                                            tick={{ fill: 'hsl(var(--muted-foreground))' }}
+                                            tick={{ fill: chartColors.tickFill, fontSize: 12 }}
+                                            axisLine={{ stroke: chartColors.gridStroke }}
+                                            tickLine={{ stroke: chartColors.gridStroke }}
                                             tickFormatter={(value) => {
                                                 if (value >= 1000) return `$${(value / 1000).toFixed(0)}k`
                                                 return `$${value.toFixed(0)}`
@@ -290,15 +303,17 @@ export function AnalyticsContent() {
                                         />
                                         <Tooltip
                                             contentStyle={{
-                                                backgroundColor: 'hsl(var(--card))',
-                                                border: '1px solid hsl(var(--border))',
+                                                backgroundColor: chartColors.tooltipBg,
+                                                border: `1px solid ${chartColors.tooltipBorder}`,
                                                 borderRadius: '8px',
+                                                color: chartColors.tooltipFg,
                                             }}
-                                            labelStyle={{ color: 'hsl(var(--foreground))' }}
+                                            labelStyle={{ color: chartColors.tooltipFg }}
+                                            itemStyle={{ color: chartColors.tooltipFg }}
                                             formatter={(value: number) => formatCurrency(value)}
                                         />
                                         <Legend
-                                            wrapperStyle={{ paddingTop: '20px' }}
+                                            wrapperStyle={{ paddingTop: '20px', color: chartColors.tickFill }}
                                             iconType="line"
                                         />
                                         <Line

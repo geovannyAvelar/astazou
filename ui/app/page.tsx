@@ -7,7 +7,8 @@ import { useI18n } from "@/lib/i18n/i18n-context"
 import { LoginForm } from "@/components/login-form"
 import { LanguageSwitcher } from "@/components/language-switcher"
 import { ThemeToggle } from "@/components/theme-toggle"
-import { DollarSign, Loader2, Shield, TrendingUp, Wallet } from "lucide-react"
+import Image from "next/image"
+import { Loader2, Shield, TrendingUp, Wallet } from "lucide-react"
 
 export default function LoginPage() {
   const { isAuthenticated, isLoading } = useAuth()
@@ -39,7 +40,7 @@ export default function LoginPage() {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="flex size-10 items-center justify-center rounded-lg bg-primary-foreground/20 text-primary-foreground">
-              <DollarSign className="size-6" />
+              <Image src="/logo.png" alt="Astazou logo" width={28} height={28} className="object-contain" />
             </div>
             <span className="text-xl font-bold text-primary-foreground tracking-tight">Astazou</span>
           </div>
@@ -86,7 +87,7 @@ export default function LoginPage() {
             {/* Mobile branding */}
             <div className="mb-8 flex flex-col items-center gap-3 lg:hidden">
               <div className="flex size-12 items-center justify-center rounded-xl bg-primary text-primary-foreground">
-                <DollarSign className="size-7" />
+                <Image src="/logo.png" alt="Astazou logo" width={32} height={32} className="object-contain" />
               </div>
               <span className="text-xl font-bold text-foreground tracking-tight">Astazou</span>
             </div>

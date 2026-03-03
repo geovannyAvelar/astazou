@@ -52,6 +52,7 @@ import {
     ArrowLeftRight,
     ArrowUpRight,
     DollarSign,
+    FileDown,
     FileText,
     Loader2,
     LogOut,
@@ -130,6 +131,7 @@ export function TransactionsContent({ preselectedAccountId }: { preselectedAccou
     const fileInputRef = useRef<HTMLInputElement>(null)
 
     const [isLoggingOut, setIsLoggingOut] = useState(false)
+    const [isGeneratingReport, setIsGeneratingReport] = useState(false)
 
     const [month, setMonth] = useState<number>(new Date().getMonth() + 1)
     const [year, setYear] = useState<number>(new Date().getFullYear())
@@ -449,6 +451,30 @@ export function TransactionsContent({ preselectedAccountId }: { preselectedAccou
         }
     }
 
+    async function handleGenerateReport() {
+        if (!selectedAccountId) return
+        setIsGeneratingReport(true)
+        try {
+            const res = await fetch(
+                `${API_BASE}/transactions/report/${selectedAccountId}?month=${month}&year=${year}`,
+                { credentials: "include" }
+            )
+            if (res.ok) {
+                const blob = await res.blob()
+                const url = URL.createObjectURL(blob)
+                const a = document.createElement("a")
+                a.href = url
+                a.download = `transactions-${year}-${String(month).padStart(2, "0")}.pdf`
+                a.click()
+                URL.revokeObjectURL(url)
+            }
+        } catch {
+            // silently fail
+        } finally {
+            setIsGeneratingReport(false)
+        }
+    }
+
     function openDeleteDialog(tx: Transaction) {
         setDeleteError("")
         setTransactionToDelete(tx)
@@ -735,6 +761,19 @@ export function TransactionsContent({ preselectedAccountId }: { preselectedAccou
                         >
                             <Upload className="size-4" />
                             {t.uploadPdf}
+                        </Button>
+                        <Button
+                            onClick={handleGenerateReport}
+                            variant="outline"
+                            disabled={!selectedAccountId || isGeneratingReport}
+                            className="gap-2"
+                        >
+                            {isGeneratingReport ? (
+                                <Loader2 className="size-4 animate-spin" />
+                            ) : (
+                                <FileDown className="size-4" />
+                            )}
+                            {isGeneratingReport ? t.generatingReport : t.generateReport}
                         </Button>
                     </div>
                 </div>

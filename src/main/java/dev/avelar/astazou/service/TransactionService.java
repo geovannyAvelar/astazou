@@ -7,6 +7,9 @@ import dev.avelar.astazou.model.BankAccount;
 import dev.avelar.astazou.model.Transaction;
 import dev.avelar.astazou.repository.BankAccountRepository;
 import dev.avelar.astazou.repository.TransactionRepository;
+import dev.avelar.jambock.reports.ReportBuilder;
+import dev.avelar.jambock.reports.ReportEngine;
+import dev.avelar.jambock.reports.ReportGenerationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,8 +23,10 @@ import org.springframework.transaction.annotation.Transactional;
 import java.io.*;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.Month;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.format.TextStyle;
 import java.util.*;
 
 @Service
@@ -39,10 +44,14 @@ public class TransactionService {
 
   private final BankAccountRepository bankAccountRepository;
 
+  private final ReportEngine reportEngine;
+
   @Autowired
-  public TransactionService(TransactionRepository repository, BankAccountRepository bankAccountRepository) {
+  public TransactionService(TransactionRepository repository, BankAccountRepository bankAccountRepository,
+      ReportEngine reportEngine) {
     this.repository = repository;
     this.bankAccountRepository = bankAccountRepository;
+    this.reportEngine = reportEngine;
   }
 
   public Page<Transaction> findByAccountIdAndMonth(Long bankAccountId, Integer month, Integer year, int page,
@@ -321,6 +330,37 @@ public class TransactionService {
     }
 
     repository.upsert(sourceTransaction);
+  }
+
+  public byte[] generateMonthlyReport(String username, Long bankAccountId, Integer month, Integer year)
+      throws ReportGenerationException {
+    List<Transaction> transactions =
+        repository.findByAccountIdAndMonth(bankAccountId, month, year, Integer.MAX_VALUE, 0);
+
+    Balance balance = calculateMonthBalance(username, month, year);
+
+    Optional<BankAccount> accountOpt = bankAccountRepository.findById(bankAccountId);
+    String accountName = accountOpt.map(BankAccount::getName).orElse("—");
+
+    String monthName = Month.of(month).getDisplayName(TextStyle.FULL, Locale.ENGLISH);
+    String generatedAt = OffsetDateTime.now().format(DateTimeFormatter.ofPattern("MM/dd/yyyy HH:mm"));
+
+    Map<String, Object> data = new HashMap<>();
+    data.put("transactions", transactions);
+    data.put("month", month);
+    data.put("monthName", monthName);
+    data.put("year", year);
+    data.put("accountName", accountName);
+    data.put("income", balance.getIncome() != null ? balance.getIncome() : 0.0);
+    data.put("expenses", balance.getExpenses() != null ? balance.getExpenses() : 0.0);
+    data.put("balance", balance.getAmount() != null ? balance.getAmount() : 0.0);
+    data.put("generatedAt", generatedAt);
+
+    return new ReportBuilder(reportEngine)
+        .withTemplate("monthly-transactions-report.ftl")
+        .withData(data)
+        .portrait()
+        .generateAsBytes();
   }
 
   public List<MonthlySummaryDto> getMonthlySummary(String username, int year) {

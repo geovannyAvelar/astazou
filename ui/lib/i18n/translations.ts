@@ -167,6 +167,10 @@ export interface Translations {
     uploadModePdf: string
     uploadModeOfx: string
 
+    // Report
+    generateReport: string
+    generatingReport: string
+
     // Session
     sessionExpiredTitle: string
     sessionExpiredMessage: string
@@ -333,6 +337,9 @@ export const translations: Record<Locale, Translations> = {
         uploadModePdf: "Itaú PDF",
         uploadModeOfx: "OFX File",
 
+        generateReport: "Generate Report",
+        generatingReport: "Generating...",
+
         sessionExpiredTitle: "Session ended",
         sessionExpiredMessage: "Your session has expired due to inactivity. Please sign in again.",
     },
@@ -496,6 +503,9 @@ export const translations: Record<Locale, Translations> = {
         uploadModePdf: "PDF Itaú",
         uploadModeOfx: "Arquivo OFX",
 
+        generateReport: "Gerar Relatório",
+        generatingReport: "Gerando...",
+
         sessionExpiredTitle: "Sessão encerrada",
         sessionExpiredMessage: "Sua sessão foi encerrada por inatividade. Por favor, faça login novamente.",
     },
@@ -658,6 +668,9 @@ export const translations: Record<Locale, Translations> = {
         uploadMode: "Tipo de importación",
         uploadModePdf: "PDF Itaú",
         uploadModeOfx: "Archivo OFX",
+
+        generateReport: "Generar Informe",
+        generatingReport: "Generando...",
 
         sessionExpiredTitle: "Sesión finalizada",
         sessionExpiredMessage: "Tu sesión ha expirado por inactividad. Por favor, inicia sesión nuevamente.",

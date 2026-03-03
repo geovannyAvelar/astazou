@@ -1,5 +1,6 @@
 package dev.avelar.astazou;
 
+import dev.avelar.jambock.reports.ReportEngine;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.openfeign.EnableFeignClients;
@@ -19,13 +20,18 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 @EnableAsync
 public class AstazouApplication {
 
-	public static void main(String[] args) {
-		SpringApplication.run(AstazouApplication.class, args);
-	}
+  public static void main(String[] args) {
+    SpringApplication.run(AstazouApplication.class, args);
+  }
 
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-      return new BCryptPasswordEncoder();
-    }
+  @Bean
+  public PasswordEncoder passwordEncoder() {
+    return new BCryptPasswordEncoder();
+  }
+
+  @Bean
+  public ReportEngine reportEngine() {
+    return new ReportEngine();
+  }
 
 }

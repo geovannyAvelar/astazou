@@ -6,8 +6,11 @@ import dev.avelar.astazou.dto.TransactionCreationForm;
 import dev.avelar.astazou.dto.TransformToTransferForm;
 import dev.avelar.astazou.model.Transaction;
 import dev.avelar.astazou.service.TransactionService;
+import dev.avelar.jambock.reports.ReportGenerationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.http.ContentDisposition;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -222,6 +225,40 @@ public class TransactionController {
     }
 
     return ResponseEntity.ok(service.getMonthlySummary(auth.getName(), year));
+  }
+
+  @GetMapping(value = "/report/{account_id}", produces = MediaType.APPLICATION_PDF_VALUE)
+  public ResponseEntity<byte[]> generateMonthlyReport(
+      @PathVariable("account_id") Long accountId,
+      @RequestParam(required = false) Integer month,
+      @RequestParam(required = false) Integer year) throws ReportGenerationException {
+    Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+
+    if (auth == null) {
+      return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+    }
+
+    var now = OffsetDateTime.now();
+
+    if (month == null || month < 1 || month > 12) {
+      month = now.getMonthValue();
+    }
+
+    if (year == null) {
+      year = now.getYear();
+    }
+
+    byte[] pdf = service.generateMonthlyReport(auth.getName(), accountId, month, year);
+
+    String filename = String.format("transactions-%d-%02d.pdf", year, month);
+
+    HttpHeaders headers = new HttpHeaders();
+    headers.setContentType(MediaType.APPLICATION_PDF);
+    headers.setContentDisposition(
+        ContentDisposition.attachment().filename(filename).build());
+    headers.setContentLength(pdf.length);
+
+    return ResponseEntity.ok().headers(headers).body(pdf);
   }
 
 }

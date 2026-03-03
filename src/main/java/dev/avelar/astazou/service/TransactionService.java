@@ -4,8 +4,10 @@ import dev.avelar.astazou.dto.Balance;
 import dev.avelar.astazou.dto.MonthlySummaryDto;
 import dev.avelar.astazou.exception.NotFoundException;
 import dev.avelar.astazou.model.BankAccount;
+import dev.avelar.astazou.model.ReportToken;
 import dev.avelar.astazou.model.Transaction;
 import dev.avelar.astazou.repository.BankAccountRepository;
+import dev.avelar.astazou.repository.ReportTokenRepository;
 import dev.avelar.astazou.repository.TransactionRepository;
 import dev.avelar.jambock.reports.ReportBuilder;
 import dev.avelar.jambock.reports.ReportEngine;
@@ -41,18 +43,27 @@ public class TransactionService {
   @Value("${astazou.python.itau-pdf-parser}")
   protected String itauPdfParserScript;
 
+  @Value("${astazou.base-url}")
+  private String baseUrl;
+
   private final TransactionRepository repository;
 
   private final BankAccountRepository bankAccountRepository;
 
   private final ReportEngine reportEngine;
 
+  private final ReportTokenRepository reportTokenRepository;
+
+  private final QrCodeService qrCodeService;
+
   @Autowired
   public TransactionService(TransactionRepository repository, BankAccountRepository bankAccountRepository,
-      ReportEngine reportEngine) {
+      ReportEngine reportEngine, ReportTokenRepository reportTokenRepository, QrCodeService qrCodeService) {
     this.repository = repository;
     this.bankAccountRepository = bankAccountRepository;
     this.reportEngine = reportEngine;
+    this.reportTokenRepository = reportTokenRepository;
+    this.qrCodeService = qrCodeService;
   }
 
   public Page<Transaction> findByAccountIdAndMonth(Long bankAccountId, Integer month, Integer year, int page,
@@ -365,6 +376,28 @@ public class TransactionService {
       LOGGER.warn("Could not load logo for report: {}", e.getMessage());
     }
 
+    // Generate a unique token for report validation and persist it
+    String token = UUID.randomUUID().toString();
+    ReportToken reportToken = ReportToken.builder()
+        .token(token)
+        .username(username)
+        .bankAccountId(bankAccountId)
+        .accountName(accountName)
+        .reportMonth(month)
+        .reportYear(year)
+        .createdAt(OffsetDateTime.now())
+        .build();
+    reportTokenRepository.save(reportToken);
+
+    // Build the validation URL and generate QR code
+    String validationUrl = baseUrl + "/validate-report/" + token;
+    String qrCodeDataUri = "";
+    try {
+      qrCodeDataUri = qrCodeService.generateQrCodeDataUri(validationUrl, 120);
+    } catch (Exception e) {
+      LOGGER.warn("Could not generate QR code for report: {}", e.getMessage());
+    }
+
     dev.avelar.astazou.dto.ReportLabels labels = dev.avelar.astazou.dto.ReportLabels.forLocale(lang);
 
     Map<String, Object> data = new HashMap<>();
@@ -379,6 +412,8 @@ public class TransactionService {
     data.put("generatedAt", generatedAt);
     data.put("logoDataUri", logoDataUri);
     data.put("labels", labels);
+    data.put("qrCodeDataUri", qrCodeDataUri);
+    data.put("validationUrl", validationUrl);
 
     return new ReportBuilder(reportEngine)
         .withTemplate("monthly-transactions-report.ftl")

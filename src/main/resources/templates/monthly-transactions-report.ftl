@@ -239,6 +239,40 @@
       color: #1FA971;
       font-weight: bold;
     }
+
+    /* ── QR code validation block ── */
+    .qr-validation {
+      width: 100%;
+      margin-top: 16px;
+      margin-bottom: 10px;
+      border: 1px solid #d1fae5;
+      border-left: 4px solid #1FA971;
+      background-color: #f0fdf8;
+      border-radius: 0 4px 4px 0;
+      padding: 8px 12px;
+    }
+
+    .qr-validation table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .qr-validation-text-cell {
+      vertical-align: middle;
+      padding-left: 12px;
+    }
+
+    .qr-validation-title {
+      font-size: 8.5pt;
+      font-weight: bold;
+      color: #167a52;
+      margin-bottom: 3px;
+    }
+
+    .qr-validation-subtitle {
+      font-size: 7.5pt;
+      color: #6b7280;
+    }
   </style>
 </head>
 <body>
@@ -352,6 +386,24 @@
   </table>
   <#else>
   <div class="empty-state">${labels.emptyState}</div>
+  </#if>
+
+  <!-- QR code – Report validation -->
+  <#if qrCodeDataUri?has_content>
+  <div class="qr-validation">
+    <table>
+      <tr>
+        <td style="width:80px; vertical-align:middle;">
+          <img src="${qrCodeDataUri}" alt="QR Code" width="72" height="72" style="display:block;"/>
+        </td>
+        <td class="qr-validation-text-cell">
+          <div class="qr-validation-title">${labels.qrValidationTitle}</div>
+          <div class="qr-validation-subtitle">${labels.qrValidationSubtitle}</div>
+          <div class="qr-validation-subtitle" style="margin-top:4px; word-break:break-all;">${validationUrl}</div>
+        </td>
+      </tr>
+    </table>
+  </div>
   </#if>
 
   <!-- Footer -->

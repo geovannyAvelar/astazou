@@ -39,7 +39,8 @@ public class SecurityConfig {
             .requestMatchers(
                 "/",
                 "/token/**",
-                "/actuator/**")
+                "/actuator/**",
+                "/reports/validate/**")
             .permitAll())
         .authorizeHttpRequests(matcher -> matcher.anyRequest().authenticated())
         .csrf(AbstractHttpConfigurer::disable)

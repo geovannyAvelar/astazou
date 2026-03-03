@@ -3,7 +3,7 @@ package dev.avelar.astazou.brapi;
 import dev.avelar.astazou.brapi.dto.CryptoCoin;
 import dev.avelar.astazou.brapi.dto.Quote;
 import dev.avelar.astazou.brapi.dto.Stock;
-import dev.avelar.astazou.client.brapi.dto.*;
+import dev.avelar.astazou.brapi.dto.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

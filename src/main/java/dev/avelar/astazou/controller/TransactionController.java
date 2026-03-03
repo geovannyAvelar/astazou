@@ -231,7 +231,8 @@ public class TransactionController {
   public ResponseEntity<byte[]> generateMonthlyReport(
       @PathVariable("account_id") Long accountId,
       @RequestParam(required = false) Integer month,
-      @RequestParam(required = false) Integer year) throws ReportGenerationException {
+      @RequestParam(required = false) Integer year,
+      @RequestParam(required = false, defaultValue = "en") String lang) throws ReportGenerationException {
     Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 
     if (auth == null) {
@@ -248,7 +249,7 @@ public class TransactionController {
       year = now.getYear();
     }
 
-    byte[] pdf = service.generateMonthlyReport(auth.getName(), accountId, month, year);
+    byte[] pdf = service.generateMonthlyReport(auth.getName(), accountId, month, year, lang);
 
     String filename = String.format("transactions-%d-%02d.pdf", year, month);
 

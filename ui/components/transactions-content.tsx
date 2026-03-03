@@ -107,7 +107,7 @@ interface TransactionsPageResponse {
 
 export function TransactionsContent({ preselectedAccountId }: { preselectedAccountId?: number }) {
     const { user, logout } = useAuth()
-    const { t } = useI18n()
+    const { t, locale } = useI18n()
 
     const [accounts, setAccounts] = useState<BankAccount[]>([])
     const [selectedAccountId, setSelectedAccountId] = useState<number | null>(null)
@@ -456,7 +456,7 @@ export function TransactionsContent({ preselectedAccountId }: { preselectedAccou
         setIsGeneratingReport(true)
         try {
             const res = await fetch(
-                `${API_BASE}/transactions/report/${selectedAccountId}?month=${month}&year=${year}`,
+                `${API_BASE}/transactions/report/${selectedAccountId}?month=${month}&year=${year}&lang=${locale}`,
                 { credentials: "include" }
             )
             if (res.ok) {

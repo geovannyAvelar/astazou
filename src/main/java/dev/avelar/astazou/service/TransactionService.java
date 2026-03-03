@@ -335,6 +335,11 @@ public class TransactionService {
 
   public byte[] generateMonthlyReport(String username, Long bankAccountId, Integer month, Integer year)
       throws ReportGenerationException {
+    return generateMonthlyReport(username, bankAccountId, month, year, "en");
+  }
+
+  public byte[] generateMonthlyReport(String username, Long bankAccountId, Integer month, Integer year, String lang)
+      throws ReportGenerationException {
     List<Transaction> transactions =
         repository.findByAccountIdAndMonth(bankAccountId, month, year, Integer.MAX_VALUE, 0);
 
@@ -343,8 +348,12 @@ public class TransactionService {
     Optional<BankAccount> accountOpt = bankAccountRepository.findById(bankAccountId);
     String accountName = accountOpt.map(BankAccount::getName).orElse("—");
 
-    String monthName = Month.of(month).getDisplayName(TextStyle.FULL, Locale.ENGLISH);
-    String generatedAt = OffsetDateTime.now().format(DateTimeFormatter.ofPattern("MM/dd/yyyy HH:mm"));
+    Locale locale = resolveLocale(lang);
+    String monthName = Month.of(month).getDisplayName(TextStyle.FULL, locale);
+    String datePattern = "pt".equalsIgnoreCase(lang) || "es".equalsIgnoreCase(lang)
+        ? "dd/MM/yyyy HH:mm"
+        : "MM/dd/yyyy HH:mm";
+    String generatedAt = OffsetDateTime.now().format(DateTimeFormatter.ofPattern(datePattern));
 
     String logoDataUri = "";
     try (InputStream logoStream = getClass().getResourceAsStream("/templates/logo.png")) {
@@ -355,6 +364,8 @@ public class TransactionService {
     } catch (IOException e) {
       LOGGER.warn("Could not load logo for report: {}", e.getMessage());
     }
+
+    dev.avelar.astazou.dto.ReportLabels labels = dev.avelar.astazou.dto.ReportLabels.forLocale(lang);
 
     Map<String, Object> data = new HashMap<>();
     data.put("transactions", transactions);
@@ -367,12 +378,22 @@ public class TransactionService {
     data.put("balance", balance.getAmount() != null ? balance.getAmount() : 0.0);
     data.put("generatedAt", generatedAt);
     data.put("logoDataUri", logoDataUri);
+    data.put("labels", labels);
 
     return new ReportBuilder(reportEngine)
         .withTemplate("monthly-transactions-report.ftl")
         .withData(data)
         .portrait()
         .generateAsBytes();
+  }
+
+  private static Locale resolveLocale(String lang) {
+    if (lang == null) return Locale.ENGLISH;
+    return switch (lang.toLowerCase()) {
+      case "pt" -> Locale.of("pt", "BR");
+      case "es" -> Locale.of("es");
+      default   -> Locale.ENGLISH;
+    };
   }
 
   public List<MonthlySummaryDto> getMonthlySummary(String username, int year) {

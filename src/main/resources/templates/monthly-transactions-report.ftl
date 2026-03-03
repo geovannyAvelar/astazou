@@ -253,8 +253,8 @@
                  style="display:block; border-radius:8px;"/>
           </td>
           <td class="header-text-cell">
-            <div class="header-app-name">Astazou</div>
-            <div class="header-title">Monthly Transaction Report</div>
+            <div class="header-app-name">${labels.appName}</div>
+            <div class="header-title">${labels.reportTitle}</div>
             <div class="header-subtitle">
               ${monthName} ${year}<#if accountName?has_content> &nbsp;·&nbsp; ${accountName}</#if>
             </div>
@@ -268,15 +268,15 @@
   <div class="info-block">
     <table>
       <tr>
-        <td class="info-label">Period:</td>
+        <td class="info-label">${labels.labelPeriod}:</td>
         <td>${monthName} / ${year}</td>
-        <td class="info-label">Account:</td>
+        <td class="info-label">${labels.labelAccount}:</td>
         <td>${accountName!"—"}</td>
       </tr>
       <tr>
-        <td class="info-label">Generated at:</td>
+        <td class="info-label">${labels.labelGeneratedAt}:</td>
         <td>${generatedAt}</td>
-        <td class="info-label">Total transactions:</td>
+        <td class="info-label">${labels.labelTotalTransactions}:</td>
         <td>${transactions?size}</td>
       </tr>
     </table>
@@ -287,19 +287,19 @@
     <table>
       <tr>
         <td class="summary-card summary-card-income">
-          <div class="summary-card-label">Income</div>
+          <div class="summary-card-label">${labels.labelIncome}</div>
           <div class="summary-card-value income-value">
             R$ ${income?string["#,##0.00"]}
           </div>
         </td>
         <td class="summary-card summary-card-expense">
-          <div class="summary-card-label">Expenses</div>
+          <div class="summary-card-label">${labels.labelExpenses}</div>
           <div class="summary-card-value expense-value">
             R$ ${expenses?string["#,##0.00"]}
           </div>
         </td>
         <td class="summary-card summary-card-balance">
-          <div class="summary-card-label">Balance</div>
+          <div class="summary-card-label">${labels.labelBalance}</div>
           <div class="summary-card-value balance-value">
             R$ ${balance?string["#,##0.00"]}
           </div>
@@ -309,27 +309,37 @@
   </div>
 
   <!-- Transactions table -->
-  <div class="section-title">Transactions</div>
+  <div class="section-title">${labels.sectionTransactions}</div>
 
   <#if transactions?has_content>
   <table class="transactions-table">
     <thead>
       <tr>
-        <th style="width:90px;">Date</th>
-        <th>Description</th>
-        <th style="width:85px;" class="text-center">Type</th>
-        <th style="width:110px;" class="text-right">Amount (R$)</th>
+        <th style="width:90px;">${labels.colDate}</th>
+        <th>${labels.colDescription}</th>
+        <th style="width:85px;" class="text-center">${labels.colType}</th>
+        <th style="width:110px;" class="text-right">${labels.colAmount}</th>
       </tr>
     </thead>
     <tbody>
       <#list transactions as tx>
+      <#assign txTypeKey = tx.type!"debit">
+      <#assign txTypeLabel>
+        <#switch txTypeKey>
+          <#case "credit">${labels.typeCredit}<#break>
+          <#case "transfer">${labels.typeTransfer}<#break>
+          <#case "transfer_credit">${labels.typeTransferCredit}<#break>
+          <#case "transfer_debit">${labels.typeTransferDebit}<#break>
+          <#default>${labels.typeDebit}
+        </#switch>
+      </#assign>
       <tr>
         <td>${tx.transactionDate}</td>
         <td>${tx.description!"—"}</td>
         <td class="text-center">
-          <span class="badge badge-${tx.type!"debit"}">${tx.type!"—"}</span>
+          <span class="badge badge-${txTypeKey}">${txTypeLabel?trim}</span>
         </td>
-        <td class="text-right amount-${tx.type!"debit"}">
+        <td class="text-right amount-${txTypeKey}">
           <#if tx.amount??>
             ${tx.amount?string["#,##0.00"]}
           <#else>
@@ -341,12 +351,12 @@
     </tbody>
   </table>
   <#else>
-  <div class="empty-state">No transactions found for this period.</div>
+  <div class="empty-state">${labels.emptyState}</div>
   </#if>
 
   <!-- Footer -->
   <div class="footer">
-    <span class="footer-brand">Astazou</span> &nbsp;·&nbsp; Personal Finance Manager &nbsp;·&nbsp; ${generatedAt}
+    <span class="footer-brand">${labels.appName}</span> &nbsp;·&nbsp; ${labels.footerTagline} &nbsp;·&nbsp; ${generatedAt}
   </div>
 
 </body>

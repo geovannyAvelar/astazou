@@ -5,7 +5,7 @@
   <style>
     @page {
       size: A4;
-      margin: 20mm 15mm 20mm 15mm;
+      margin: 18mm 15mm 18mm 15mm;
     }
 
     * {
@@ -17,37 +17,78 @@
     body {
       font-family: Arial, Helvetica, sans-serif;
       font-size: 10pt;
-      color: #1a1a1a;
+      color: #111827;
       background-color: #ffffff;
     }
+
+    /* ── Brand colours ── */
+    /* Primary green : #1FA971  (oklch 0.62 0.155 162) */
+    /* Dark green    : #167a52  */
+    /* Light green   : #e6f7f0  */
 
     /* ── Header ── */
     .header {
       width: 100%;
-      border-bottom: 2px solid #2563eb;
-      padding-bottom: 8px;
-      margin-bottom: 16px;
+      background-color: #1FA971;
+      border-radius: 6px;
+      padding: 14px 16px;
+      margin-bottom: 14px;
+    }
+
+    .header-inner {
+      width: 100%;
+    }
+
+    .header-inner table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .header-logo-cell {
+      width: 52px;
+      vertical-align: middle;
+    }
+
+    .header-logo-cell svg {
+      display: block;
+    }
+
+    .header-text-cell {
+      vertical-align: middle;
+      padding-left: 12px;
+    }
+
+    .header-app-name {
+      font-size: 9pt;
+      font-weight: bold;
+      color: rgba(255,255,255,0.75);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
     }
 
     .header-title {
-      font-size: 18pt;
+      font-size: 17pt;
       font-weight: bold;
-      color: #2563eb;
+      color: #ffffff;
+      line-height: 1.15;
+      margin-top: 2px;
     }
 
     .header-subtitle {
-      font-size: 10pt;
-      color: #6b7280;
-      margin-top: 2px;
+      font-size: 9.5pt;
+      color: rgba(255,255,255,0.80);
+      margin-top: 3px;
     }
 
     /* ── Info block ── */
     .info-block {
       width: 100%;
-      margin-bottom: 16px;
-      border: 1px solid #e5e7eb;
-      background-color: #f9fafb;
+      margin-bottom: 14px;
+      border: 1px solid #d1fae5;
+      border-left: 4px solid #1FA971;
+      background-color: #f0fdf8;
       padding: 8px 12px;
+      border-radius: 0 4px 4px 0;
     }
 
     .info-block table {
@@ -62,14 +103,14 @@
 
     .info-label {
       font-weight: bold;
-      color: #374151;
-      width: 120px;
+      color: #167a52;
+      width: 130px;
     }
 
     /* ── Summary cards ── */
     .summary-row {
       width: 100%;
-      margin-bottom: 16px;
+      margin-bottom: 14px;
     }
 
     .summary-row table {
@@ -80,28 +121,44 @@
 
     .summary-card {
       border: 1px solid #e5e7eb;
-      border-radius: 4px;
-      padding: 8px 12px;
+      border-radius: 6px;
+      padding: 10px 14px;
       text-align: center;
       width: 33%;
     }
 
+    .summary-card-income  { border-top: 3px solid #1FA971; }
+    .summary-card-expense { border-top: 3px solid #ef4444; }
+    .summary-card-balance { border-top: 3px solid #167a52; }
+
     .summary-card-label {
-      font-size: 8.5pt;
+      font-size: 8pt;
       color: #6b7280;
       text-transform: uppercase;
-      letter-spacing: 0.05em;
+      letter-spacing: 0.07em;
     }
 
     .summary-card-value {
       font-size: 13pt;
       font-weight: bold;
-      margin-top: 4px;
+      margin-top: 5px;
     }
 
-    .income-value  { color: #16a34a; }
-    .expense-value { color: #dc2626; }
-    .balance-value { color: #2563eb; }
+    .income-value  { color: #1FA971; }
+    .expense-value { color: #ef4444; }
+    .balance-value { color: #167a52; }
+
+    /* ── Section title ── */
+    .section-title {
+      font-size: 10pt;
+      font-weight: bold;
+      color: #167a52;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      margin-bottom: 6px;
+      padding-bottom: 4px;
+      border-bottom: 2px solid #1FA971;
+    }
 
     /* ── Transactions table ── */
     .transactions-table {
@@ -111,7 +168,7 @@
     }
 
     .transactions-table thead tr {
-      background-color: #2563eb;
+      background-color: #1FA971;
       color: #ffffff;
     }
 
@@ -127,7 +184,7 @@
     }
 
     .transactions-table tbody tr:nth-child(even) {
-      background-color: #f3f4f6;
+      background-color: #f0fdf8;
     }
 
     .transactions-table tbody td {
@@ -141,20 +198,20 @@
 
     .badge {
       display: inline-block;
-      padding: 1px 6px;
+      padding: 1px 7px;
       border-radius: 8px;
-      font-size: 8pt;
+      font-size: 7.5pt;
       font-weight: bold;
     }
 
-    .badge-credit          { background-color: #dcfce7; color: #15803d; }
-    .badge-debit           { background-color: #fee2e2; color: #b91c1c; }
+    .badge-credit          { background-color: #d1fae5; color: #065f46; }
+    .badge-debit           { background-color: #fee2e2; color: #991b1b; }
     .badge-transfer        { background-color: #dbeafe; color: #1d4ed8; }
     .badge-transfer_credit { background-color: #dbeafe; color: #1d4ed8; }
     .badge-transfer_debit  { background-color: #ede9fe; color: #6d28d9; }
 
-    .amount-credit          { color: #16a34a; }
-    .amount-debit           { color: #dc2626; }
+    .amount-credit          { color: #1FA971; }
+    .amount-debit           { color: #ef4444; }
     .amount-transfer        { color: #1d4ed8; }
     .amount-transfer_credit { color: #1d4ed8; }
     .amount-transfer_debit  { color: #6d28d9; }
@@ -162,29 +219,48 @@
     /* ── Empty state ── */
     .empty-state {
       text-align: center;
-      padding: 24px;
+      padding: 28px;
       color: #9ca3af;
       font-size: 10pt;
+      border: 1px dashed #d1fae5;
+      border-radius: 6px;
     }
 
     /* ── Footer ── */
     .footer {
-      border-top: 1px solid #e5e7eb;
+      border-top: 1px solid #d1fae5;
       padding-top: 6px;
       font-size: 8pt;
-      color: #9ca3af;
+      color: #6b7280;
       text-align: center;
+    }
+
+    .footer-brand {
+      color: #1FA971;
+      font-weight: bold;
     }
   </style>
 </head>
 <body>
 
-  <!-- Header -->
+  <!-- Header with logo -->
   <div class="header">
-    <div class="header-title">Monthly Transaction Report</div>
-    <div class="header-subtitle">
-      ${monthName} ${year}
-      <#if accountName?has_content> &nbsp;·&nbsp; Account: ${accountName}</#if>
+    <div class="header-inner">
+      <table>
+        <tr>
+          <td class="header-logo-cell">
+            <img src="${logoDataUri}" alt="Astazou logo" width="46" height="46"
+                 style="display:block; border-radius:8px;"/>
+          </td>
+          <td class="header-text-cell">
+            <div class="header-app-name">Astazou</div>
+            <div class="header-title">Monthly Transaction Report</div>
+            <div class="header-subtitle">
+              ${monthName} ${year}<#if accountName?has_content> &nbsp;·&nbsp; ${accountName}</#if>
+            </div>
+          </td>
+        </tr>
+      </table>
     </div>
   </div>
 
@@ -210,19 +286,19 @@
   <div class="summary-row">
     <table>
       <tr>
-        <td class="summary-card">
+        <td class="summary-card summary-card-income">
           <div class="summary-card-label">Income</div>
           <div class="summary-card-value income-value">
             R$ ${income?string["#,##0.00"]}
           </div>
         </td>
-        <td class="summary-card">
+        <td class="summary-card summary-card-expense">
           <div class="summary-card-label">Expenses</div>
           <div class="summary-card-value expense-value">
             R$ ${expenses?string["#,##0.00"]}
           </div>
         </td>
-        <td class="summary-card">
+        <td class="summary-card summary-card-balance">
           <div class="summary-card-label">Balance</div>
           <div class="summary-card-value balance-value">
             R$ ${balance?string["#,##0.00"]}
@@ -233,13 +309,15 @@
   </div>
 
   <!-- Transactions table -->
+  <div class="section-title">Transactions</div>
+
   <#if transactions?has_content>
   <table class="transactions-table">
     <thead>
       <tr>
         <th style="width:90px;">Date</th>
         <th>Description</th>
-        <th style="width:80px;" class="text-center">Type</th>
+        <th style="width:85px;" class="text-center">Type</th>
         <th style="width:110px;" class="text-right">Amount (R$)</th>
       </tr>
     </thead>
@@ -268,7 +346,7 @@
 
   <!-- Footer -->
   <div class="footer">
-    Generated by Astazou &nbsp;·&nbsp; ${generatedAt}
+    <span class="footer-brand">Astazou</span> &nbsp;·&nbsp; Personal Finance Manager &nbsp;·&nbsp; ${generatedAt}
   </div>
 
 </body>

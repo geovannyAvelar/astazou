@@ -28,6 +28,7 @@ import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.TextStyle;
 import java.util.*;
+import java.util.Base64;
 
 @Service
 public class TransactionService {
@@ -345,6 +346,16 @@ public class TransactionService {
     String monthName = Month.of(month).getDisplayName(TextStyle.FULL, Locale.ENGLISH);
     String generatedAt = OffsetDateTime.now().format(DateTimeFormatter.ofPattern("MM/dd/yyyy HH:mm"));
 
+    String logoDataUri = "";
+    try (InputStream logoStream = getClass().getResourceAsStream("/templates/logo.png")) {
+      if (logoStream != null) {
+        byte[] logoBytes = logoStream.readAllBytes();
+        logoDataUri = "data:image/png;base64," + Base64.getEncoder().encodeToString(logoBytes);
+      }
+    } catch (IOException e) {
+      LOGGER.warn("Could not load logo for report: {}", e.getMessage());
+    }
+
     Map<String, Object> data = new HashMap<>();
     data.put("transactions", transactions);
     data.put("month", month);
@@ -355,6 +366,7 @@ public class TransactionService {
     data.put("expenses", balance.getExpenses() != null ? balance.getExpenses() : 0.0);
     data.put("balance", balance.getAmount() != null ? balance.getAmount() : 0.0);
     data.put("generatedAt", generatedAt);
+    data.put("logoDataUri", logoDataUri);
 
     return new ReportBuilder(reportEngine)
         .withTemplate("monthly-transactions-report.ftl")

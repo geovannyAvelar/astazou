@@ -41,7 +41,7 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-webmvc'
     implementation 'org.flywaydb:flyway-database-postgresql'
     implementation 'org.springframework.cloud:spring-cloud-starter-openfeign'
-    implementation 'dev.avelar:jambock:1.0.1'
+    implementation 'dev.avelar:jambock:1.0.2'
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
     implementation 'com.webcohesion.ofx4j:ofx4j:1.39'

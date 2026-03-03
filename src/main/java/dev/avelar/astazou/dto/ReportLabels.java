@@ -66,6 +66,30 @@ public class ReportLabels {
         this.sectionTransactions = b.sectionTransactions;
     }
 
+    // ── Getters (required by FreeMarker bean wrapper) ────────────────────────
+
+    public String getAppName()                { return appName; }
+    public String getReportTitle()            { return reportTitle; }
+    public String getLabelPeriod()            { return labelPeriod; }
+    public String getLabelAccount()           { return labelAccount; }
+    public String getLabelGeneratedAt()       { return labelGeneratedAt; }
+    public String getLabelTotalTransactions() { return labelTotalTransactions; }
+    public String getLabelIncome()            { return labelIncome; }
+    public String getLabelExpenses()          { return labelExpenses; }
+    public String getLabelBalance()           { return labelBalance; }
+    public String getColDate()                { return colDate; }
+    public String getColDescription()         { return colDescription; }
+    public String getColType()                { return colType; }
+    public String getColAmount()              { return colAmount; }
+    public String getTypeDebit()              { return typeDebit; }
+    public String getTypeCredit()             { return typeCredit; }
+    public String getTypeTransfer()           { return typeTransfer; }
+    public String getTypeTransferCredit()     { return typeTransferCredit; }
+    public String getTypeTransferDebit()      { return typeTransferDebit; }
+    public String getEmptyState()             { return emptyState; }
+    public String getFooterTagline()          { return footerTagline; }
+    public String getSectionTransactions()    { return sectionTransactions; }
+
     // ── Factory ───────────────────────────────────────────────────────────────
 
     public static ReportLabels forLocale(String lang) {

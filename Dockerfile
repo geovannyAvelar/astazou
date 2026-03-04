@@ -20,6 +20,10 @@ RUN python3 -m venv /opt/venv \
 
 COPY --from=builder /home/gradle/project/build/libs/*.jar /app/app.jar
 
+RUN useradd -m appuser && chown -R appuser:appuser /app /opt/venv
+
+USER appuser
+
 EXPOSE 8080
 
 ENTRYPOINT ["java","-jar","/app/app.jar"]

@@ -3,6 +3,7 @@ package dev.avelar.astazou.controller;
 import dev.avelar.astazou.dto.Balance;
 import dev.avelar.astazou.dto.MonthlySummaryDto;
 import dev.avelar.astazou.dto.TransactionCreationForm;
+import dev.avelar.astazou.dto.TransactionUpdateForm;
 import dev.avelar.astazou.dto.TransformToTransferForm;
 import dev.avelar.astazou.dto.UpdateTagsForm;
 import dev.avelar.astazou.model.Transaction;
@@ -79,6 +80,26 @@ public class TransactionController {
     service.delete(transactionId, username);
 
     return ResponseEntity.ok().build();
+  }
+
+  @PutMapping("/{transaction_id}")
+  public ResponseEntity<Void> update(@PathVariable("transaction_id") Long transactionId,
+      @RequestBody TransactionUpdateForm data) {
+    Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+
+    if (auth == null) {
+      return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+    }
+
+    String username = auth.getName();
+
+    try {
+      service.update(transactionId, username, data.getTransactionDate(), data.getDescription(),
+          data.getAmount(), data.getType());
+      return ResponseEntity.ok().build();
+    } catch (Exception e) {
+      return ResponseEntity.badRequest().build();
+    }
   }
 
   @PostMapping("/{transaction_id}/transform-to-transfer")

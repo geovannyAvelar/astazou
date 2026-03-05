@@ -275,6 +275,30 @@ public class TransactionService {
   }
 
   @Transactional
+  public void update(Long transactionId, String username, java.time.LocalDate transactionDate,
+      String description, java.math.BigDecimal amount, String type) {
+    Optional<Transaction> opt = repository.findById(transactionId);
+    if (opt.isEmpty()) {
+      throw new NotFoundException("Transaction not found");
+    }
+    Transaction existing = opt.get();
+
+    Optional<BankAccount> accountOpt = bankAccountRepository.findById(existing.getBankAccountId());
+    if (accountOpt.isEmpty() || !accountOpt.get().getUsername().equals(username)) {
+      throw new IllegalStateException("Transaction does not belong to user");
+    }
+
+    BigDecimal finalAmount = amount;
+    if ("debit".equalsIgnoreCase(type)) {
+      if (finalAmount != null && finalAmount.compareTo(BigDecimal.ZERO) > 0) {
+        finalAmount = finalAmount.negate();
+      }
+    }
+
+    repository.update(transactionId, username, transactionDate, description, finalAmount, type);
+  }
+
+  @Transactional
   public void transformToTransfer(Long transactionId, Long destinationAccountId, String username) {
     Optional<Transaction> transactionOpt = repository.findById(transactionId);
     if (transactionOpt.isEmpty()) {

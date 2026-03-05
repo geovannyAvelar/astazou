@@ -169,4 +169,23 @@ public interface TransactionRepository extends CrudRepository<Transaction, Long>
       """)
   List<String> findAllTagsByUsername(@Param("username") String username);
 
+  @Modifying
+  @Query("""
+      UPDATE transactions t
+      SET transaction_date = :transactionDate,
+          description = :description,
+          amount = :amount,
+          type = :type
+      FROM bank_account ba
+      WHERE t.bank_account_id = ba.id
+        AND t.id = :transactionId
+        AND ba.username = :username
+      """)
+  void update(@Param("transactionId") Long transactionId,
+              @Param("username") String username,
+              @Param("transactionDate") java.time.LocalDate transactionDate,
+              @Param("description") String description,
+              @Param("amount") java.math.BigDecimal amount,
+              @Param("type") String type);
+
 }

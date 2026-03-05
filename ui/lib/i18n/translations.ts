@@ -198,6 +198,13 @@ export interface Translations {
     noTags: string
     filterByTag: string
     clearTagFilter: string
+
+    // Edit Transaction
+    editTransaction: string
+    editTransactionDescription: string
+    editing: string
+    edit: string
+    editTransactionError: string
 }
 
 export const translations: Record<Locale, Translations> = {
@@ -388,6 +395,12 @@ export const translations: Record<Locale, Translations> = {
         noTags: "No tags",
         filterByTag: "Filter by tag",
         clearTagFilter: "Clear filter",
+
+        editTransaction: "Edit Transaction",
+        editTransactionDescription: "Update transaction details",
+        editing: "Saving...",
+        edit: "Save",
+        editTransactionError: "Failed to update transaction. Please try again.",
     },
     pt: {
         brandTagline: "Assuma o controle do seu futuro financeiro",
@@ -576,6 +589,12 @@ export const translations: Record<Locale, Translations> = {
         noTags: "Sem tags",
         filterByTag: "Filtrar por tag",
         clearTagFilter: "Limpar filtro",
+
+        editTransaction: "Editar Transação",
+        editTransactionDescription: "Atualizar detalhes da transação",
+        editing: "Salvando...",
+        edit: "Salvar",
+        editTransactionError: "Falha ao atualizar transação. Tente novamente.",
     },
     es: {
         brandTagline: "Toma el control de tu futuro financiero",
@@ -764,5 +783,11 @@ export const translations: Record<Locale, Translations> = {
         noTags: "Sin etiquetas",
         filterByTag: "Filtrar por etiqueta",
         clearTagFilter: "Limpiar filtro",
+
+        editTransaction: "Editar Transacción",
+        editTransactionDescription: "Actualizar detalles de la transacción",
+        editing: "Guardando...",
+        edit: "Guardar",
+        editTransactionError: "Error al actualizar transacción. Inténtalo de nuevo.",
     },
 }

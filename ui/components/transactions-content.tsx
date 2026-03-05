@@ -51,11 +51,11 @@ import {
     ArrowDownRight,
     ArrowLeftRight,
     ArrowUpRight,
-    DollarSign,
     FileDown,
     FileText,
     Loader2,
     LogOut,
+    Pencil,
     Plus,
     Tag,
     Tags,
@@ -181,6 +181,18 @@ export function TransactionsContent({ preselectedAccountId }: { preselectedAccou
     const [tagError, setTagError] = useState("")
     const [allTags, setAllTags] = useState<string[]>([])
     const [activeTagFilter, setActiveTagFilter] = useState<string | null>(null)
+
+    // Edit transaction state
+    const [showEditDialog, setShowEditDialog] = useState(false)
+    const [transactionToEdit, setTransactionToEdit] = useState<Transaction | null>(null)
+    const [isEditing, setIsEditing] = useState(false)
+    const [editError, setEditError] = useState("")
+    const [editFormData, setEditFormData] = useState({
+        transactionDate: "",
+        description: "",
+        amount: "",
+        type: "debit",
+    })
 
     const displayName = user?.completeUsername || user?.username || "User"
     const initials = displayName
@@ -631,6 +643,65 @@ export function TransactionsContent({ preselectedAccountId }: { preselectedAccou
         setEditingTags(tx.tags ?? [])
         setTagInput("")
         setShowTagDialog(true)
+    }
+
+    function openEditDialog(tx: Transaction) {
+        setEditError("")
+        setTransactionToEdit(tx)
+        setEditFormData({
+            transactionDate: tx.transactionDate,
+            description: tx.description,
+            amount: String(Math.abs(tx.amount)),
+            type: tx.type,
+        })
+        setShowEditDialog(true)
+    }
+
+    async function handleEditTransaction() {
+        if (!transactionToEdit) return
+        setEditError("")
+
+        if (!editFormData.description.trim()) {
+            setEditError("Description is required")
+            return
+        }
+        if (!editFormData.amount || Number(editFormData.amount) === 0) {
+            setEditError("Amount is required")
+            return
+        }
+
+        setIsEditing(true)
+        try {
+            const res = await fetch(`${API_BASE}/transactions/${transactionToEdit.id}`, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                credentials: "include",
+                body: JSON.stringify({
+                    transactionDate: editFormData.transactionDate,
+                    description: editFormData.description,
+                    amount: Number(editFormData.amount),
+                    type: editFormData.type,
+                }),
+            })
+
+            if (res.ok) {
+                setShowEditDialog(false)
+                setTransactionToEdit(null)
+                if (selectedAccountId) {
+                    if (isSearchMode) {
+                        fetchSearchResults(selectedAccountId, currentPage)
+                    } else {
+                        fetchTransactions(selectedAccountId, currentPage)
+                    }
+                }
+            } else {
+                setEditError(t.editTransactionError)
+            }
+        } catch {
+            setEditError(t.editTransactionError)
+        } finally {
+            setIsEditing(false)
+        }
     }
 
     function handleTagInputKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
@@ -1144,6 +1215,15 @@ export function TransactionsContent({ preselectedAccountId }: { preselectedAccou
                                                     <Button
                                                         variant="ghost"
                                                         size="icon-sm"
+                                                        onClick={() => openEditDialog(tx)}
+                                                        aria-label={t.editTransaction}
+                                                        className="text-muted-foreground hover:text-primary"
+                                                    >
+                                                        <Pencil className="size-4" />
+                                                    </Button>
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="icon-sm"
                                                         onClick={() => openTagDialog(tx)}
                                                         aria-label={t.editTags}
                                                         className="text-muted-foreground hover:text-primary"
@@ -1541,6 +1621,95 @@ export function TransactionsContent({ preselectedAccountId }: { preselectedAccou
                                 <ArrowLeftRight className="size-4" />
                             )}
                             {isTransforming ? (t.transforming || 'Transforming...') : (t.transform || 'Transform')}
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
+            {/* Edit Transaction Dialog */}
+            <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle className="flex items-center gap-2">
+                            <Pencil className="size-4" />
+                            {t.editTransaction}
+                        </DialogTitle>
+                        <DialogDescription>
+                            {t.editTransactionDescription}
+                        </DialogDescription>
+                    </DialogHeader>
+
+                    <div className="flex flex-col gap-4 py-4">
+                        <div className="flex flex-col gap-2">
+                            <Label htmlFor="edit-transaction-date">{t.transactionDate}</Label>
+                            <Input
+                                id="edit-transaction-date"
+                                type="date"
+                                value={editFormData.transactionDate}
+                                onChange={(e) => setEditFormData({ ...editFormData, transactionDate: e.target.value })}
+                            />
+                        </div>
+
+                        <div className="flex flex-col gap-2">
+                            <Label htmlFor="edit-description">{t.transactionDescription}</Label>
+                            <Input
+                                id="edit-description"
+                                placeholder={t.transactionDescriptionPlaceholder}
+                                value={editFormData.description}
+                                onChange={(e) => setEditFormData({ ...editFormData, description: e.target.value })}
+                            />
+                        </div>
+
+                        <div className="flex flex-col gap-2">
+                            <Label htmlFor="edit-amount">{t.transactionAmount}</Label>
+                            <Input
+                                id="edit-amount"
+                                type="number"
+                                step="0.01"
+                                min="0"
+                                placeholder="0.00"
+                                value={editFormData.amount}
+                                onChange={(e) => setEditFormData({ ...editFormData, amount: e.target.value })}
+                            />
+                        </div>
+
+                        <div className="flex flex-col gap-2">
+                            <Label htmlFor="edit-type">{t.transactionType}</Label>
+                            <select
+                                id="edit-type"
+                                value={editFormData.type}
+                                onChange={(e) => setEditFormData({ ...editFormData, type: e.target.value })}
+                                className="h-9 rounded-md border border-input bg-background px-3 text-sm text-foreground ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                            >
+                                <option value="debit">{t.debit}</option>
+                                <option value="credit">{t.credit}</option>
+                            </select>
+                        </div>
+
+                        {editError && (
+                            <p className="text-sm text-destructive">{editError}</p>
+                        )}
+                    </div>
+
+                    <DialogFooter>
+                        <Button
+                            variant="outline"
+                            onClick={() => setShowEditDialog(false)}
+                            disabled={isEditing}
+                        >
+                            {t.cancel}
+                        </Button>
+                        <Button
+                            onClick={handleEditTransaction}
+                            disabled={isEditing}
+                            className="gap-2"
+                        >
+                            {isEditing ? (
+                                <Loader2 className="size-4 animate-spin" />
+                            ) : (
+                                <Pencil className="size-4" />
+                            )}
+                            {isEditing ? t.editing : t.edit}
                         </Button>
                     </DialogFooter>
                 </DialogContent>

@@ -187,6 +187,17 @@ export interface Translations {
     // Session
     sessionExpiredTitle: string
     sessionExpiredMessage: string
+
+    // Tags
+    tags: string
+    addTag: string
+    tagPlaceholder: string
+    editTags: string
+    saveTags: string
+    savingTags: string
+    noTags: string
+    filterByTag: string
+    clearTagFilter: string
 }
 
 export const translations: Record<Locale, Translations> = {
@@ -367,6 +378,16 @@ export const translations: Record<Locale, Translations> = {
 
         sessionExpiredTitle: "Session ended",
         sessionExpiredMessage: "Your session has expired due to inactivity. Please sign in again.",
+
+        tags: "Tags",
+        addTag: "Add tag",
+        tagPlaceholder: "Type a tag and press Enter...",
+        editTags: "Edit tags",
+        saveTags: "Save tags",
+        savingTags: "Saving...",
+        noTags: "No tags",
+        filterByTag: "Filter by tag",
+        clearTagFilter: "Clear filter",
     },
     pt: {
         brandTagline: "Assuma o controle do seu futuro financeiro",
@@ -545,6 +566,16 @@ export const translations: Record<Locale, Translations> = {
 
         sessionExpiredTitle: "Sessão encerrada",
         sessionExpiredMessage: "Sua sessão foi encerrada por inatividade. Por favor, faça login novamente.",
+
+        tags: "Tags",
+        addTag: "Adicionar tag",
+        tagPlaceholder: "Digite uma tag e pressione Enter...",
+        editTags: "Editar tags",
+        saveTags: "Salvar tags",
+        savingTags: "Salvando...",
+        noTags: "Sem tags",
+        filterByTag: "Filtrar por tag",
+        clearTagFilter: "Limpar filtro",
     },
     es: {
         brandTagline: "Toma el control de tu futuro financiero",
@@ -723,5 +754,15 @@ export const translations: Record<Locale, Translations> = {
 
         sessionExpiredTitle: "Sesión finalizada",
         sessionExpiredMessage: "Tu sesión ha expirado por inactividad. Por favor, inicia sesión nuevamente.",
+
+        tags: "Etiquetas",
+        addTag: "Agregar etiqueta",
+        tagPlaceholder: "Escribe una etiqueta y presiona Enter...",
+        editTags: "Editar etiquetas",
+        saveTags: "Guardar etiquetas",
+        savingTags: "Guardando...",
+        noTags: "Sin etiquetas",
+        filterByTag: "Filtrar por etiqueta",
+        clearTagFilter: "Limpiar filtro",
     },
 }

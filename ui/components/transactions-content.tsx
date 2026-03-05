@@ -57,6 +57,8 @@ import {
     Loader2,
     LogOut,
     Plus,
+    Tag,
+    Tags,
     Trash2,
     Upload,
     X,
@@ -91,6 +93,7 @@ interface Transaction {
     createdAt: string
     bankAccountId: number
     sequence: number
+    tags: string[]
 }
 
 interface TransactionsPageResponse {
@@ -168,6 +171,16 @@ export function TransactionsContent({ preselectedAccountId }: { preselectedAccou
     const [searchEndDate, setSearchEndDate] = useState("")
 
     const isSearchMode = Boolean(searchQuery || searchStartDate || searchEndDate)
+
+    // Tag state
+    const [showTagDialog, setShowTagDialog] = useState(false)
+    const [transactionToTag, setTransactionToTag] = useState<Transaction | null>(null)
+    const [tagInput, setTagInput] = useState("")
+    const [editingTags, setEditingTags] = useState<string[]>([])
+    const [isSavingTags, setIsSavingTags] = useState(false)
+    const [tagError, setTagError] = useState("")
+    const [allTags, setAllTags] = useState<string[]>([])
+    const [activeTagFilter, setActiveTagFilter] = useState<string | null>(null)
 
     const displayName = user?.completeUsername || user?.username || "User"
     const initials = displayName
@@ -612,6 +625,79 @@ export function TransactionsContent({ preselectedAccountId }: { preselectedAccou
         }
     }
 
+    function openTagDialog(tx: Transaction) {
+        setTagError("")
+        setTransactionToTag(tx)
+        setEditingTags(tx.tags ?? [])
+        setTagInput("")
+        setShowTagDialog(true)
+    }
+
+    function handleTagInputKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
+        if (e.key === "Enter" || e.key === ",") {
+            e.preventDefault()
+            addTagFromInput()
+        }
+    }
+
+    function addTagFromInput() {
+        const trimmed = tagInput.trim().toLowerCase()
+        if (trimmed && !editingTags.includes(trimmed)) {
+            setEditingTags(prev => [...prev, trimmed])
+        }
+        setTagInput("")
+    }
+
+    function removeEditingTag(tag: string) {
+        setEditingTags(prev => prev.filter(t => t !== tag))
+    }
+
+    async function handleSaveTags() {
+        if (!transactionToTag) return
+        setTagError("")
+        setIsSavingTags(true)
+        try {
+            const res = await fetch(`${API_BASE}/transactions/${transactionToTag.id}/tags`, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                credentials: "include",
+                body: JSON.stringify({ tags: editingTags })
+            })
+            if (res.ok) {
+                setShowTagDialog(false)
+                setTransactionToTag(null)
+                // Update tags in local state
+                setTransactions(prev => prev.map(tx =>
+                    tx.id === transactionToTag.id ? { ...tx, tags: editingTags } : tx
+                ))
+                // Refresh all-tags list
+                fetchAllTags()
+            } else {
+                setTagError("Failed to save tags")
+            }
+        } catch {
+            setTagError("Failed to save tags")
+        } finally {
+            setIsSavingTags(false)
+        }
+    }
+
+    const fetchAllTags = useCallback(async () => {
+        try {
+            const res = await fetch(`${API_BASE}/transactions/tags`, { credentials: "include" })
+            if (res.ok) {
+                const data: string[] = await res.json()
+                setAllTags(data)
+            }
+        } catch {
+            // silently fail
+        }
+    }, [])
+
+    useEffect(() => {
+        fetchAllTags()
+    }, [fetchAllTags])
+
     function formatCurrency(value: number) {
         return new Intl.NumberFormat("en-US", {
             style: "currency",
@@ -940,6 +1026,39 @@ export function TransactionsContent({ preselectedAccountId }: { preselectedAccou
                     />
                 )}
 
+                {/* Tag filter bar */}
+                {allTags.length > 0 && (
+                    <div className="mb-4 flex flex-wrap items-center gap-2">
+                        <span className="text-xs font-medium text-muted-foreground flex items-center gap-1">
+                            <Tags className="size-3.5" />
+                            {t.filterByTag}:
+                        </span>
+                        {allTags.map(tag => (
+                            <button
+                                key={tag}
+                                onClick={() => setActiveTagFilter(activeTagFilter === tag ? null : tag)}
+                                className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium transition-colors border ${
+                                    activeTagFilter === tag
+                                        ? "bg-primary text-primary-foreground border-primary"
+                                        : "bg-muted text-muted-foreground border-border hover:border-primary/50 hover:text-foreground"
+                                }`}
+                            >
+                                <Tag className="size-3" />
+                                {tag}
+                            </button>
+                        ))}
+                        {activeTagFilter && (
+                            <button
+                                onClick={() => setActiveTagFilter(null)}
+                                className="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors"
+                            >
+                                <X className="size-3" />
+                                {t.clearTagFilter}
+                            </button>
+                        )}
+                    </div>
+                )}
+
                 {/* Transactions list */}
                 {isLoadingAccounts || isLoadingTransactions ? (
                     <div className="flex items-center justify-center py-16">
@@ -992,55 +1111,87 @@ export function TransactionsContent({ preselectedAccountId }: { preselectedAccou
                             </div>
 
                             <div className="flex flex-col gap-1">
-                                {transactions.map((tx) => (
+                                {transactions
+                                    .filter(tx => !activeTagFilter || (tx.tags ?? []).includes(activeTagFilter))
+                                    .map((tx) => (
                                     <div
                                         key={tx.id}
-                                        className="flex flex-col gap-3 rounded-lg border p-4 sm:grid sm:grid-cols-[1fr_2fr_1fr_auto] sm:items-center sm:gap-4 sm:border-0 sm:p-3 sm:hover:bg-muted/50 sm:transition-colors"
+                                        className="flex flex-col gap-2 rounded-lg border p-4 sm:border-0 sm:p-3 sm:hover:bg-muted/50 sm:transition-colors"
                                     >
-                                        <p className="text-sm text-muted-foreground">{formatDate(tx.transactionDate)}</p>
-                                        <div className="flex items-center gap-2">
-                                            <div className={`flex size-7 shrink-0 items-center justify-center rounded-full ${
-                                                tx.amount >= 0
-                                                    ? "bg-primary/10 text-primary"
-                                                    : "bg-destructive/10 text-destructive"
-                                            }`}>
-                                                {tx.amount >= 0 ? (
-                                                    <ArrowDownRight className="size-3.5" />
-                                                ) : (
-                                                    <ArrowUpRight className="size-3.5" />
-                                                )}
+                                        <div className="sm:grid sm:grid-cols-[1fr_2fr_1fr_auto] sm:items-center sm:gap-4">
+                                            <p className="text-sm text-muted-foreground">{formatDate(tx.transactionDate)}</p>
+                                            <div className="flex items-center gap-2">
+                                                <div className={`flex size-7 shrink-0 items-center justify-center rounded-full ${
+                                                    tx.amount >= 0
+                                                        ? "bg-primary/10 text-primary"
+                                                        : "bg-destructive/10 text-destructive"
+                                                }`}>
+                                                    {tx.amount >= 0 ? (
+                                                        <ArrowDownRight className="size-3.5" />
+                                                    ) : (
+                                                        <ArrowUpRight className="size-3.5" />
+                                                    )}
+                                                </div>
+                                                <p className="text-sm font-medium text-foreground">{tx.description}</p>
                                             </div>
-                                            <p className="text-sm font-medium text-foreground">{tx.description}</p>
-                                        </div>
-                                        <div className="flex items-center justify-between sm:justify-end gap-3">
-                                            <p className={`text-sm font-semibold ${
-                                                tx.amount >= 0 ? "text-primary" : "text-destructive"
-                                            }`}>
-                                                {tx.amount >= 0 ? "+" : ""}{formatCurrency(tx.amount)}
-                                            </p>
-                                            <div className="flex gap-1">
-                                                {(tx.type === "debit" || tx.type === "credit") && accounts.length > 1 && (
+                                            <div className="flex items-center justify-between sm:justify-end gap-3 mt-2 sm:mt-0">
+                                                <p className={`text-sm font-semibold ${
+                                                    tx.amount >= 0 ? "text-primary" : "text-destructive"
+                                                }`}>
+                                                    {tx.amount >= 0 ? "+" : ""}{formatCurrency(tx.amount)}
+                                                </p>
+                                                <div className="flex gap-1">
                                                     <Button
                                                         variant="ghost"
                                                         size="icon-sm"
-                                                        onClick={() => openTransformDialog(tx)}
-                                                        aria-label={t.transformToTransfer || "Transform to transfer"}
+                                                        onClick={() => openTagDialog(tx)}
+                                                        aria-label={t.editTags}
                                                         className="text-muted-foreground hover:text-primary"
                                                     >
-                                                        <ArrowLeftRight className="size-4" />
+                                                        <Tags className="size-4" />
                                                     </Button>
-                                                )}
-                                                <Button
-                                                    variant="ghost"
-                                                    size="icon-sm"
-                                                    onClick={() => openDeleteDialog(tx)}
-                                                    aria-label={t.deleteTransaction || "Delete transaction"}
-                                                    className="text-muted-foreground hover:text-destructive"
-                                                >
-                                                    <Trash2 className="size-4" />
-                                                </Button>
+                                                    {(tx.type === "debit" || tx.type === "credit") && accounts.length > 1 && (
+                                                        <Button
+                                                            variant="ghost"
+                                                            size="icon-sm"
+                                                            onClick={() => openTransformDialog(tx)}
+                                                            aria-label={t.transformToTransfer || "Transform to transfer"}
+                                                            className="text-muted-foreground hover:text-primary"
+                                                        >
+                                                            <ArrowLeftRight className="size-4" />
+                                                        </Button>
+                                                    )}
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="icon-sm"
+                                                        onClick={() => openDeleteDialog(tx)}
+                                                        aria-label={t.deleteTransaction || "Delete transaction"}
+                                                        className="text-muted-foreground hover:text-destructive"
+                                                    >
+                                                        <Trash2 className="size-4" />
+                                                    </Button>
+                                                </div>
                                             </div>
                                         </div>
+                                        {/* Tag badges */}
+                                        {(tx.tags ?? []).length > 0 && (
+                                            <div className="flex flex-wrap gap-1 pl-0 sm:pl-9">
+                                                {(tx.tags ?? []).map(tag => (
+                                                    <span
+                                                        key={tag}
+                                                        onClick={() => setActiveTagFilter(activeTagFilter === tag ? null : tag)}
+                                                        className={`inline-flex cursor-pointer items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium transition-colors border ${
+                                                            activeTagFilter === tag
+                                                                ? "bg-primary text-primary-foreground border-primary"
+                                                                : "bg-muted text-muted-foreground border-border hover:border-primary/50 hover:text-foreground"
+                                                        }`}
+                                                    >
+                                                        <Tag className="size-2.5" />
+                                                        {tag}
+                                                    </span>
+                                                ))}
+                                            </div>
+                                        )}
                                     </div>
                                 ))}
                             </div>
@@ -1390,6 +1541,116 @@ export function TransactionsContent({ preselectedAccountId }: { preselectedAccou
                                 <ArrowLeftRight className="size-4" />
                             )}
                             {isTransforming ? (t.transforming || 'Transforming...') : (t.transform || 'Transform')}
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
+            {/* Edit Tags Dialog */}
+            <Dialog open={showTagDialog} onOpenChange={setShowTagDialog}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle className="flex items-center gap-2">
+                            <Tags className="size-4" />
+                            {t.editTags}
+                        </DialogTitle>
+                        <DialogDescription>
+                            {transactionToTag?.description}
+                        </DialogDescription>
+                    </DialogHeader>
+
+                    <div className="flex flex-col gap-4 py-4">
+                        {/* Current tags */}
+                        <div className="flex flex-wrap gap-1.5 min-h-[2rem]">
+                            {editingTags.length === 0 ? (
+                                <span className="text-sm text-muted-foreground">{t.noTags}</span>
+                            ) : (
+                                editingTags.map(tag => (
+                                    <span
+                                        key={tag}
+                                        className="inline-flex items-center gap-1 rounded-full bg-primary/10 text-primary border border-primary/20 px-2.5 py-0.5 text-xs font-medium"
+                                    >
+                                        <Tag className="size-3" />
+                                        {tag}
+                                        <button
+                                            onClick={() => removeEditingTag(tag)}
+                                            className="ml-0.5 rounded-full hover:bg-primary/20 p-0.5 transition-colors"
+                                            aria-label={`Remove ${tag}`}
+                                        >
+                                            <X className="size-2.5" />
+                                        </button>
+                                    </span>
+                                ))
+                            )}
+                        </div>
+
+                        {/* Tag input */}
+                        <div className="flex gap-2">
+                            <Input
+                                placeholder={t.tagPlaceholder}
+                                value={tagInput}
+                                onChange={e => setTagInput(e.target.value)}
+                                onKeyDown={handleTagInputKeyDown}
+                                className="flex-1"
+                            />
+                            <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                onClick={addTagFromInput}
+                                disabled={!tagInput.trim()}
+                                className="gap-1"
+                            >
+                                <Plus className="size-3.5" />
+                                {t.addTag}
+                            </Button>
+                        </div>
+
+                        {/* Suggestions from existing tags */}
+                        {allTags.filter(t => !editingTags.includes(t)).length > 0 && (
+                            <div className="flex flex-wrap gap-1.5">
+                                <span className="text-xs text-muted-foreground w-full">{t.tags}:</span>
+                                {allTags
+                                    .filter(tag => !editingTags.includes(tag))
+                                    .map(tag => (
+                                        <button
+                                            key={tag}
+                                            type="button"
+                                            onClick={() => setEditingTags(prev => [...prev, tag])}
+                                            className="inline-flex items-center gap-1 rounded-full border border-dashed border-border px-2.5 py-0.5 text-xs text-muted-foreground hover:border-primary/50 hover:text-foreground transition-colors"
+                                        >
+                                            <Plus className="size-2.5" />
+                                            {tag}
+                                        </button>
+                                    ))
+                                }
+                            </div>
+                        )}
+
+                        {tagError && (
+                            <p className="text-sm text-destructive">{tagError}</p>
+                        )}
+                    </div>
+
+                    <DialogFooter>
+                        <Button
+                            variant="outline"
+                            onClick={() => setShowTagDialog(false)}
+                            disabled={isSavingTags}
+                        >
+                            {t.cancel}
+                        </Button>
+                        <Button
+                            onClick={handleSaveTags}
+                            disabled={isSavingTags}
+                            className="gap-2"
+                        >
+                            {isSavingTags ? (
+                                <Loader2 className="size-4 animate-spin" />
+                            ) : (
+                                <Tags className="size-4" />
+                            )}
+                            {isSavingTags ? t.savingTags : t.saveTags}
                         </Button>
                     </DialogFooter>
                 </DialogContent>

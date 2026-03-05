@@ -580,4 +580,29 @@ public class TransactionService {
     return transactions;
   }
 
+  @Transactional
+  public void updateTags(Long transactionId, String[] tags, String username) {
+    if (!repository.existsById(transactionId)) {
+      throw new NotFoundException("Transaction not found");
+    }
+    // Normalise: trim, lowercase, deduplicate, remove empty entries
+    String[] normalised = Arrays.stream(tags == null ? new String[0] : tags)
+        .filter(t -> t != null && !t.isBlank())
+        .map(t -> t.trim().toLowerCase())
+        .distinct()
+        .toArray(String[]::new);
+
+    // Build a Postgres array literal: {"tag1","tag2"}
+    String pgArray = "{" + String.join(",",
+        Arrays.stream(normalised)
+              .map(t -> "\"" + t.replace("\\", "\\\\").replace("\"", "\\\"") + "\"")
+              .toList()) + "}";
+
+    repository.updateTags(transactionId, username, pgArray);
+  }
+
+  public List<String> findAllTags(String username) {
+    return repository.findAllTagsByUsername(username);
+  }
+
 }

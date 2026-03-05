@@ -3,6 +3,7 @@ package dev.avelar.astazou.config;
 import dev.avelar.astazou.converter.JsonbToMapConverter;
 import dev.avelar.astazou.converter.MapToJsonbConverter;
 import dev.avelar.astazou.converter.OffsetDatetimeNoopConverter;
+import dev.avelar.astazou.converter.PgArrayToStringArrayConverter;
 import dev.avelar.astazou.converter.TimestampToOffsetDatetimeConverter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -19,7 +20,8 @@ public class JdbcConfig {
         new MapToJsonbConverter(mapper),
         new JsonbToMapConverter(mapper),
         new OffsetDatetimeNoopConverter(),
-        new TimestampToOffsetDatetimeConverter()
+        new TimestampToOffsetDatetimeConverter(),
+        new PgArrayToStringArrayConverter()
     ));
   }
 }

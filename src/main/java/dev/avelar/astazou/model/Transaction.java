@@ -45,4 +45,8 @@ public class Transaction {
 
   private int sequence;
 
+  @Column("tags")
+  @Builder.Default
+  private String[] tags = new String[0];
+
 }

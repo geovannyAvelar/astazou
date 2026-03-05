@@ -4,6 +4,7 @@ import dev.avelar.astazou.dto.Balance;
 import dev.avelar.astazou.dto.MonthlySummaryDto;
 import dev.avelar.astazou.dto.TransactionCreationForm;
 import dev.avelar.astazou.dto.TransformToTransferForm;
+import dev.avelar.astazou.dto.UpdateTagsForm;
 import dev.avelar.astazou.model.Transaction;
 import dev.avelar.astazou.service.TransactionService;
 import dev.avelar.jambock.reports.ReportGenerationException;
@@ -260,6 +261,34 @@ public class TransactionController {
     headers.setContentLength(pdf.length);
 
     return ResponseEntity.ok().headers(headers).body(pdf);
+  }
+
+  @PutMapping("/{transaction_id}/tags")
+  public ResponseEntity<Void> updateTags(@PathVariable("transaction_id") Long transactionId,
+      @RequestBody UpdateTagsForm form) {
+    Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+
+    if (auth == null) {
+      return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+    }
+
+    try {
+      service.updateTags(transactionId, form.getTags(), auth.getName());
+      return ResponseEntity.ok().build();
+    } catch (Exception e) {
+      return ResponseEntity.badRequest().build();
+    }
+  }
+
+  @GetMapping("/tags")
+  public ResponseEntity<java.util.List<String>> getAllTags() {
+    Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+
+    if (auth == null) {
+      return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+    }
+
+    return ResponseEntity.ok(service.findAllTags(auth.getName()));
   }
 
 }

@@ -147,4 +147,26 @@ public interface TransactionRepository extends CrudRepository<Transaction, Long>
       """)
   List<MonthlySummaryDto> getMonthlySummary(String username, int year);
 
+  @Modifying
+  @Query("""
+      UPDATE transactions t
+      SET tags = :tags::text[]
+      FROM bank_account ba
+      WHERE t.bank_account_id = ba.id
+        AND t.id = :transactionId
+        AND ba.username = :username
+      """)
+  void updateTags(@Param("transactionId") Long transactionId,
+      @Param("username") String username,
+      @Param("tags") String tags);
+
+  @Query("""
+      SELECT DISTINCT UNNEST(t.tags) AS tag
+      FROM transactions t
+      JOIN bank_account ba ON t.bank_account_id = ba.id
+      WHERE ba.username = :username
+      ORDER BY tag
+      """)
+  List<String> findAllTagsByUsername(@Param("username") String username);
+
 }

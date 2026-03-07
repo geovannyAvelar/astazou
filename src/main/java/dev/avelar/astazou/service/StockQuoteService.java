@@ -26,7 +26,7 @@ public class StockQuoteService {
   private final StockQuoteRepository stockQuoteRepository;
   private final StockQuoteHistoryRepository stockQuoteHistoryRepository;
 
-  private static final int BRAPI_CHUNK_SIZE = 20;
+  private static final int BRAPI_CHUNK_SIZE = 1;
 
   /**
    * Fetches fresh quotes from BrAPI for the given tickers, upserts the current snapshot

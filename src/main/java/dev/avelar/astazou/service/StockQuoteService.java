@@ -64,9 +64,7 @@ public class StockQuoteService {
     return stockQuoteHistoryRepository.findBySymbolOrderByRecordedAtDesc(symbol.toUpperCase());
   }
 
-  // --- private helpers ---
-
-  private StockQuote persist(Quote quote) {
+  protected StockQuote persist(Quote quote) {
     BigDecimal price = BigDecimal.valueOf(quote.getRegularMarketPrice());
 
     StockQuote snapshot = StockQuote.builder()

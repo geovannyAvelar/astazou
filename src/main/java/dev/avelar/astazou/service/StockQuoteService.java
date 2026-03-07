@@ -12,6 +12,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -24,13 +26,23 @@ public class StockQuoteService {
   private final StockQuoteRepository stockQuoteRepository;
   private final StockQuoteHistoryRepository stockQuoteHistoryRepository;
 
+  private static final int BRAPI_CHUNK_SIZE = 20;
+
   /**
    * Fetches fresh quotes from BrAPI for the given tickers, upserts the current snapshot
    * in {@code stock_quote} and appends a new row to {@code stock_quote_history}.
+   * Tickers are sent in chunks of {@value BRAPI_CHUNK_SIZE} to respect BrAPI limits.
    */
   @Transactional
   public List<StockQuote> refreshQuotes(String... tickers) {
-    List<Quote> quotes = brapiService.findAssetByTicker(tickers);
+    List<String> tickerList = Arrays.asList(tickers);
+    List<Quote> quotes = new ArrayList<>();
+
+    for (int i = 0; i < tickerList.size(); i += BRAPI_CHUNK_SIZE) {
+      List<String> chunk = tickerList.subList(i, Math.min(i + BRAPI_CHUNK_SIZE, tickerList.size()));
+      log.debug("Fetching quotes for chunk {}-{}: {}", i, i + chunk.size() - 1, chunk);
+      quotes.addAll(brapiService.findAssetByTicker(chunk.toArray(String[]::new)));
+    }
 
     return quotes.stream()
         .filter(q -> q.getRegularMarketPrice() != null)

@@ -205,6 +205,17 @@ export interface Translations {
     editing: string
     edit: string
     editTransactionError: string
+
+    // Stock Quotes
+    stockQuotes: string
+    stockQuotesDescription: string
+    tickerPlaceholder: string
+    quoteNotFound: string
+    quoteError: string
+    quotesCacheNote: string
+    lastUpdated: string
+    cached: string
+    refresh: string
 }
 
 export const translations: Record<Locale, Translations> = {
@@ -401,6 +412,16 @@ export const translations: Record<Locale, Translations> = {
         editing: "Saving...",
         edit: "Save",
         editTransactionError: "Failed to update transaction. Please try again.",
+
+        stockQuotes: "Stock Quotes",
+        stockQuotesDescription: "Check the current price of a ticker. Price is cached for 20 minutes.",
+        tickerPlaceholder: "e.g. PETR4, VALE3, ITUB4...",
+        quoteNotFound: "Ticker not found or not available on BrAPI.",
+        quoteError: "Failed to fetch quote. Please try again.",
+        quotesCacheNote: "Prices are refreshed from BrAPI only when the cached data is older than 20 minutes.",
+        lastUpdated: "Last updated",
+        cached: "Cached",
+        refresh: "Refresh",
     },
     pt: {
         brandTagline: "Assuma o controle do seu futuro financeiro",
@@ -595,6 +616,16 @@ export const translations: Record<Locale, Translations> = {
         editing: "Salvando...",
         edit: "Salvar",
         editTransactionError: "Falha ao atualizar transação. Tente novamente.",
+
+        stockQuotes: "Cotações",
+        stockQuotesDescription: "Consulte o preço atual de um ativo. O preço fica em cache por 20 minutos.",
+        tickerPlaceholder: "ex. PETR4, VALE3, ITUB4...",
+        quoteNotFound: "Ticker não encontrado ou não disponível na BrAPI.",
+        quoteError: "Falha ao buscar cotação. Tente novamente.",
+        quotesCacheNote: "Os preços são atualizados da BrAPI apenas quando o dado em cache tem mais de 20 minutos.",
+        lastUpdated: "Última atualização",
+        cached: "Cache",
+        refresh: "Atualizar",
     },
     es: {
         brandTagline: "Toma el control de tu futuro financiero",
@@ -789,5 +820,15 @@ export const translations: Record<Locale, Translations> = {
         editing: "Guardando...",
         edit: "Guardar",
         editTransactionError: "Error al actualizar transacción. Inténtalo de nuevo.",
+
+        stockQuotes: "Cotizaciones",
+        stockQuotesDescription: "Consulta el precio actual de un activo. El precio se almacena en caché por 20 minutos.",
+        tickerPlaceholder: "ej. PETR4, VALE3, ITUB4...",
+        quoteNotFound: "Ticker no encontrado o no disponible en BrAPI.",
+        quoteError: "Error al obtener cotización. Inténtalo de nuevo.",
+        quotesCacheNote: "Los precios se actualizan desde BrAPI solo cuando los datos en caché tienen más de 20 minutos.",
+        lastUpdated: "Última actualización",
+        cached: "Caché",
+        refresh: "Actualizar",
     },
 }

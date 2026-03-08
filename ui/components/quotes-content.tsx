@@ -23,6 +23,8 @@ import {
 import Image from "next/image"
 import Link from "next/link"
 
+const API_BASE: string = (process.env.NEXT_PUBLIC_API_URL as string) || (process.env.REACT_APP_API_BASE as string) || (process.env.VITE_API_BASE as string) || (process.env.API_BASE as string) || 'http://localhost:8080';
+
 interface StockQuote {
   id: number
   symbol: string
@@ -52,7 +54,9 @@ export function QuotesContent() {
     setQuote(null)
     setSearchedTicker(symbol.toUpperCase())
     try {
-      const res = await fetch(`/api/quotes/${encodeURIComponent(symbol.trim().toUpperCase())}`)
+      const res = await fetch(`${API_BASE}/quotes/${encodeURIComponent(symbol.trim().toUpperCase())}`, {
+          credentials: "include"
+      })
       if (res.status === 404) {
         setError(t.quoteNotFound)
         return

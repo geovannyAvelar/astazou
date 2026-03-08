@@ -10,6 +10,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.regex.Pattern;
 
 @Slf4j
 @Component
@@ -21,6 +22,13 @@ public class StockQuoteScheduler {
 
   @Value("${brapi.scheduler.enabled:false}")
   private boolean schedulerEnabled;
+
+  /**
+   * Matches B3 common/preferred stocks (e.g. PETR3, PETR4, VALE5, PRIO3)
+   * and FIIs (e.g. MXRF11, HGLG11).
+   * Pattern: exactly 4 letters followed by 3, 4, 5, 6 (stocks) or 11 (FIIs).
+   */
+  private static final Pattern B3_TICKER = Pattern.compile("^[A-Z]{4}(3|4|5|6|11)$");
 
   /**
    * Refreshes quotes for all tickers available on BrAPI periodically.
@@ -38,6 +46,8 @@ public class StockQuoteScheduler {
         .stream()
         .map(Stock::getStock)
         .filter(t -> t != null && !t.isBlank())
+        .map(String::toUpperCase)
+        .filter(t -> B3_TICKER.matcher(t).matches())
         .toList();
 
     if (tickers.isEmpty()) {

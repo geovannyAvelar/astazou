@@ -4,6 +4,8 @@ import dev.avelar.astazou.service.BrapiStockService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -16,6 +18,14 @@ public class BrapiStockSyncScheduler {
 
   @Value("${brapi.scheduler.enabled:false}")
   private boolean schedulerEnabled;
+
+  /**
+   * Runs the stock sync once as soon as the application is ready.
+   */
+  @EventListener(ApplicationReadyEvent.class)
+  public void syncOnStartup() {
+    syncStocks();
+  }
 
   /**
    * Syncs the list of available stocks from BrAPI into the {@code brapi_stock} table.

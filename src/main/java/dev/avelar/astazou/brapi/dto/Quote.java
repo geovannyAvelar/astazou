@@ -16,13 +16,13 @@ public class Quote {
   @JsonProperty("shortName")
   private String shortName;
 
-  @JsonProperty("LongName")
+  @JsonProperty("longName")
   private String longName;
 
-  @JsonProperty("Currency")
+  @JsonProperty("currency")
   private String currency;
 
-  @JsonProperty("RegularMarketPrice")
+  @JsonProperty("regularMarketPrice")
   private Double regularMarketPrice;
 
 }

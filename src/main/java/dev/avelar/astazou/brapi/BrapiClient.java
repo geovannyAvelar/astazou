@@ -6,7 +6,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 
-
 @FeignClient(name = "brapi", url = "${brapi.base-url:https://brapi.dev/api}", configuration = BrapiClientConfig.class)
 public interface BrapiClient {
 
@@ -15,7 +14,7 @@ public interface BrapiClient {
    * e.g. GET /quote/PETR4,VALE3
    */
   @GetMapping("/quote/{tickers}")
-  QuoteApiResponse findAssetByTicker(@PathVariable("tickers") String tickers);
+  QuoteApiResponse findAssetByTicker(@PathVariable String tickers);
 
   /**
    * Searches available tickers by keyword.

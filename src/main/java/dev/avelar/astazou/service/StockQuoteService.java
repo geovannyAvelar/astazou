@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -73,6 +74,7 @@ public class StockQuoteService {
         .longName(quote.getLongName())
         .currency(quote.getCurrency())
         .price(price)
+        .updatedAt(OffsetDateTime.now())
         .build();
 
     stockQuoteRepository.upsert(snapshot);
@@ -83,6 +85,7 @@ public class StockQuoteService {
         .longName(quote.getLongName())
         .currency(quote.getCurrency())
         .price(price)
+        .recordedAt(OffsetDateTime.now())
         .build();
 
     stockQuoteHistoryRepository.save(entry);

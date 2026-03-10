@@ -1,7 +1,6 @@
 package dev.avelar.astazou.scheduler;
 
-import dev.avelar.astazou.brapi.BrapiService;
-import dev.avelar.astazou.brapi.dto.Stock;
+import dev.avelar.astazou.service.BrapiStockService;
 import dev.avelar.astazou.service.StockQuoteService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -22,7 +21,7 @@ import java.util.regex.Pattern;
 @RequiredArgsConstructor
 public class StockQuoteScheduler {
 
-  private final BrapiService brapiService;
+  private final BrapiStockService brapiStockService;
   private final StockQuoteService stockQuoteService;
 
   @Value("${brapi.scheduler.enabled:false}")
@@ -65,9 +64,13 @@ public class StockQuoteScheduler {
       return;
     }
 
+    // @formatter:off
     List<String> tickers =
-        brapiService.listStocks().stream().map(Stock::getStock).filter(t -> t != null && !t.isBlank())
-            .map(String::toUpperCase).filter(t -> B3_TICKER.matcher(t).matches()).toList();
+        brapiStockService.listTickers().stream()
+            .filter(t -> t != null && !t.isBlank())
+            .map(String::toUpperCase)
+            .filter(t -> B3_TICKER.matcher(t).matches()).toList();
+    // @formatter:on
 
     if (tickers.isEmpty()) {
       log.warn("No tickers returned from BrAPI, skipping refresh.");

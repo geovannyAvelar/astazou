@@ -16,6 +16,7 @@ import java.util.List;
 public class BrapiStockService {
 
   private final BrapiService brapiService;
+
   private final BrapiStockRepository brapiStockRepository;
 
   /**

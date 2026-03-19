@@ -24,6 +24,7 @@ public class BrapiStockSyncScheduler {
    */
   @EventListener(ApplicationReadyEvent.class)
   public void syncOnStartup() {
+    log.info("Starting BrAPI stock list sync.");
     syncStocks();
   }
 

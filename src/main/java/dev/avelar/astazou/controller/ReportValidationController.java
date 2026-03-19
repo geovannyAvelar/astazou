@@ -23,10 +23,6 @@ public class ReportValidationController {
     this.reportTokenRepository = reportTokenRepository;
   }
 
-  /**
-   * Public endpoint to validate a report token.
-   * Returns report metadata if the token is valid, or 404 if not found.
-   */
   @GetMapping("/validate/{token}")
   public ResponseEntity<Map<String, Object>> validate(@PathVariable("token") String token) {
     Optional<ReportToken> opt = reportTokenRepository.findByToken(token);

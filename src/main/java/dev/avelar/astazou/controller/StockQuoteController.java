@@ -21,11 +21,6 @@ public class StockQuoteController {
 
   private final StockQuoteService stockQuoteService;
 
-  /**
-   * Returns the latest price for a ticker.
-   * If the stored quote is missing or older than 20 minutes, it fetches a fresh one from BrAPI
-   * and persists it before returning.
-   */
   @GetMapping("/{ticker}")
   public ResponseEntity<StockQuote> getQuote(@PathVariable String ticker) {
     String symbol = ticker.toUpperCase();
@@ -47,9 +42,6 @@ public class StockQuoteController {
     return ResponseEntity.ok(cached.get());
   }
 
-  /**
-   * Returns the full price history for a ticker (most-recent first).
-   */
   @GetMapping("/{ticker}/history")
   public ResponseEntity<List<StockQuoteHistory>> getHistory(@PathVariable String ticker) {
     List<StockQuoteHistory> history = stockQuoteService.getHistory(ticker.toUpperCase());

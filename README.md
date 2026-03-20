@@ -17,8 +17,6 @@
   - [Running with Docker Compose](#running-with-docker-compose)
   - [Running locally (development)](#running-locally-development)
 - [Environment Variables](#environment-variables)
-- [API Endpoints](#api-endpoints)
-- [Project Structure](#project-structure)
 - [License](#license)
 
 ---

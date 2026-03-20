@@ -17,8 +17,6 @@
   - [Com Docker Compose](#com-docker-compose)
   - [Localmente (desenvolvimento)](#localmente-desenvolvimento)
 - [Variáveis de Ambiente](#variáveis-de-ambiente)
-- [Endpoints da API](#endpoints-da-api)
-- [Estrutura do Projeto](#estrutura-do-projeto)
 - [Licença](#licença)
 
 ---

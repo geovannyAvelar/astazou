@@ -83,8 +83,8 @@ Astazou é uma aplicação fullstack de finanças pessoais que permite gerenciar
 
 ```
 ┌─────────────────────────────────────────────┐
-│                   Traefik                    │  :80 / :443
-│             (Proxy Reverso)                  │
+│                   Traefik                   │  :80 / :443
+│             (Proxy Reverso)                 │
 └───────┬──────────────────────────┬──────────┘
         │                          │
         ▼                          ▼
@@ -211,58 +211,6 @@ python parse_itau_history_pdf.py <caminho-do-pdf> <saida.csv>
 | `BACKEND_HOST` | Domínio do backend (roteamento Traefik) |
 | `FRONTEND_HOST` | Domínio do frontend (roteamento Traefik) |
 | `SPRING_PROFILES_ACTIVE` | Profiles ativos do Spring |
-
----
-
-## Endpoints da API
-
-| Método | Caminho | Descrição |
-|---|---|---|
-| `POST` | `/auth/login` | Autenticar e iniciar sessão |
-| `POST` | `/auth/logout` | Encerrar a sessão atual |
-| `GET` | `/bank-accounts` | Listar contas bancárias |
-| `POST` | `/bank-accounts` | Criar conta bancária |
-| `PUT` | `/bank-accounts/{id}` | Atualizar conta bancária |
-| `GET` | `/transactions/{accountId}` | Listar transações de uma conta |
-| `POST` | `/transactions` | Criar transação |
-| `POST` | `/transactions/ofx/{accountId}` | Importar extrato OFX |
-| `GET` | `/transactions/{accountId}/monthly-summary` | Resumo mensal |
-| `GET` | `/credit-cards` | Listar cartões de crédito |
-| `POST` | `/credit-cards` | Cadastrar cartão de crédito |
-| `GET` | `/credit-cards/{cardId}` | Detalhes do cartão de crédito |
-| `GET` | `/credit-cards/{cardId}/transactions` | Listar transações do cartão |
-| `POST` | `/credit-cards/{cardId}/transactions/pdf` | Importar extrato PDF do Itaú |
-
----
-
-## Estrutura do Projeto
-
-```
-astazou/
-├── src/                        # Backend Spring Boot
-│   └── main/
-│       ├── java/dev/avelar/astazou/
-│       │   ├── controller/     # Controllers REST
-│       │   ├── service/        # Regras de negócio
-│       │   ├── model/          # Entidades do domínio
-│       │   ├── repository/     # Repositórios Spring Data JDBC
-│       │   ├── dto/            # DTOs de requisição/resposta
-│       │   ├── config/         # Configurações do Spring
-│       │   └── scheduler/      # Tarefas agendadas
-│       └── resources/
-│           ├── application.properties
-│           └── db/migration/   # Migrações Flyway
-├── ui/                         # Frontend Next.js
-│   ├── app/                    # Páginas (App Router)
-│   ├── components/             # Componentes React
-│   ├── lib/                    # Utilitários, contexto de auth, i18n
-│   └── hooks/                  # Custom React hooks
-├── scripts/
-│   └── python/                 # Parser de extrato PDF do Itaú
-├── Dockerfile                  # Imagem Docker do backend
-├── docker-compose.yml          # Deploy full-stack
-└── build.gradle                # Configuração Gradle
-```
 
 ---
 

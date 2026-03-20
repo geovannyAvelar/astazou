@@ -83,8 +83,8 @@ Astazou is a full-stack personal finance application that lets you manage your b
 
 ```
 ┌─────────────────────────────────────────────┐
-│                   Traefik                    │  :80 / :443
-│              (Reverse Proxy)                 │
+│                   Traefik                   │  :80 / :443
+│              (Reverse Proxy)                │
 └───────┬──────────────────────────┬──────────┘
         │                          │
         ▼                          ▼
@@ -211,58 +211,6 @@ python parse_itau_history_pdf.py <path-to-pdf> <output.csv>
 | `BACKEND_HOST` | Domain for the backend (Traefik routing) |
 | `FRONTEND_HOST` | Domain for the frontend (Traefik routing) |
 | `SPRING_PROFILES_ACTIVE` | Active Spring profiles |
-
----
-
-## API Endpoints
-
-| Method | Path | Description |
-|---|---|---|
-| `POST` | `/auth/login` | Authenticate and start a session |
-| `POST` | `/auth/logout` | End the current session |
-| `GET` | `/bank-accounts` | List bank accounts |
-| `POST` | `/bank-accounts` | Create a bank account |
-| `PUT` | `/bank-accounts/{id}` | Update a bank account |
-| `GET` | `/transactions/{accountId}` | List transactions for an account |
-| `POST` | `/transactions` | Create a transaction |
-| `POST` | `/transactions/ofx/{accountId}` | Import OFX statement |
-| `GET` | `/transactions/{accountId}/monthly-summary` | Monthly summary |
-| `GET` | `/credit-cards` | List credit cards |
-| `POST` | `/credit-cards` | Create a credit card |
-| `GET` | `/credit-cards/{cardId}` | Get credit card details |
-| `GET` | `/credit-cards/{cardId}/transactions` | List credit card transactions |
-| `POST` | `/credit-cards/{cardId}/transactions/pdf` | Import Itaú PDF statement |
-
----
-
-## Project Structure
-
-```
-astazou/
-├── src/                        # Spring Boot backend
-│   └── main/
-│       ├── java/dev/avelar/astazou/
-│       │   ├── controller/     # REST controllers
-│       │   ├── service/        # Business logic
-│       │   ├── model/          # Domain entities
-│       │   ├── repository/     # Spring Data JDBC repositories
-│       │   ├── dto/            # Request/Response DTOs
-│       │   ├── config/         # Spring configuration
-│       │   └── scheduler/      # Scheduled tasks
-│       └── resources/
-│           ├── application.properties
-│           └── db/migration/   # Flyway migrations
-├── ui/                         # Next.js frontend
-│   ├── app/                    # App router pages
-│   ├── components/             # React components
-│   ├── lib/                    # Utilities, auth context, i18n
-│   └── hooks/                  # Custom React hooks
-├── scripts/
-│   └── python/                 # Itaú PDF statement parser
-├── Dockerfile                  # Backend Docker image
-├── docker-compose.yml          # Full-stack deployment
-└── build.gradle                # Gradle build configuration
-```
 
 ---
 

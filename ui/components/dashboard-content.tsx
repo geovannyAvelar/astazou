@@ -27,6 +27,8 @@ import {
   ArrowDownRight,
   ArrowRight,
   ArrowUpRight,
+  BarChart2,
+  Briefcase,
   Calendar,
   CreditCard,
   Landmark,
@@ -34,7 +36,6 @@ import {
   LogOut,
   TrendingUp,
   Wallet,
-  BarChart2,
 } from "lucide-react"
 
 const API_BASE: string = (process.env.NEXT_PUBLIC_API_URL as string) || (process.env.REACT_APP_API_BASE as string) || (process.env.VITE_API_BASE as string) || (process.env.API_BASE as string) || 'http://localhost:8080';
@@ -343,6 +344,25 @@ export function DashboardContent() {
                   <div>
                     <p className="text-base font-semibold text-foreground">{t.stockQuotes}</p>
                     <p className="text-sm text-muted-foreground">{t.stockQuotesDescription}</p>
+                  </div>
+                </div>
+                <ArrowRight className="size-5 text-muted-foreground transition-transform group-hover:translate-x-1" />
+              </CardContent>
+            </Card>
+          </Link>
+        </div>
+
+        <div className="mt-4">
+          <Link href="/investments" className="group">
+            <Card className="transition-shadow hover:shadow-md">
+              <CardContent className="flex items-center justify-between pt-6">
+                <div className="flex items-center gap-4">
+                  <div className="flex size-12 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                    <Briefcase className="size-6" />
+                  </div>
+                  <div>
+                    <p className="text-base font-semibold text-foreground">{t.investments}</p>
+                    <p className="text-sm text-muted-foreground">{t.investmentsDescription}</p>
                   </div>
                 </div>
                 <ArrowRight className="size-5 text-muted-foreground transition-transform group-hover:translate-x-1" />

@@ -216,6 +216,32 @@ export interface Translations {
     lastUpdated: string
     cached: string
     refresh: string
+
+    // Investments
+    investments: string
+    investmentsDescription: string
+    addContribution: string
+    editContribution: string
+    editContributionDescription: string
+    deleteContribution: string
+    deleteContributionDescription: string
+    ticker: string
+    purchaseDate: string
+    quantity: string
+    purchasePrice: string
+    totalInvested: string
+    noInvestments: string
+    noInvestmentsDescription: string
+    contributionAdded: string
+    contributionAddError: string
+    contributionUpdated: string
+    contributionUpdateError: string
+    contributionDeleted: string
+    contributionDeleteError: string
+    tickerRequired: string
+    quantityRequired: string
+    priceRequired: string
+    dateRequired: string
 }
 
 export const translations: Record<Locale, Translations> = {
@@ -422,6 +448,31 @@ export const translations: Record<Locale, Translations> = {
         lastUpdated: "Last updated",
         cached: "Cached",
         refresh: "Refresh",
+
+        investments: "Investments",
+        investmentsDescription: "Track your investment contributions by ticker.",
+        addContribution: "Add Contribution",
+        editContribution: "Edit Contribution",
+        editContributionDescription: "Update the details of this investment contribution.",
+        deleteContribution: "Delete contribution",
+        deleteContributionDescription: "This action cannot be undone. The contribution will be permanently removed.",
+        ticker: "Ticker",
+        purchaseDate: "Purchase Date",
+        quantity: "Quantity",
+        purchasePrice: "Purchase Price",
+        totalInvested: "Total Invested",
+        noInvestments: "No contributions yet",
+        noInvestmentsDescription: "Add your first investment contribution to get started.",
+        contributionAdded: "Contribution added successfully!",
+        contributionAddError: "Failed to add contribution. Please try again.",
+        contributionUpdated: "Contribution updated successfully!",
+        contributionUpdateError: "Failed to update contribution. Please try again.",
+        contributionDeleted: "Contribution deleted successfully!",
+        contributionDeleteError: "Failed to delete contribution. Please try again.",
+        tickerRequired: "Please enter a ticker symbol.",
+        quantityRequired: "Please enter a quantity.",
+        priceRequired: "Please enter a purchase price.",
+        dateRequired: "Please enter a purchase date.",
     },
     pt: {
         brandTagline: "Assuma o controle do seu futuro financeiro",
@@ -626,6 +677,31 @@ export const translations: Record<Locale, Translations> = {
         lastUpdated: "Última atualização",
         cached: "Cache",
         refresh: "Atualizar",
+
+        investments: "Investimentos",
+        investmentsDescription: "Acompanhe seus aportes em investimentos por ticker.",
+        addContribution: "Adicionar Aporte",
+        editContribution: "Editar Aporte",
+        editContributionDescription: "Atualize os detalhes deste aporte.",
+        deleteContribution: "Excluir aporte",
+        deleteContributionDescription: "Esta ação não pode ser desfeita. O aporte será removido permanentemente.",
+        ticker: "Ticker",
+        purchaseDate: "Data de Compra",
+        quantity: "Quantidade",
+        purchasePrice: "Preço de Compra",
+        totalInvested: "Total Investido",
+        noInvestments: "Nenhum aporte ainda",
+        noInvestmentsDescription: "Adicione seu primeiro aporte para começar.",
+        contributionAdded: "Aporte adicionado com sucesso!",
+        contributionAddError: "Falha ao adicionar aporte. Tente novamente.",
+        contributionUpdated: "Aporte atualizado com sucesso!",
+        contributionUpdateError: "Falha ao atualizar aporte. Tente novamente.",
+        contributionDeleted: "Aporte excluído com sucesso!",
+        contributionDeleteError: "Falha ao excluir aporte. Tente novamente.",
+        tickerRequired: "Por favor, insira o ticker.",
+        quantityRequired: "Por favor, insira a quantidade.",
+        priceRequired: "Por favor, insira o preço de compra.",
+        dateRequired: "Por favor, insira a data de compra.",
     },
     es: {
         brandTagline: "Toma el control de tu futuro financiero",
@@ -830,5 +906,30 @@ export const translations: Record<Locale, Translations> = {
         lastUpdated: "Última actualización",
         cached: "Caché",
         refresh: "Actualizar",
+
+        investments: "Inversiones",
+        investmentsDescription: "Registra tus aportes de inversión por ticker.",
+        addContribution: "Agregar Aporte",
+        editContribution: "Editar Aporte",
+        editContributionDescription: "Actualiza los detalles de este aporte de inversión.",
+        deleteContribution: "Eliminar aporte",
+        deleteContributionDescription: "Esta acción no se puede deshacer. El aporte será eliminado permanentemente.",
+        ticker: "Ticker",
+        purchaseDate: "Fecha de Compra",
+        quantity: "Cantidad",
+        purchasePrice: "Precio de Compra",
+        totalInvested: "Total Invertido",
+        noInvestments: "Sin aportes aún",
+        noInvestmentsDescription: "Agrega tu primer aporte de inversión para comenzar.",
+        contributionAdded: "Aporte agregado exitosamente!",
+        contributionAddError: "Error al agregar aporte. Inténtalo de nuevo.",
+        contributionUpdated: "Aporte actualizado exitosamente!",
+        contributionUpdateError: "Error al actualizar aporte. Inténtalo de nuevo.",
+        contributionDeleted: "Aporte eliminado exitosamente!",
+        contributionDeleteError: "Error al eliminar aporte. Inténtalo de nuevo.",
+        tickerRequired: "Por favor, ingresa el ticker.",
+        quantityRequired: "Por favor, ingresa la cantidad.",
+        priceRequired: "Por favor, ingresa el precio de compra.",
+        dateRequired: "Por favor, ingresa la fecha de compra.",
     },
 }

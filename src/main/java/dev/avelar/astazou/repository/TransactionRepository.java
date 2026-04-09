@@ -142,7 +142,7 @@ public interface TransactionRepository extends CrudRepository<Transaction, Long>
         JOIN bank_account ba ON t.bank_account_id = ba.id
         WHERE ba.username = :username
           AND EXTRACT(YEAR FROM t.transaction_date) = :year
-          AND (t.type = 'credit' or t.type = 'debit' 
+          AND (t.type = 'credit' or t.type = 'debit')
         GROUP BY month
         ORDER BY month
       """)

@@ -62,22 +62,24 @@ public interface TransactionRepository extends CrudRepository<Transaction, Long>
         JOIN bank_account ba ON t.bank_account_id = ba.id
         WHERE ba.username = :username
         AND t.type = 'credit'
+        AND ba.currency = :currency
         AND EXTRACT(YEAR FROM t.transaction_date) = :year
         AND EXTRACT(MONTH FROM t.transaction_date) = :month
       """)
   Double calculateIncomeByUsernameAndMonth(@Param("username") String username, @Param("month") Integer month,
-      @Param("year") Integer year);
+      @Param("year") Integer year, @Param("currency") String currency);
 
   @Query("""
         SELECT COALESCE(SUM(ABS(t.amount)), 0) FROM transactions t
         JOIN bank_account ba ON t.bank_account_id = ba.id
         WHERE ba.username = :username
         AND (t.type = 'debit')
+        AND ba.currency = :currency
         AND EXTRACT(YEAR FROM t.transaction_date) = :year
         AND EXTRACT(MONTH FROM t.transaction_date) = :month
       """)
   Double calculateExpenseByUsernameAndMonth(@Param("username") String username, @Param("month") Integer month,
-      @Param("year") Integer year);
+      @Param("year") Integer year, @Param("currency") String currency);
 
   @Query("""
         SELECT t.* FROM transactions t
@@ -141,12 +143,13 @@ public interface TransactionRepository extends CrudRepository<Transaction, Long>
         FROM transactions t
         JOIN bank_account ba ON t.bank_account_id = ba.id
         WHERE ba.username = :username
+          AND ba.currency = :currency
           AND EXTRACT(YEAR FROM t.transaction_date) = :year
           AND (t.type = 'credit' or t.type = 'debit')
         GROUP BY month
         ORDER BY month
       """)
-  List<MonthlySummaryDto> getMonthlySummary(String username, int year);
+  List<MonthlySummaryDto> getMonthlySummary(String username, int year, String currency);
 
   @Modifying
   @Query("""

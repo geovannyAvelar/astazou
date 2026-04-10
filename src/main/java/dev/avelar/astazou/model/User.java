@@ -31,4 +31,7 @@ public class User {
 
   private List<String> roles;
 
+  @Column("preferred_currency")
+  private String preferredCurrency;
+
 }

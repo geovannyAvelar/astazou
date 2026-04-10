@@ -16,11 +16,14 @@ public class BankAccountCreationForm {
 
   private BigDecimal initialBalance;
 
+  private String currency;
+
   public BankAccount toModel() {
     var account = new BankAccount();
 
     account.setName(name);
     account.setBalance(initialBalance);
+    account.setCurrency(currency != null && !currency.isBlank() ? currency.toUpperCase() : "BRL");
 
     return account;
   }

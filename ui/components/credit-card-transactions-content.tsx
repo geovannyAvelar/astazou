@@ -5,6 +5,8 @@ import Link from "next/link"
 import Image from "next/image"
 import { useAuth } from "@/lib/auth-context"
 import { useI18n } from "@/lib/i18n/i18n-context"
+import { useCurrency } from "@/lib/currency-context"
+import { formatCurrency } from "@/lib/currency"
 import { LanguageSwitcher } from "@/components/language-switcher"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { Button } from "@/components/ui/button"
@@ -48,6 +50,7 @@ interface CreditCardData {
     name: string
     cardNumber: string
     brand: string
+    currency: string
 }
 
 interface CreditCardTransaction {
@@ -65,6 +68,7 @@ interface CardTransactionsContentProps {
 export function CreditCardTransactionsContent({ cardId }: CardTransactionsContentProps) {
     const { user, logout } = useAuth()
     const { t } = useI18n()
+    const { preferredCurrency } = useCurrency()
     const [card, setCard] = useState<CreditCardData | null>(null)
     const [transactions, setTransactions] = useState<CreditCardTransaction[]>([])
     const [isLoading, setIsLoading] = useState(true)
@@ -180,11 +184,8 @@ export function CreditCardTransactionsContent({ cardId }: CardTransactionsConten
         }
     }
 
-    function formatCurrency(value: number) {
-        return new Intl.NumberFormat("en-US", {
-            style: "currency",
-            currency: "USD",
-        }).format(Math.abs(value))
+    function formatCardCurrency(value: number) {
+        return formatCurrency(value, card?.currency || preferredCurrency)
     }
 
     function formatDate(dateString: string) {
@@ -356,7 +357,7 @@ export function CreditCardTransactionsContent({ cardId }: CardTransactionsConten
                                 <div className="flex items-baseline gap-2">
                                     <span className="text-sm text-muted-foreground">Total for Statement:</span>
                                     <span className={`text-2xl font-bold tracking-tight ${totalAmount >= 0 ? 'text-foreground' : 'text-destructive'}`}>
-                                        {totalAmount >= 0 ? '+' : ''}{formatCurrency(totalAmount)}
+                                        {totalAmount >= 0 ? '+' : ''}{formatCardCurrency(totalAmount)}
                                     </span>
                                 </div>
                             </CardContent>
@@ -403,7 +404,7 @@ export function CreditCardTransactionsContent({ cardId }: CardTransactionsConten
                                                 <div className="flex items-center gap-3">
                                                     <div className="text-right">
                                                         <p className={`text-lg font-semibold tracking-tight ${transaction.amount >= 0 ? 'text-primary' : 'text-destructive'}`}>
-                                                            {transaction.amount >= 0 ? '+' : ''}{formatCurrency(transaction.amount)}
+                                                            {transaction.amount >= 0 ? '+' : ''}{formatCardCurrency(transaction.amount)}
                                                         </p>
                                                     </div>
                                                     <AlertDialog open={isDeleteDialogOpen && transactionToDelete?.id === transaction.id} onOpenChange={(open) => {
@@ -432,7 +433,7 @@ export function CreditCardTransactionsContent({ cardId }: CardTransactionsConten
                                                             <div className="bg-muted p-3 rounded-lg mb-4">
                                                                 <p className="text-sm font-medium text-foreground">{transaction.description}</p>
                                                                 <p className={`text-sm font-semibold ${transaction.amount >= 0 ? 'text-primary' : 'text-destructive'}`}>
-                                                                    {transaction.amount >= 0 ? '+' : ''}{formatCurrency(transaction.amount)}
+                                                                    {transaction.amount >= 0 ? '+' : ''}{formatCardCurrency(transaction.amount)}
                                                                 </p>
                                                             </div>
                                                             <div className="flex gap-2 justify-end">

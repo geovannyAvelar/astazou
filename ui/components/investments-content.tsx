@@ -5,6 +5,8 @@ import Link from "next/link"
 import Image from "next/image"
 import { useAuth } from "@/lib/auth-context"
 import { useI18n } from "@/lib/i18n/i18n-context"
+import { useCurrency } from "@/lib/currency-context"
+import { formatCurrency } from "@/lib/currency"
 import { LanguageSwitcher } from "@/components/language-switcher"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { Button } from "@/components/ui/button"
@@ -76,6 +78,7 @@ interface PageResponse {
 export function InvestmentsContent() {
     const { user, logout } = useAuth()
     const { t } = useI18n()
+    const { preferredCurrency } = useCurrency()
 
     const [contributions, setContributions] = useState<InvestmentContribution[]>([])
     const [isLoading, setIsLoading] = useState(true)
@@ -268,12 +271,8 @@ export function InvestmentsContent() {
         return new Date(date + "T00:00:00").toLocaleDateString()
     }
 
-    function formatCurrency(value: number) {
-        return new Intl.NumberFormat("en-US", {
-            style: "currency",
-            currency: "USD",
-            minimumFractionDigits: 2,
-        }).format(value)
+    function formatInvestmentCurrency(value: number) {
+        return formatCurrency(value, preferredCurrency)
     }
 
     function formatQuantity(value: number) {
@@ -466,9 +465,9 @@ export function InvestmentsContent() {
                                             </td>
                                             <td className="px-4 py-3 text-muted-foreground">{formatDate(item.purchaseDate)}</td>
                                             <td className="px-4 py-3 text-right font-medium text-foreground">{formatQuantity(item.quantity)}</td>
-                                            <td className="px-4 py-3 text-right text-muted-foreground">{formatCurrency(item.purchasePrice)}</td>
+                                            <td className="px-4 py-3 text-right text-muted-foreground">{formatInvestmentCurrency(item.purchasePrice)}</td>
                                             <td className="px-4 py-3 text-right font-semibold text-foreground">
-                                                {formatCurrency(item.quantity * item.purchasePrice)}
+                                                {formatInvestmentCurrency(item.quantity * item.purchasePrice)}
                                             </td>
                                             <td className="px-4 py-3">
                                                 <div className="flex items-center justify-center gap-1">
@@ -619,7 +618,7 @@ export function InvestmentsContent() {
                             {t.deleteContributionDescription}
                             {deleteItem && (
                                 <span className="mt-1 block font-medium text-foreground">
-                                    {deleteItem.symbol} — {formatDate(deleteItem.purchaseDate)} — {formatQuantity(deleteItem.quantity)} × {formatCurrency(deleteItem.purchasePrice)}
+                                    {deleteItem.symbol} — {formatDate(deleteItem.purchaseDate)} — {formatQuantity(deleteItem.quantity)} × {formatInvestmentCurrency(deleteItem.purchasePrice)}
                                 </span>
                             )}
                         </AlertDialogDescription>

@@ -6,7 +6,10 @@ import Image from "next/image"
 import { useTheme } from "next-themes"
 import { useAuth } from "@/lib/auth-context"
 import { useI18n } from "@/lib/i18n/i18n-context"
+import { useCurrency } from "@/lib/currency-context"
+import { formatCurrency } from "@/lib/currency"
 import { LanguageSwitcher } from "@/components/language-switcher"
+import { CurrencySwitcher } from "@/components/currency-switcher"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { Button } from "@/components/ui/button"
 import {
@@ -50,6 +53,7 @@ export function AnalyticsContent() {
     const { user, logout } = useAuth()
     const { t } = useI18n()
     const { resolvedTheme } = useTheme()
+    const { preferredCurrency } = useCurrency()
     const isDark = resolvedTheme === "dark"
 
     const chartColors = {
@@ -102,11 +106,8 @@ export function AnalyticsContent() {
         }
     }
 
-    function formatCurrency(value: number) {
-        return new Intl.NumberFormat("en-US", {
-            style: "currency",
-            currency: "USD",
-        }).format(value)
+    function formatAnalyticsCurrency(value: number) {
+        return formatCurrency(value, preferredCurrency)
     }
 
     // Get current month for filtering
@@ -142,6 +143,7 @@ export function AnalyticsContent() {
 
                     <div className="flex items-center gap-3">
                         <ThemeToggle variant="ghost" />
+                        <CurrencySwitcher variant="compact" />
                         <LanguageSwitcher variant="ghost" />
 
                         <div className="hidden items-center gap-3 sm:flex">
@@ -222,7 +224,7 @@ export function AnalyticsContent() {
                             <div className="mt-3">
                                 <p className="text-sm text-muted-foreground">Total Income</p>
                                 <p className="text-2xl font-bold tracking-tight text-foreground">
-                                    {formatCurrency(totalIncome)}
+                                    {formatAnalyticsCurrency(totalIncome)}
                                 </p>
                             </div>
                         </CardContent>
@@ -238,7 +240,7 @@ export function AnalyticsContent() {
                             <div className="mt-3">
                                 <p className="text-sm text-muted-foreground">Total Expenses</p>
                                 <p className="text-2xl font-bold tracking-tight text-foreground">
-                                    {formatCurrency(totalExpenses)}
+                                    {formatAnalyticsCurrency(totalExpenses)}
                                 </p>
                             </div>
                         </CardContent>
@@ -258,7 +260,7 @@ export function AnalyticsContent() {
                                 <p className={`text-2xl font-bold tracking-tight ${
                                     netSavings >= 0 ? 'text-primary' : 'text-destructive'
                                 }`}>
-                                    {formatCurrency(netSavings)}
+                                    {formatAnalyticsCurrency(netSavings)}
                                 </p>
                             </div>
                         </CardContent>
@@ -296,10 +298,7 @@ export function AnalyticsContent() {
                                             tick={{ fill: chartColors.tickFill, fontSize: 12 }}
                                             axisLine={{ stroke: chartColors.gridStroke }}
                                             tickLine={{ stroke: chartColors.gridStroke }}
-                                            tickFormatter={(value) => {
-                                                if (value >= 1000) return `$${(value / 1000).toFixed(0)}k`
-                                                return `$${value.toFixed(0)}`
-                                            }}
+                                            tickFormatter={(value) => formatAnalyticsCurrency(value)}
                                         />
                                         <Tooltip
                                             contentStyle={{
@@ -310,7 +309,7 @@ export function AnalyticsContent() {
                                             }}
                                             labelStyle={{ color: chartColors.tooltipFg }}
                                             itemStyle={{ color: chartColors.tooltipFg }}
-                                            formatter={(value: number) => formatCurrency(value)}
+                                            formatter={(value: number) => formatAnalyticsCurrency(value)}
                                         />
                                         <Legend
                                             wrapperStyle={{ paddingTop: '20px', color: chartColors.tickFill }}
@@ -344,6 +343,8 @@ export function AnalyticsContent() {
         </div>
     )
 }
+
+
 
 
 

@@ -5,7 +5,10 @@ import Link from "next/link"
 import Image from "next/image"
 import { useAuth } from "@/lib/auth-context"
 import { useI18n } from "@/lib/i18n/i18n-context"
+import { useCurrency } from "@/lib/currency-context"
+import { formatCurrency, SUPPORTED_CURRENCIES } from "@/lib/currency"
 import { LanguageSwitcher } from "@/components/language-switcher"
+import { CurrencySwitcher } from "@/components/currency-switcher"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -16,6 +19,13 @@ import {
     CardHeader,
     CardTitle,
 } from "@/components/ui/card"
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select"
 import {
     ArrowLeft,
     ChevronLeft,
@@ -45,6 +55,7 @@ interface BankAccount {
     name: string
     balance: number
     username: string
+    currency: string
 }
 
 interface PageResponse {
@@ -60,6 +71,7 @@ interface PageResponse {
 export function AccountsContent() {
     const { user, logout } = useAuth()
     const { t } = useI18n()
+    const { preferredCurrency } = useCurrency()
     const [accounts, setAccounts] = useState<BankAccount[]>([])
     const [isLoadingAccounts, setIsLoadingAccounts] = useState(true)
     const [page, setPage] = useState(0)
@@ -71,6 +83,7 @@ export function AccountsContent() {
     // Form state
     const [name, setName] = useState("")
     const [initialBalance, setInitialBalance] = useState("")
+    const [currency, setCurrency] = useState(preferredCurrency)
     const [isCreating, setIsCreating] = useState(false)
     const [formError, setFormError] = useState("")
     const [formSuccess, setFormSuccess] = useState("")
@@ -80,6 +93,7 @@ export function AccountsContent() {
     const [editingAccount, setEditingAccount] = useState<BankAccount | null>(null)
     const [editName, setEditName] = useState("")
     const [editBalance, setEditBalance] = useState("")
+    const [editCurrency, setEditCurrency] = useState("")
     const [isUpdating, setIsUpdating] = useState(false)
     const [editError, setEditError] = useState("")
     const [editSuccess, setEditSuccess] = useState("")
@@ -142,6 +156,7 @@ export function AccountsContent() {
                 body: JSON.stringify({
                     name: name.trim(),
                     initialBalance: initialBalance ? parseFloat(initialBalance) : 0,
+                    currency: currency || preferredCurrency || "BRL",
                 }),
                 credentials: "include"
             })
@@ -150,6 +165,7 @@ export function AccountsContent() {
                 setFormSuccess(t.accountCreated)
                 setName("")
                 setInitialBalance("")
+                setCurrency(preferredCurrency)
                 setShowForm(false)
                 setPage(0)
                 fetchAccounts(0)
@@ -167,6 +183,7 @@ export function AccountsContent() {
         setEditingAccount(account)
         setEditName(account.name)
         setEditBalance(account.balance.toString())
+        setEditCurrency(account.currency || preferredCurrency || "BRL")
         setEditError("")
         setEditSuccess("")
     }
@@ -175,6 +192,7 @@ export function AccountsContent() {
         setEditingAccount(null)
         setEditName("")
         setEditBalance("")
+        setEditCurrency("")
         setEditError("")
         setEditSuccess("")
     }
@@ -199,6 +217,7 @@ export function AccountsContent() {
                 body: JSON.stringify({
                     name: editName.trim(),
                     balance: editBalance ? parseFloat(editBalance) : 0,
+                    currency: editCurrency || preferredCurrency || "BRL",
                 }),
                 credentials: "include"
             })
@@ -228,11 +247,8 @@ export function AccountsContent() {
         }
     }
 
-    function formatCurrency(value: number) {
-        return new Intl.NumberFormat("en-US", {
-            style: "currency",
-            currency: "USD",
-        }).format(value)
+    function formatAccountCurrency(value: number, accountCurrency?: string) {
+        return formatCurrency(value, accountCurrency || preferredCurrency)
     }
 
     return (
@@ -248,6 +264,7 @@ export function AccountsContent() {
 
                     <div className="flex items-center gap-3">
                         <ThemeToggle variant="ghost" />
+                        <CurrencySwitcher variant="compact" />
                         <LanguageSwitcher variant="ghost" />
 
                         <div className="hidden items-center gap-3 sm:flex">
@@ -352,6 +369,22 @@ export function AccountsContent() {
                                             />
                                         </div>
                                     </div>
+                                    <div className="flex flex-col gap-2">
+                                        <Label>{t.currency}</Label>
+                                        <Select value={currency} onValueChange={setCurrency}>
+                                            <SelectTrigger>
+                                                <SelectValue placeholder={t.selectCurrency} />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                {SUPPORTED_CURRENCIES.map((c) => (
+                                                    <SelectItem key={c.code} value={c.code}>
+                                                        <span className="font-mono text-xs mr-1">{c.code}</span>
+                                                        <span className="text-muted-foreground">{c.name}</span>
+                                                    </SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
                                 </div>
 
                                 {formError && (
@@ -413,8 +446,11 @@ export function AccountsContent() {
                                         <div className="mt-3 flex items-baseline gap-1">
                                             <p className="text-xs text-muted-foreground">{t.balance}</p>
                                             <p className="text-xl font-bold text-foreground tracking-tight">
-                                                {formatCurrency(account.balance)}
+                                                {formatAccountCurrency(account.balance, account.currency)}
                                             </p>
+                                            <span className="ml-auto text-xs font-mono text-muted-foreground bg-muted px-1.5 py-0.5 rounded">
+                                                {account.currency || "BRL"}
+                                            </span>
                                         </div>
                                         <Link
                                             href={`/transactions?accountId=${account.id}`}
@@ -507,6 +543,22 @@ export function AccountsContent() {
                                         className="pl-9"
                                     />
                                 </div>
+                            </div>
+                            <div className="flex flex-col gap-2">
+                                <Label>{t.currency}</Label>
+                                <Select value={editCurrency} onValueChange={setEditCurrency}>
+                                    <SelectTrigger>
+                                        <SelectValue placeholder={t.selectCurrency} />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {SUPPORTED_CURRENCIES.map((c) => (
+                                            <SelectItem key={c.code} value={c.code}>
+                                                <span className="font-mono text-xs mr-1">{c.code}</span>
+                                                <span className="text-muted-foreground">{c.name}</span>
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
                             </div>
 
                             {editError && (

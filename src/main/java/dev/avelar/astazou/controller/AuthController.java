@@ -90,6 +90,7 @@ public class AuthController {
         .scope("read write")
         .accessToken(session.getToken())
         .expiresAt(session.getExpiresAt())
+        .preferredCurrency(user.getPreferredCurrency() != null ? user.getPreferredCurrency() : "BRL")
         .build();
 
     return ResponseEntity.ok(res);

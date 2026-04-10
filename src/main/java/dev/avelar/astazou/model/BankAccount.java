@@ -31,4 +31,7 @@ public class BankAccount {
   @Column("username")
   private String username;
 
+  @Column("currency")
+  private String currency;
+
 }

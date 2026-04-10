@@ -21,4 +21,11 @@ public class UserService {
     return repository.findById(username);
   }
 
+  public void updatePreferredCurrency(String username, String currency) {
+    repository.findById(username).ifPresent(user -> {
+      user.setPreferredCurrency(currency != null ? currency.toUpperCase() : "BRL");
+      repository.save(user);
+    });
+  }
+
 }

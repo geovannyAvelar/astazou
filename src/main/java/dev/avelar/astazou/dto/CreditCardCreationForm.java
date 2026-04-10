@@ -14,9 +14,12 @@ public class CreditCardCreationForm {
 
   private String name;
 
+  private String currency;
+
   public CreditCard toModel() {
     CreditCard creditCard = new CreditCard();
     creditCard.setName(name);
+    creditCard.setCurrency(currency != null && !currency.isBlank() ? currency.toUpperCase() : "BRL");
     return creditCard;
   }
 

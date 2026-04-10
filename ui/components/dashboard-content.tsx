@@ -6,7 +6,10 @@ import Image from "next/image"
 import { useRouter } from "next/navigation"
 import { useAuth } from "@/lib/auth-context"
 import { useI18n } from "@/lib/i18n/i18n-context"
+import { useCurrency } from "@/lib/currency-context"
+import { formatCurrency } from "@/lib/currency"
 import { LanguageSwitcher } from "@/components/language-switcher"
+import { CurrencySwitcher } from "@/components/currency-switcher"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { Button } from "@/components/ui/button"
 import {
@@ -74,6 +77,7 @@ interface TransactionsPageResponse {
 export function DashboardContent() {
   const { user, logout } = useAuth()
   const { t } = useI18n()
+  const { preferredCurrency } = useCurrency()
   const router = useRouter()
   const [isLoggingOut, setIsLoggingOut] = useState(false)
   const [balance, setBalance] = useState<Balance | null>(null)
@@ -146,12 +150,8 @@ export function DashboardContent() {
     return t.greetingEvening
   }
 
-  function formatCurrency(amount: number, useAbsolute = false) {
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: "USD",
-      minimumFractionDigits: 2,
-    }).format(useAbsolute ? Math.abs(amount) : amount)
+  function formatDashboardCurrency(amount: number, useAbsolute = false) {
+    return formatCurrency(amount, preferredCurrency, useAbsolute)
   }
 
   function formatDate(dateString: string) {
@@ -176,6 +176,7 @@ export function DashboardContent() {
 
           <div className="flex items-center gap-3">
             <ThemeToggle variant="ghost" />
+            <CurrencySwitcher variant="compact" />
             <LanguageSwitcher variant="ghost" />
 
             <div className="hidden items-center gap-3 sm:flex">
@@ -260,18 +261,18 @@ export function DashboardContent() {
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <SummaryCard
             title={t.totalBalance}
-            value={balance ? formatCurrency(balance.amount) : "$0.00"}
+            value={balance ? formatDashboardCurrency(balance.amount) : formatCurrency(0, preferredCurrency)}
             icon={<Wallet className="size-5" />}
             valueClassName={balance && balance.amount < 0 ? "text-destructive" : "text-foreground"}
           />
           <SummaryCard
             title={t.monthlyIncome}
-            value={balance ? formatCurrency(balance.income) : "$0.00"}
+            value={balance ? formatDashboardCurrency(balance.income) : formatCurrency(0, preferredCurrency)}
             icon={<TrendingUp className="size-5" />}
           />
           <SummaryCard
             title={t.monthlyExpenses}
-            value={balance ? formatCurrency(balance.expenses) : "$0.00"}
+            value={balance ? formatDashboardCurrency(balance.expenses) : formatCurrency(0, preferredCurrency)}
             icon={<CreditCard className="size-5" />}
           />
         </div>
@@ -411,7 +412,7 @@ export function DashboardContent() {
                       <span className={`text-sm font-semibold ${
                         tx.amount >= 0 ? "text-primary" : "text-destructive"
                       }`}>
-                        {tx.amount >= 0 ? "+" : "-"}{formatCurrency(tx.amount, true)}
+                        {tx.amount >= 0 ? "+" : "-"}{formatDashboardCurrency(tx.amount, true)}
                       </span>
                     </div>
                   ))}

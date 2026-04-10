@@ -15,5 +15,7 @@ public class BankAccountUpdateForm {
 
   private BigDecimal balance;
 
+  private String currency;
+
 }
 

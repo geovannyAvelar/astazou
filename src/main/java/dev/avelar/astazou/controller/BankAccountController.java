@@ -80,6 +80,10 @@ public class BankAccountController {
       account.setBalance(data.getBalance());
     }
 
+    if (data.getCurrency() != null && !data.getCurrency().isBlank()) {
+      account.setCurrency(data.getCurrency().toUpperCase());
+    }
+
     BankAccount updatedAccount = service.update(account);
 
     return ResponseEntity.ok(updatedAccount);

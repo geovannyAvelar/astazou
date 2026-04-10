@@ -5,6 +5,8 @@ import Link from "next/link"
 import Image from "next/image"
 import { useAuth } from "@/lib/auth-context"
 import { useI18n } from "@/lib/i18n/i18n-context"
+import { useCurrency } from "@/lib/currency-context"
+import { formatCurrency } from "@/lib/currency"
 import { LanguageSwitcher } from "@/components/language-switcher"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { Button } from "@/components/ui/button"
@@ -71,6 +73,7 @@ interface BankAccount {
     name: string
     balance: number
     username: string
+    currency: string
 }
 
 interface PageResponse {
@@ -111,6 +114,7 @@ interface TransactionsPageResponse {
 export function TransactionsContent({ preselectedAccountId }: { preselectedAccountId?: number }) {
     const { user, logout } = useAuth()
     const { t, locale } = useI18n()
+    const { preferredCurrency } = useCurrency()
 
     const [accounts, setAccounts] = useState<BankAccount[]>([])
     const [selectedAccountId, setSelectedAccountId] = useState<number | null>(null)
@@ -769,11 +773,8 @@ export function TransactionsContent({ preselectedAccountId }: { preselectedAccou
         fetchAllTags()
     }, [fetchAllTags])
 
-    function formatCurrency(value: number) {
-        return new Intl.NumberFormat("en-US", {
-            style: "currency",
-            currency: "USD",
-        }).format(value)
+    function formatTxCurrency(value: number, account?: BankAccount | null) {
+        return formatCurrency(value, account?.currency || preferredCurrency)
     }
 
     function formatDate(dateStr: string) {
@@ -1209,7 +1210,7 @@ export function TransactionsContent({ preselectedAccountId }: { preselectedAccou
                                                 <p className={`text-sm font-semibold ${
                                                     tx.amount >= 0 ? "text-primary" : "text-destructive"
                                                 }`}>
-                                                    {tx.amount >= 0 ? "+" : ""}{formatCurrency(tx.amount)}
+                                                    {tx.amount >= 0 ? "+" : ""}{formatTxCurrency(tx.amount, accounts.find(a => a.id === selectedAccountId))}
                                                 </p>
                                                 <div className="flex gap-1">
                                                     <Button
@@ -1573,7 +1574,7 @@ export function TransactionsContent({ preselectedAccountId }: { preselectedAccou
                                 <p className="text-sm text-muted-foreground mb-1">Current Transaction</p>
                                 <p className="text-sm font-medium">{transactionToTransform.description}</p>
                                 <p className={`text-sm font-semibold mt-1 ${transactionToTransform.amount >= 0 ? "text-primary" : "text-destructive"}`}>
-                                    {transactionToTransform.amount >= 0 ? "+" : ""}{formatCurrency(transactionToTransform.amount)}
+                                    {transactionToTransform.amount >= 0 ? "+" : ""}{formatTxCurrency(transactionToTransform.amount, accounts.find(a => a.id === selectedAccountId))}
                                 </p>
                             </div>
                         )}

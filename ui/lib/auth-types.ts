@@ -6,6 +6,7 @@ export interface LoginResponse {
   scope: string
   accessToken: string
   expiresAt: string
+  preferred_currency?: string
 }
 
 export interface AuthState {

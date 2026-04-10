@@ -21,4 +21,6 @@ public class CreditCard {
 
   private String username;
 
+  private String currency;
+
 }

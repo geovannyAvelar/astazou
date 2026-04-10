@@ -242,6 +242,13 @@ export interface Translations {
     quantityRequired: string
     priceRequired: string
     dateRequired: string
+
+    // Currency
+    currency: string
+    preferredCurrency: string
+    selectCurrency: string
+    currencyUpdated: string
+    currencyUpdateError: string
 }
 
 export const translations: Record<Locale, Translations> = {
@@ -473,6 +480,12 @@ export const translations: Record<Locale, Translations> = {
         quantityRequired: "Please enter a quantity.",
         priceRequired: "Please enter a purchase price.",
         dateRequired: "Please enter a purchase date.",
+
+        currency: "Currency",
+        preferredCurrency: "Preferred Currency",
+        selectCurrency: "Select currency...",
+        currencyUpdated: "Preferred currency updated!",
+        currencyUpdateError: "Failed to update currency. Please try again.",
     },
     pt: {
         brandTagline: "Assuma o controle do seu futuro financeiro",
@@ -702,6 +715,12 @@ export const translations: Record<Locale, Translations> = {
         quantityRequired: "Por favor, insira a quantidade.",
         priceRequired: "Por favor, insira o preço de compra.",
         dateRequired: "Por favor, insira a data de compra.",
+
+        currency: "Moeda",
+        preferredCurrency: "Moeda Preferida",
+        selectCurrency: "Selecione a moeda...",
+        currencyUpdated: "Moeda preferida atualizada!",
+        currencyUpdateError: "Falha ao atualizar moeda. Tente novamente.",
     },
     es: {
         brandTagline: "Toma el control de tu futuro financiero",
@@ -931,5 +950,11 @@ export const translations: Record<Locale, Translations> = {
         quantityRequired: "Por favor, ingresa la cantidad.",
         priceRequired: "Por favor, ingresa el precio de compra.",
         dateRequired: "Por favor, ingresa la fecha de compra.",
+
+        currency: "Moneda",
+        preferredCurrency: "Moneda Preferida",
+        selectCurrency: "Selecciona moneda...",
+        currencyUpdated: "¡Moneda preferida actualizada!",
+        currencyUpdateError: "Error al actualizar moneda. Inténtalo de nuevo.",
     },
 }

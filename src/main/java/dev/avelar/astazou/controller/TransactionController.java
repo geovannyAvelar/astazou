@@ -1,6 +1,7 @@
 package dev.avelar.astazou.controller;
 
 import dev.avelar.astazou.dto.Balance;
+import dev.avelar.astazou.dto.BalanceByCurrencyDto;
 import dev.avelar.astazou.dto.MonthlySummaryDto;
 import dev.avelar.astazou.dto.TransactionCreationForm;
 import dev.avelar.astazou.dto.TransactionUpdateForm;
@@ -122,9 +123,9 @@ public class TransactionController {
   }
 
   @GetMapping("/balance")
-  public ResponseEntity<Balance> calculateBalanceMonth(@RequestParam(required = false) Integer month,
-      @RequestParam(required = false) Integer year,
-      @RequestParam(required = false, defaultValue = "BRL") String currency) {
+  public ResponseEntity<java.util.List<BalanceByCurrencyDto>> calculateBalanceMonth(
+      @RequestParam(required = false) Integer month,
+      @RequestParam(required = false) Integer year) {
     Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 
     if (auth == null) {
@@ -141,7 +142,7 @@ public class TransactionController {
       year = now.getYear();
     }
 
-    return ResponseEntity.ok(service.calculateMonthBalance(auth.getName(), month, year, currency));
+    return ResponseEntity.ok(service.calculateAllCurrencyBalances(auth.getName(), month, year));
   }
 
   @GetMapping("/last")
@@ -233,9 +234,8 @@ public class TransactionController {
   }
 
   @GetMapping("/summary")
-  public ResponseEntity<java.util.List<MonthlySummaryDto>> getMonthlySummary(
-      @RequestParam(required = false) Integer year,
-      @RequestParam(required = false, defaultValue = "BRL") String currency) {
+  public ResponseEntity<java.util.Map<String, java.util.List<MonthlySummaryDto>>> getMonthlySummary(
+      @RequestParam(required = false) Integer year) {
     Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 
     if (auth == null) {
@@ -248,7 +248,7 @@ public class TransactionController {
       year = now.getYear();
     }
 
-    return ResponseEntity.ok(service.getMonthlySummary(auth.getName(), year, currency));
+    return ResponseEntity.ok(service.getAllCurrencySummaries(auth.getName(), year));
   }
 
   @GetMapping(value = "/report/{account_id}", produces = MediaType.APPLICATION_PDF_VALUE)

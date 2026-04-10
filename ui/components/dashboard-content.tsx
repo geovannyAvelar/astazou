@@ -41,7 +41,8 @@ import {
 
 const API_BASE: string = (process.env.NEXT_PUBLIC_API_URL as string) || (process.env.REACT_APP_API_BASE as string) || (process.env.VITE_API_BASE as string) || (process.env.API_BASE as string) || 'http://localhost:8080';
 
-interface Balance {
+interface BalanceByCurrency {
+  currency: string
   income: number
   expenses: number
   amount: number
@@ -77,11 +78,9 @@ export function DashboardContent() {
   const { t } = useI18n()
   const router = useRouter()
   const [isLoggingOut, setIsLoggingOut] = useState(false)
-  const [balance, setBalance] = useState<Balance | null>(null)
+  const [balances, setBalances] = useState<BalanceByCurrency[]>([])
   const [transactions, setTransactions] = useState<Transaction[]>([])
   const [isLoadingTransactions, setIsLoadingTransactions] = useState(true)
-  const [currencies, setCurrencies] = useState<string[]>([])
-  const [selectedCurrency, setSelectedCurrency] = useState<string>("BRL")
 
   // Get current month and year
   const now = new Date()
@@ -90,17 +89,17 @@ export function DashboardContent() {
 
   const fetchBalance = useCallback(async () => {
     try {
-      const res = await fetch(`${API_BASE}/transactions/balance?month=${selectedMonth}&year=${selectedYear}&currency=${selectedCurrency}`, {
+      const res = await fetch(`${API_BASE}/transactions/balance?month=${selectedMonth}&year=${selectedYear}`, {
         credentials: "include"
       })
       if (res.ok) {
-        const data: Balance = await res.json()
-        setBalance(data)
+        const data: BalanceByCurrency[] = await res.json()
+        setBalances(data)
       }
     } catch (error) {
       console.error("Failed to fetch balance:", error)
     }
-  }, [selectedMonth, selectedYear, selectedCurrency])
+  }, [selectedMonth, selectedYear])
 
   const fetchLastTransactions = useCallback(async () => {
     setIsLoadingTransactions(true)
@@ -123,16 +122,6 @@ export function DashboardContent() {
     fetchBalance()
     fetchLastTransactions()
   }, [fetchBalance, fetchLastTransactions])
-
-  useEffect(() => {
-    fetch(`${API_BASE}/users/currencies`, { credentials: "include" })
-      .then(r => r.ok ? r.json() : ["BRL"])
-      .then((list: string[]) => {
-        setCurrencies(list)
-        if (list.length > 0) setSelectedCurrency(list[0])
-      })
-      .catch(() => setCurrencies(["BRL"]))
-  }, [])
 
   async function handleLogout() {
     setIsLoggingOut(true)
@@ -159,10 +148,6 @@ export function DashboardContent() {
     return t.greetingEvening
   }
 
-  function formatDashboardCurrency(amount: number, useAbsolute = false) {
-    return formatCurrency(amount, selectedCurrency, useAbsolute)
-  }
-
   function formatDate(dateString: string) {
     const date = new Date(dateString)
     return new Intl.DateTimeFormat("en-US", {
@@ -185,18 +170,6 @@ export function DashboardContent() {
 
           <div className="flex items-center gap-3">
             <ThemeToggle variant="ghost" />
-            {currencies.length > 0 && (
-              <Select value={selectedCurrency} onValueChange={setSelectedCurrency}>
-                <SelectTrigger className="w-[90px] h-8 text-xs">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {currencies.map(c => (
-                    <SelectItem key={c} value={c}>{c}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            )}
             <LanguageSwitcher variant="ghost" />
 
             <div className="hidden items-center gap-3 sm:flex">
@@ -278,24 +251,40 @@ export function DashboardContent() {
           </div>
         </div>
 
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <SummaryCard
-            title={t.totalBalance}
-            value={balance ? formatDashboardCurrency(balance.amount) : formatCurrency(0, selectedCurrency)}
-            icon={<Wallet className="size-5" />}
-            valueClassName={balance && balance.amount < 0 ? "text-destructive" : "text-foreground"}
-          />
-          <SummaryCard
-            title={t.monthlyIncome}
-            value={balance ? formatDashboardCurrency(balance.income) : formatCurrency(0, selectedCurrency)}
-            icon={<TrendingUp className="size-5" />}
-          />
-          <SummaryCard
-            title={t.monthlyExpenses}
-            value={balance ? formatDashboardCurrency(balance.expenses) : formatCurrency(0, selectedCurrency)}
-            icon={<CreditCard className="size-5" />}
-          />
-        </div>
+        {/* Summary cards per currency */}
+        {balances.length === 0 ? (
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <SummaryCard title={t.totalBalance}   value={formatCurrency(0, "BRL")} icon={<Wallet className="size-5" />} />
+            <SummaryCard title={t.monthlyIncome}  value={formatCurrency(0, "BRL")} icon={<TrendingUp className="size-5" />} />
+            <SummaryCard title={t.monthlyExpenses} value={formatCurrency(0, "BRL")} icon={<CreditCard className="size-5" />} />
+          </div>
+        ) : (
+          <div className="flex flex-col gap-6">
+            {balances.map((b) => (
+              <div key={b.currency}>
+                <p className="mb-2 text-xs font-semibold uppercase tracking-widest text-muted-foreground">{b.currency}</p>
+                <div className="grid gap-4 sm:grid-cols-3">
+                  <SummaryCard
+                    title={t.totalBalance}
+                    value={formatCurrency(b.amount, b.currency)}
+                    icon={<Wallet className="size-5" />}
+                    valueClassName={b.amount < 0 ? "text-destructive" : "text-foreground"}
+                  />
+                  <SummaryCard
+                    title={t.monthlyIncome}
+                    value={formatCurrency(b.income, b.currency)}
+                    icon={<TrendingUp className="size-5" />}
+                  />
+                  <SummaryCard
+                    title={t.monthlyExpenses}
+                    value={formatCurrency(b.expenses, b.currency)}
+                    icon={<CreditCard className="size-5" />}
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
 
         <div className="mt-8">
           <Link href="/accounts" className="group">
@@ -432,7 +421,7 @@ export function DashboardContent() {
                       <span className={`text-sm font-semibold ${
                         tx.amount >= 0 ? "text-primary" : "text-destructive"
                       }`}>
-                        {tx.amount >= 0 ? "+" : "-"}{formatDashboardCurrency(tx.amount, true)}
+                        {tx.amount >= 0 ? "+" : ""}{tx.amount.toFixed(2)}
                       </span>
                     </div>
                   ))}

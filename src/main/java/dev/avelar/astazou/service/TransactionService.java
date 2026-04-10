@@ -1,6 +1,7 @@
 package dev.avelar.astazou.service;
 
 import dev.avelar.astazou.dto.Balance;
+import dev.avelar.astazou.dto.BalanceByCurrencyDto;
 import dev.avelar.astazou.dto.MonthlySummaryDto;
 import dev.avelar.astazou.exception.NotFoundException;
 import dev.avelar.astazou.model.BankAccount;
@@ -112,6 +113,18 @@ public class TransactionService {
     Double expenses = repository.calculateExpenseByUsernameAndMonth(username, month, year, currency);
     Double balance = income - expenses;
     return new Balance(income, expenses, balance);
+  }
+
+  /** Returns income/expenses/balance for every currency the user has accounts in. */
+  public List<BalanceByCurrencyDto> calculateAllCurrencyBalances(String username, int month, int year) {
+    List<String> currencies = bankAccountRepository.findDistinctCurrenciesByUsername(username);
+    if (currencies.isEmpty()) {
+      return List.of();
+    }
+    return currencies.stream().map(currency -> {
+      Balance b = calculateMonthBalance(username, month, year, currency);
+      return new BalanceByCurrencyDto(currency, b.getIncome(), b.getExpenses(), b.getAmount());
+    }).toList();
   }
 
   public Page<Transaction> findLast10(String username) {
@@ -476,6 +489,16 @@ public class TransactionService {
       }
     }
 
+    return result;
+  }
+
+  /** Returns the 12-month income/expense summary for every currency the user has accounts in. */
+  public java.util.Map<String, List<MonthlySummaryDto>> getAllCurrencySummaries(String username, int year) {
+    List<String> currencies = bankAccountRepository.findDistinctCurrenciesByUsername(username);
+    var result = new java.util.LinkedHashMap<String, List<MonthlySummaryDto>>();
+    for (String currency : currencies) {
+      result.put(currency, getMonthlySummary(username, year, currency));
+    }
     return result;
   }
 

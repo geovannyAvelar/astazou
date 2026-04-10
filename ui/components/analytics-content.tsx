@@ -61,11 +61,10 @@ export function AnalyticsContent() {
         tooltipFg: isDark ? "#fafafa" : "#09090b",
     }
     const [isLoggingOut, setIsLoggingOut] = useState(false)
-    const [summary, setSummary] = useState<MonthlySummary[]>([])
+    // Map of currency → 12 monthly summaries
+    const [summaryByCurrency, setSummaryByCurrency] = useState<Record<string, MonthlySummary[]>>({})
     const [isLoading, setIsLoading] = useState(true)
     const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear())
-    const [currencies, setCurrencies] = useState<string[]>([])
-    const [selectedCurrency, setSelectedCurrency] = useState<string>("BRL")
 
     const displayName = user?.completeUsername || user?.username || "User"
     const initials = displayName
@@ -78,33 +77,23 @@ export function AnalyticsContent() {
     const fetchSummary = useCallback(async () => {
         setIsLoading(true)
         try {
-            const res = await fetch(`${API_BASE}/transactions/summary?year=${selectedYear}&currency=${selectedCurrency}`, {
+            const res = await fetch(`${API_BASE}/transactions/summary?year=${selectedYear}`, {
                 credentials: "include"
             })
             if (res.ok) {
-                const data: MonthlySummary[] = await res.json()
-                setSummary(data)
+                const data: Record<string, MonthlySummary[]> = await res.json()
+                setSummaryByCurrency(data)
             }
         } catch (error) {
             console.error("Failed to fetch summary:", error)
         } finally {
             setIsLoading(false)
         }
-    }, [selectedYear, selectedCurrency])
+    }, [selectedYear])
 
     useEffect(() => {
         fetchSummary()
     }, [fetchSummary])
-
-    useEffect(() => {
-        fetch(`${API_BASE}/users/currencies`, { credentials: "include" })
-            .then(r => r.ok ? r.json() : ["BRL"])
-            .then((list: string[]) => {
-                setCurrencies(list)
-                if (list.length > 0) setSelectedCurrency(list[0])
-            })
-            .catch(() => setCurrencies(["BRL"]))
-    }, [])
 
     async function handleLogout() {
         setIsLoggingOut(true)
@@ -115,29 +104,9 @@ export function AnalyticsContent() {
         }
     }
 
-    function formatAnalyticsCurrency(value: number) {
-        return formatCurrency(value, selectedCurrency)
-    }
-
-    // Get current month for filtering
     const now = new Date()
     const currentMonth = selectedYear === now.getFullYear() ? now.getMonth() + 1 : 12
-
-    // Filter out future months
-    const filteredSummary = summary.filter(item => item.month <= currentMonth)
-
-    const chartData = filteredSummary.map(item => ({
-        month: MONTH_NAMES[item.month - 1],
-        Income: Math.abs(item.income),
-        Expenses: Math.abs(item.expenses),
-    }))
-
-    console.log('Chart data:', chartData)
-    console.log('Summary data:', summary)
-
-    const totalIncome = filteredSummary.reduce((sum, item) => sum + item.income, 0)
-    const totalExpenses = filteredSummary.reduce((sum, item) => sum + item.expenses, 0)
-    const netSavings = totalIncome - totalExpenses
+    const currencyEntries = Object.entries(summaryByCurrency)
 
     return (
         <div className="min-h-svh bg-background">
@@ -152,18 +121,6 @@ export function AnalyticsContent() {
 
                     <div className="flex items-center gap-3">
                         <ThemeToggle variant="ghost" />
-                        {currencies.length > 0 && (
-                            <Select value={selectedCurrency} onValueChange={setSelectedCurrency}>
-                                <SelectTrigger className="w-[90px] h-8 text-xs">
-                                    <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {currencies.map(c => (
-                                        <SelectItem key={c} value={c}>{c}</SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                        )}
                         <LanguageSwitcher variant="ghost" />
 
                         <div className="hidden items-center gap-3 sm:flex">
@@ -178,18 +135,8 @@ export function AnalyticsContent() {
                             </div>
                         </div>
 
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={handleLogout}
-                            disabled={isLoggingOut}
-                            className="gap-2"
-                        >
-                            {isLoggingOut ? (
-                                <Loader2 className="size-4 animate-spin" />
-                            ) : (
-                                <LogOut className="size-4" />
-                            )}
+                        <Button variant="outline" size="sm" onClick={handleLogout} disabled={isLoggingOut} className="gap-2">
+                            {isLoggingOut ? <Loader2 className="size-4 animate-spin" /> : <LogOut className="size-4" />}
                             <span className="hidden sm:inline">{t.signOut}</span>
                         </Button>
                     </div>
@@ -198,10 +145,7 @@ export function AnalyticsContent() {
 
             <main className="mx-auto max-w-6xl px-4 py-8 lg:px-8">
                 <div className="mb-6">
-                    <Link
-                        href="/dashboard"
-                        className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
-                    >
+                    <Link href="/dashboard" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors">
                         <ArrowLeft className="size-4" />
                         {t.backToDashboard}
                     </Link>
@@ -209,163 +153,115 @@ export function AnalyticsContent() {
 
                 <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                     <div>
-                        <h1 className="text-2xl font-bold text-foreground tracking-tight">
-                            Financial Analytics
-                        </h1>
+                        <h1 className="text-2xl font-bold text-foreground tracking-tight">Financial Analytics</h1>
                         <p className="mt-1 text-muted-foreground">Monthly income and expenses overview</p>
                     </div>
-
-                    <Select
-                        value={selectedYear.toString()}
-                        onValueChange={(value) => setSelectedYear(parseInt(value))}
-                    >
-                        <SelectTrigger className="w-36">
-                            <SelectValue />
-                        </SelectTrigger>
+                    <Select value={selectedYear.toString()} onValueChange={(v) => setSelectedYear(parseInt(v))}>
+                        <SelectTrigger className="w-36"><SelectValue /></SelectTrigger>
                         <SelectContent>
-                            {Array.from({ length: 10 }, (_, i) => new Date().getFullYear() - i).map((year) => (
-                                <SelectItem key={year} value={year.toString()}>
-                                    {year}
-                                </SelectItem>
+                            {Array.from({ length: 10 }, (_, i) => now.getFullYear() - i).map((y) => (
+                                <SelectItem key={y} value={y.toString()}>{y}</SelectItem>
                             ))}
                         </SelectContent>
                     </Select>
                 </div>
 
-                {/* Summary Cards */}
-                <div className="grid gap-4 sm:grid-cols-3 mb-8">
-                    <Card>
-                        <CardContent className="pt-6">
-                            <div className="flex items-center justify-between">
-                                <div className="flex size-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                                    <TrendingUp className="size-5" />
-                                </div>
-                            </div>
-                            <div className="mt-3">
-                                <p className="text-sm text-muted-foreground">Total Income</p>
-                                <p className="text-2xl font-bold tracking-tight text-foreground">
-                                    {formatAnalyticsCurrency(totalIncome)}
-                                </p>
-                            </div>
-                        </CardContent>
-                    </Card>
+                {isLoading ? (
+                    <div className="flex items-center justify-center py-24">
+                        <Loader2 className="size-8 animate-spin text-primary" />
+                    </div>
+                ) : currencyEntries.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center py-24 text-center">
+                        <p className="text-sm text-muted-foreground">No data available</p>
+                        <p className="text-xs text-muted-foreground mt-1">Upload transactions to see your financial trends</p>
+                    </div>
+                ) : (
+                    <div className="flex flex-col gap-10">
+                        {currencyEntries.map(([currency, months]) => {
+                            const filtered = months.filter(m => m.month <= currentMonth)
+                            const chartData = filtered.map(m => ({
+                                month: MONTH_NAMES[m.month - 1],
+                                Income: Math.abs(m.income),
+                                Expenses: Math.abs(m.expenses),
+                            }))
+                            const totalIncome = filtered.reduce((s, m) => s + m.income, 0)
+                            const totalExpenses = filtered.reduce((s, m) => s + m.expenses, 0)
+                            const netSavings = totalIncome - totalExpenses
 
-                    <Card>
-                        <CardContent className="pt-6">
-                            <div className="flex items-center justify-between">
-                                <div className="flex size-10 items-center justify-center rounded-lg bg-destructive/10 text-destructive">
-                                    <TrendingDown className="size-5" />
-                                </div>
-                            </div>
-                            <div className="mt-3">
-                                <p className="text-sm text-muted-foreground">Total Expenses</p>
-                                <p className="text-2xl font-bold tracking-tight text-foreground">
-                                    {formatAnalyticsCurrency(totalExpenses)}
-                                </p>
-                            </div>
-                        </CardContent>
-                    </Card>
+                            return (
+                                <div key={currency}>
+                                    <p className="mb-4 text-xs font-semibold uppercase tracking-widest text-muted-foreground">{currency}</p>
 
-                    <Card>
-                        <CardContent className="pt-6">
-                            <div className="flex items-center justify-between">
-                                <div className={`flex size-10 items-center justify-center rounded-lg ${
-                                    netSavings >= 0 ? 'bg-primary/10 text-primary' : 'bg-destructive/10 text-destructive'
-                                }`}>
-                                    <DollarSign className="size-5" />
-                                </div>
-                            </div>
-                            <div className="mt-3">
-                                <p className="text-sm text-muted-foreground">Net Savings</p>
-                                <p className={`text-2xl font-bold tracking-tight ${
-                                    netSavings >= 0 ? 'text-primary' : 'text-destructive'
-                                }`}>
-                                    {formatAnalyticsCurrency(netSavings)}
-                                </p>
-                            </div>
-                        </CardContent>
-                    </Card>
-                </div>
+                                    {/* Summary cards */}
+                                    <div className="grid gap-4 sm:grid-cols-3 mb-6">
+                                        <Card>
+                                            <CardContent className="pt-6">
+                                                <div className="flex size-10 items-center justify-center rounded-lg bg-primary/10 text-primary mb-3">
+                                                    <TrendingUp className="size-5" />
+                                                </div>
+                                                <p className="text-sm text-muted-foreground">Total Income</p>
+                                                <p className="text-2xl font-bold tracking-tight text-foreground">{formatCurrency(totalIncome, currency)}</p>
+                                            </CardContent>
+                                        </Card>
+                                        <Card>
+                                            <CardContent className="pt-6">
+                                                <div className="flex size-10 items-center justify-center rounded-lg bg-destructive/10 text-destructive mb-3">
+                                                    <TrendingDown className="size-5" />
+                                                </div>
+                                                <p className="text-sm text-muted-foreground">Total Expenses</p>
+                                                <p className="text-2xl font-bold tracking-tight text-foreground">{formatCurrency(totalExpenses, currency)}</p>
+                                            </CardContent>
+                                        </Card>
+                                        <Card>
+                                            <CardContent className="pt-6">
+                                                <div className={`flex size-10 items-center justify-center rounded-lg mb-3 ${netSavings >= 0 ? "bg-primary/10 text-primary" : "bg-destructive/10 text-destructive"}`}>
+                                                    <DollarSign className="size-5" />
+                                                </div>
+                                                <p className="text-sm text-muted-foreground">Net Savings</p>
+                                                <p className={`text-2xl font-bold tracking-tight ${netSavings >= 0 ? "text-primary" : "text-destructive"}`}>{formatCurrency(netSavings, currency)}</p>
+                                            </CardContent>
+                                        </Card>
+                                    </div>
 
-                {/* Chart */}
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Monthly Trends</CardTitle>
-                        <CardDescription>Income vs Expenses throughout the year</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                        {isLoading ? (
-                            <div className="flex items-center justify-center py-16">
-                                <Loader2 className="size-8 animate-spin text-primary" />
-                            </div>
-                        ) : chartData.length === 0 ? (
-                            <div className="flex flex-col items-center justify-center py-16 text-center">
-                                <p className="text-sm text-muted-foreground">No data available</p>
-                                <p className="text-xs text-muted-foreground mt-1">Upload transactions to see your financial trends</p>
-                            </div>
-                        ) : (
-                            <div className="h-96 w-full">
-                                <ResponsiveContainer width="100%" height="100%">
-                                    <LineChart data={chartData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
-                                        <CartesianGrid strokeDasharray="3 3" stroke={chartColors.gridStroke} />
-                                        <XAxis
-                                            dataKey="month"
-                                            tick={{ fill: chartColors.tickFill, fontSize: 12 }}
-                                            axisLine={{ stroke: chartColors.gridStroke }}
-                                            tickLine={{ stroke: chartColors.gridStroke }}
-                                        />
-                                        <YAxis
-                                            tick={{ fill: chartColors.tickFill, fontSize: 12 }}
-                                            axisLine={{ stroke: chartColors.gridStroke }}
-                                            tickLine={{ stroke: chartColors.gridStroke }}
-                                            tickFormatter={(value) => formatAnalyticsCurrency(value)}
-                                        />
-                                        <Tooltip
-                                            contentStyle={{
-                                                backgroundColor: chartColors.tooltipBg,
-                                                border: `1px solid ${chartColors.tooltipBorder}`,
-                                                borderRadius: '8px',
-                                                color: chartColors.tooltipFg,
-                                            }}
-                                            labelStyle={{ color: chartColors.tooltipFg }}
-                                            itemStyle={{ color: chartColors.tooltipFg }}
-                                            formatter={(value: number) => formatAnalyticsCurrency(value)}
-                                        />
-                                        <Legend
-                                            wrapperStyle={{ paddingTop: '20px', color: chartColors.tickFill }}
-                                            iconType="line"
-                                        />
-                                        <Line
-                                            type="monotone"
-                                            dataKey="Income"
-                                            stroke="#22c55e"
-                                            strokeWidth={2}
-                                            name="Income"
-                                            dot={{ fill: '#22c55e' }}
-                                            activeDot={{ r: 8 }}
-                                        />
-                                        <Line
-                                            type="monotone"
-                                            dataKey="Expenses"
-                                            stroke="#ef4444"
-                                            strokeWidth={2}
-                                            name="Expenses"
-                                            dot={{ fill: '#ef4444' }}
-                                            activeDot={{ r: 8 }}
-                                        />
-                                    </LineChart>
-                                </ResponsiveContainer>
-                            </div>
-                        )}
-                    </CardContent>
-                </Card>
+                                    {/* Chart */}
+                                    <Card>
+                                        <CardHeader>
+                                            <CardTitle>Monthly Trends</CardTitle>
+                                            <CardDescription>Income vs Expenses throughout the year</CardDescription>
+                                        </CardHeader>
+                                        <CardContent>
+                                            {chartData.length === 0 ? (
+                                                <div className="flex flex-col items-center justify-center py-16 text-center">
+                                                    <p className="text-sm text-muted-foreground">No transactions this year</p>
+                                                </div>
+                                            ) : (
+                                                <div className="h-80 w-full">
+                                                    <ResponsiveContainer width="100%" height="100%">
+                                                        <LineChart data={chartData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+                                                            <CartesianGrid strokeDasharray="3 3" stroke={chartColors.gridStroke} />
+                                                            <XAxis dataKey="month" tick={{ fill: chartColors.tickFill, fontSize: 12 }} axisLine={{ stroke: chartColors.gridStroke }} tickLine={{ stroke: chartColors.gridStroke }} />
+                                                            <YAxis tick={{ fill: chartColors.tickFill, fontSize: 12 }} axisLine={{ stroke: chartColors.gridStroke }} tickLine={{ stroke: chartColors.gridStroke }} tickFormatter={(v) => formatCurrency(v, currency)} />
+                                                            <Tooltip
+                                                                contentStyle={{ backgroundColor: chartColors.tooltipBg, border: `1px solid ${chartColors.tooltipBorder}`, borderRadius: "8px", color: chartColors.tooltipFg }}
+                                                                labelStyle={{ color: chartColors.tooltipFg }}
+                                                                itemStyle={{ color: chartColors.tooltipFg }}
+                                                                formatter={(v: number) => formatCurrency(v, currency)}
+                                                            />
+                                                            <Legend wrapperStyle={{ paddingTop: "20px", color: chartColors.tickFill }} iconType="line" />
+                                                            <Line type="monotone" dataKey="Income" stroke="#22c55e" strokeWidth={2} dot={{ fill: "#22c55e" }} activeDot={{ r: 8 }} />
+                                                            <Line type="monotone" dataKey="Expenses" stroke="#ef4444" strokeWidth={2} dot={{ fill: "#ef4444" }} activeDot={{ r: 8 }} />
+                                                        </LineChart>
+                                                    </ResponsiveContainer>
+                                                </div>
+                                            )}
+                                        </CardContent>
+                                    </Card>
+                                </div>
+                            )
+                        })}
+                    </div>
+                )}
             </main>
         </div>
     )
 }
-
-
-
-
-
-

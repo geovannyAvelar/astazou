@@ -84,7 +84,6 @@ interface PageResponse {
 export function InvestmentsContent() {
     const { user, logout } = useAuth()
     const { t } = useI18n()
-    const [selectedCurrency, setSelectedCurrency] = useState<string>("BRL")
 
     const [contributions, setContributions] = useState<InvestmentContribution[]>([])
     const [isLoading, setIsLoading] = useState(true)
@@ -117,6 +116,7 @@ export function InvestmentsContent() {
     const [isDeleting, setIsDeleting] = useState(false)
 
     const [isLoggingOut, setIsLoggingOut] = useState(false)
+    const [selectedCurrency, setSelectedCurrency] = useState("BRL")
 
     const displayName = user?.completeUsername || user?.username || "User"
     const initials = displayName
@@ -287,7 +287,6 @@ export function InvestmentsContent() {
         }).format(value)
     }
 
-    // @ts-ignore
     // @ts-ignore
     return (
         <div className="min-h-svh bg-background">

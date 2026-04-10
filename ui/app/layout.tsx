@@ -4,7 +4,6 @@ import { Analytics } from '@vercel/analytics/next'
 import { ThemeProvider } from '@/components/theme-provider'
 import { I18nProvider } from '@/lib/i18n/i18n-context'
 import { AuthProvider } from '@/lib/auth-context'
-import { CurrencyProvider } from '@/lib/currency-context'
 import './globals.css'
 
 const _geist = Geist({ subsets: ["latin"] });
@@ -49,9 +48,7 @@ export default function RootLayout({
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
           <I18nProvider>
             <AuthProvider>
-              <CurrencyProvider>
                 {children}
-              </CurrencyProvider>
             </AuthProvider>
           </I18nProvider>
         </ThemeProvider>

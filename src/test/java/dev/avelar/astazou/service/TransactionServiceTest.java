@@ -5,11 +5,9 @@ import dev.avelar.astazou.dto.MonthlySummaryDto;
 import dev.avelar.astazou.exception.NotFoundException;
 import dev.avelar.astazou.model.BankAccount;
 import dev.avelar.astazou.model.Transaction;
-import dev.avelar.astazou.model.User;
 import dev.avelar.astazou.repository.BankAccountRepository;
 import dev.avelar.astazou.repository.ReportTokenRepository;
 import dev.avelar.astazou.repository.TransactionRepository;
-import dev.avelar.astazou.repository.UserRepository;
 import dev.avelar.jambock.reports.ReportEngine;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -43,8 +41,6 @@ class TransactionServiceTest {
   @Mock
   private BankAccountRepository bankAccountRepository;
 
-  @Mock
-  private UserRepository userRepository;
 
   @Mock
   private ReportEngine reportEngine;
@@ -210,12 +206,10 @@ class TransactionServiceTest {
 
   @Test
   void calculateMonthBalance_returnsCorrectBalance() {
-    User user = User.builder().username("user").preferredCurrency("BRL").build();
-    when(userRepository.findById("user")).thenReturn(Optional.of(user));
     when(repository.calculateIncomeByUsernameAndMonth("user", 3, 2025, "BRL")).thenReturn(1000.0);
     when(repository.calculateExpenseByUsernameAndMonth("user", 3, 2025, "BRL")).thenReturn(400.0);
 
-    Balance balance = service.calculateMonthBalance("user", 3, 2025);
+    Balance balance = service.calculateMonthBalance("user", 3, 2025, "BRL");
 
     assertEquals(1000.0, balance.getIncome());
     assertEquals(400.0, balance.getExpenses());
@@ -525,11 +519,9 @@ class TransactionServiceTest {
 
   @Test
   void getMonthlySummary_always12Months_andFillsZeroForMissing() {
-    User user = User.builder().username("user").preferredCurrency("BRL").build();
-    when(userRepository.findById("user")).thenReturn(Optional.of(user));
     when(repository.getMonthlySummary("user", 2025, "BRL")).thenReturn(List.of(new MonthlySummaryDto(3, 1000.0, 400.0)));
 
-    List<MonthlySummaryDto> result = service.getMonthlySummary("user", 2025);
+    List<MonthlySummaryDto> result = service.getMonthlySummary("user", 2025, "BRL");
 
     assertEquals(12, result.size());
     assertEquals(1000.0, result.get(2).income());
@@ -540,15 +532,13 @@ class TransactionServiceTest {
 
   @Test
   void getMonthlySummary_allMonthsPresent_noGapFilling() {
-    User user = User.builder().username("user").preferredCurrency("BRL").build();
-    when(userRepository.findById("user")).thenReturn(Optional.of(user));
     List<MonthlySummaryDto> rows = new ArrayList<>();
     for (int m = 1; m <= 12; m++) {
       rows.add(new MonthlySummaryDto(m, m * 100.0, m * 50.0));
     }
     when(repository.getMonthlySummary("user", 2025, "BRL")).thenReturn(rows);
 
-    List<MonthlySummaryDto> result = service.getMonthlySummary("user", 2025);
+    List<MonthlySummaryDto> result = service.getMonthlySummary("user", 2025, "BRL");
 
     assertEquals(12, result.size());
     for (int m = 1; m <= 12; m++) {
@@ -559,11 +549,9 @@ class TransactionServiceTest {
 
   @Test
   void getMonthlySummary_emptyRepositoryResult_returns12ZeroMonths() {
-    User user = User.builder().username("user").preferredCurrency("BRL").build();
-    when(userRepository.findById("user")).thenReturn(Optional.of(user));
     when(repository.getMonthlySummary("user", 2025, "BRL")).thenReturn(List.of());
 
-    List<MonthlySummaryDto> result = service.getMonthlySummary("user", 2025);
+    List<MonthlySummaryDto> result = service.getMonthlySummary("user", 2025, "BRL");
 
     assertEquals(12, result.size());
     result.forEach(dto -> {

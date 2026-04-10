@@ -6,10 +6,8 @@ import Image from "next/image"
 import { useRouter } from "next/navigation"
 import { useAuth } from "@/lib/auth-context"
 import { useI18n } from "@/lib/i18n/i18n-context"
-import { useCurrency } from "@/lib/currency-context"
 import { formatCurrency } from "@/lib/currency"
 import { LanguageSwitcher } from "@/components/language-switcher"
-import { CurrencySwitcher } from "@/components/currency-switcher"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { Button } from "@/components/ui/button"
 import {
@@ -77,12 +75,13 @@ interface TransactionsPageResponse {
 export function DashboardContent() {
   const { user, logout } = useAuth()
   const { t } = useI18n()
-  const { preferredCurrency } = useCurrency()
   const router = useRouter()
   const [isLoggingOut, setIsLoggingOut] = useState(false)
   const [balance, setBalance] = useState<Balance | null>(null)
   const [transactions, setTransactions] = useState<Transaction[]>([])
   const [isLoadingTransactions, setIsLoadingTransactions] = useState(true)
+  const [currencies, setCurrencies] = useState<string[]>([])
+  const [selectedCurrency, setSelectedCurrency] = useState<string>("BRL")
 
   // Get current month and year
   const now = new Date()
@@ -91,7 +90,7 @@ export function DashboardContent() {
 
   const fetchBalance = useCallback(async () => {
     try {
-      const res = await fetch(`${API_BASE}/transactions/balance?month=${selectedMonth}&year=${selectedYear}`, {
+      const res = await fetch(`${API_BASE}/transactions/balance?month=${selectedMonth}&year=${selectedYear}&currency=${selectedCurrency}`, {
         credentials: "include"
       })
       if (res.ok) {
@@ -101,7 +100,7 @@ export function DashboardContent() {
     } catch (error) {
       console.error("Failed to fetch balance:", error)
     }
-  }, [selectedMonth, selectedYear])
+  }, [selectedMonth, selectedYear, selectedCurrency])
 
   const fetchLastTransactions = useCallback(async () => {
     setIsLoadingTransactions(true)
@@ -124,6 +123,16 @@ export function DashboardContent() {
     fetchBalance()
     fetchLastTransactions()
   }, [fetchBalance, fetchLastTransactions])
+
+  useEffect(() => {
+    fetch(`${API_BASE}/users/currencies`, { credentials: "include" })
+      .then(r => r.ok ? r.json() : ["BRL"])
+      .then((list: string[]) => {
+        setCurrencies(list)
+        if (list.length > 0) setSelectedCurrency(list[0])
+      })
+      .catch(() => setCurrencies(["BRL"]))
+  }, [])
 
   async function handleLogout() {
     setIsLoggingOut(true)
@@ -151,7 +160,7 @@ export function DashboardContent() {
   }
 
   function formatDashboardCurrency(amount: number, useAbsolute = false) {
-    return formatCurrency(amount, preferredCurrency, useAbsolute)
+    return formatCurrency(amount, selectedCurrency, useAbsolute)
   }
 
   function formatDate(dateString: string) {
@@ -176,7 +185,18 @@ export function DashboardContent() {
 
           <div className="flex items-center gap-3">
             <ThemeToggle variant="ghost" />
-            <CurrencySwitcher variant="compact" />
+            {currencies.length > 0 && (
+              <Select value={selectedCurrency} onValueChange={setSelectedCurrency}>
+                <SelectTrigger className="w-[90px] h-8 text-xs">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {currencies.map(c => (
+                    <SelectItem key={c} value={c}>{c}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
             <LanguageSwitcher variant="ghost" />
 
             <div className="hidden items-center gap-3 sm:flex">
@@ -261,18 +281,18 @@ export function DashboardContent() {
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <SummaryCard
             title={t.totalBalance}
-            value={balance ? formatDashboardCurrency(balance.amount) : formatCurrency(0, preferredCurrency)}
+            value={balance ? formatDashboardCurrency(balance.amount) : formatCurrency(0, selectedCurrency)}
             icon={<Wallet className="size-5" />}
             valueClassName={balance && balance.amount < 0 ? "text-destructive" : "text-foreground"}
           />
           <SummaryCard
             title={t.monthlyIncome}
-            value={balance ? formatDashboardCurrency(balance.income) : formatCurrency(0, preferredCurrency)}
+            value={balance ? formatDashboardCurrency(balance.income) : formatCurrency(0, selectedCurrency)}
             icon={<TrendingUp className="size-5" />}
           />
           <SummaryCard
             title={t.monthlyExpenses}
-            value={balance ? formatDashboardCurrency(balance.expenses) : formatCurrency(0, preferredCurrency)}
+            value={balance ? formatDashboardCurrency(balance.expenses) : formatCurrency(0, selectedCurrency)}
             icon={<CreditCard className="size-5" />}
           />
         </div>

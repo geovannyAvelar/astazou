@@ -38,7 +38,5 @@ public class LoginResponse {
   @JsonProperty("expires_at")
   private OffsetDateTime expiresAt;
 
-  @JsonProperty("preferred_currency")
-  private String preferredCurrency;
 
 }

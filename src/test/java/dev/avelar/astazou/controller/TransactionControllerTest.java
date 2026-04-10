@@ -240,7 +240,7 @@ class TransactionControllerTest {
 
   @Test
   void calculateBalanceMonth_returnsUnauthorized_whenNoAuthentication() {
-    ResponseEntity<Balance> response = controller.calculateBalanceMonth(3, 2026);
+    ResponseEntity<Balance> response = controller.calculateBalanceMonth(3, 2026, "BRL");
 
     assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
     verifyNoInteractions(service);
@@ -250,9 +250,9 @@ class TransactionControllerTest {
   void calculateBalanceMonth_returnsBalance() {
     setAuthentication("alice");
     Balance balance = Balance.builder().income(3000.0).expenses(1500.0).amount(1500.0).build();
-    when(service.calculateMonthBalance("alice", 3, 2026)).thenReturn(balance);
+    when(service.calculateMonthBalance("alice", 3, 2026, "BRL")).thenReturn(balance);
 
-    ResponseEntity<Balance> response = controller.calculateBalanceMonth(3, 2026);
+    ResponseEntity<Balance> response = controller.calculateBalanceMonth(3, 2026, "BRL");
 
     assertEquals(HttpStatus.OK, response.getStatusCode());
     assertEquals(balance, response.getBody());
@@ -262,36 +262,36 @@ class TransactionControllerTest {
   void calculateBalanceMonth_defaultsToCurrentMonthAndYear_whenParamsAreNull() {
     setAuthentication("alice");
     var now = OffsetDateTime.now();
-    when(service.calculateMonthBalance("alice", now.getMonthValue(), now.getYear()))
+    when(service.calculateMonthBalance("alice", now.getMonthValue(), now.getYear(), "BRL"))
         .thenReturn(new Balance());
 
-    controller.calculateBalanceMonth(null, null);
+    controller.calculateBalanceMonth(null, null, "BRL");
 
-    verify(service).calculateMonthBalance("alice", now.getMonthValue(), now.getYear());
+    verify(service).calculateMonthBalance("alice", now.getMonthValue(), now.getYear(), "BRL");
   }
 
   @Test
   void calculateBalanceMonth_resetsMonth_whenZero() {
     setAuthentication("alice");
     var now = OffsetDateTime.now();
-    when(service.calculateMonthBalance(eq("alice"), eq(now.getMonthValue()), anyInt()))
+    when(service.calculateMonthBalance(eq("alice"), eq(now.getMonthValue()), anyInt(), eq("BRL")))
         .thenReturn(new Balance());
 
-    controller.calculateBalanceMonth(0, 2026);
+    controller.calculateBalanceMonth(0, 2026, "BRL");
 
-    verify(service).calculateMonthBalance("alice", now.getMonthValue(), 2026);
+    verify(service).calculateMonthBalance("alice", now.getMonthValue(), 2026, "BRL");
   }
 
   @Test
   void calculateBalanceMonth_resetsMonth_whenGreaterThan12() {
     setAuthentication("alice");
     var now = OffsetDateTime.now();
-    when(service.calculateMonthBalance(eq("alice"), eq(now.getMonthValue()), anyInt()))
+    when(service.calculateMonthBalance(eq("alice"), eq(now.getMonthValue()), anyInt(), eq("BRL")))
         .thenReturn(new Balance());
 
-    controller.calculateBalanceMonth(13, 2026);
+    controller.calculateBalanceMonth(13, 2026, "BRL");
 
-    verify(service).calculateMonthBalance("alice", now.getMonthValue(), 2026);
+    verify(service).calculateMonthBalance("alice", now.getMonthValue(), 2026, "BRL");
   }
 
   @Test
@@ -506,7 +506,7 @@ class TransactionControllerTest {
 
   @Test
   void getMonthlySummary_returnsUnauthorized_whenNoAuthentication() {
-    ResponseEntity<java.util.List<MonthlySummaryDto>> response = controller.getMonthlySummary(2026);
+    ResponseEntity<java.util.List<MonthlySummaryDto>> response = controller.getMonthlySummary(2026, "BRL");
 
     assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
     verifyNoInteractions(service);
@@ -518,9 +518,9 @@ class TransactionControllerTest {
     List<MonthlySummaryDto> summary = List.of(
         new MonthlySummaryDto(1, 3000.0, 1200.0),
         new MonthlySummaryDto(2, 3200.0, 1400.0));
-    when(service.getMonthlySummary("alice", 2026)).thenReturn(summary);
+    when(service.getMonthlySummary("alice", 2026, "BRL")).thenReturn(summary);
 
-    ResponseEntity<java.util.List<MonthlySummaryDto>> response = controller.getMonthlySummary(2026);
+    ResponseEntity<java.util.List<MonthlySummaryDto>> response = controller.getMonthlySummary(2026, "BRL");
 
     assertEquals(HttpStatus.OK, response.getStatusCode());
     assertEquals(2, response.getBody().size());
@@ -530,11 +530,11 @@ class TransactionControllerTest {
   void getMonthlySummary_defaultsToCurrentYear_whenNull() {
     setAuthentication("alice");
     int currentYear = OffsetDateTime.now().getYear();
-    when(service.getMonthlySummary("alice", currentYear)).thenReturn(List.of());
+    when(service.getMonthlySummary("alice", currentYear, "BRL")).thenReturn(List.of());
 
-    controller.getMonthlySummary(null);
+    controller.getMonthlySummary(null, "BRL");
 
-    verify(service).getMonthlySummary("alice", currentYear);
+    verify(service).getMonthlySummary("alice", currentYear, "BRL");
   }
 
   @Test

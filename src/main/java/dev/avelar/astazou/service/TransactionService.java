@@ -6,11 +6,9 @@ import dev.avelar.astazou.exception.NotFoundException;
 import dev.avelar.astazou.model.BankAccount;
 import dev.avelar.astazou.model.ReportToken;
 import dev.avelar.astazou.model.Transaction;
-import dev.avelar.astazou.model.User;
 import dev.avelar.astazou.repository.BankAccountRepository;
 import dev.avelar.astazou.repository.ReportTokenRepository;
 import dev.avelar.astazou.repository.TransactionRepository;
-import dev.avelar.astazou.repository.UserRepository;
 import dev.avelar.jambock.reports.ReportBuilder;
 import dev.avelar.jambock.reports.ReportEngine;
 import dev.avelar.jambock.reports.ReportGenerationException;
@@ -52,7 +50,6 @@ public class TransactionService {
 
   private final BankAccountRepository bankAccountRepository;
 
-  private final UserRepository userRepository;
 
   private final ReportEngine reportEngine;
 
@@ -62,11 +59,10 @@ public class TransactionService {
 
   @Autowired
   public TransactionService(TransactionRepository repository, BankAccountRepository bankAccountRepository,
-      UserRepository userRepository, ReportEngine reportEngine, ReportTokenRepository reportTokenRepository,
+      ReportEngine reportEngine, ReportTokenRepository reportTokenRepository,
       QrCodeService qrCodeService) {
     this.repository = repository;
     this.bankAccountRepository = bankAccountRepository;
-    this.userRepository = userRepository;
     this.reportEngine = reportEngine;
     this.reportTokenRepository = reportTokenRepository;
     this.qrCodeService = qrCodeService;
@@ -111,8 +107,7 @@ public class TransactionService {
     return new PageImpl<>(transactions, PageRequest.of(page, itemsPerPage), count);
   }
 
-  public Balance calculateMonthBalance(String username, Integer month, Integer year) {
-    String currency = resolveUserCurrency(username);
+  public Balance calculateMonthBalance(String username, Integer month, Integer year, String currency) {
     Double income = repository.calculateIncomeByUsernameAndMonth(username, month, year, currency);
     Double expenses = repository.calculateExpenseByUsernameAndMonth(username, month, year, currency);
     Double balance = income - expenses;
@@ -385,10 +380,11 @@ public class TransactionService {
     List<Transaction> transactions =
         repository.findByAccountIdAndMonth(bankAccountId, month, year, Integer.MAX_VALUE, 0);
 
-    Balance balance = calculateMonthBalance(username, month, year);
-
     Optional<BankAccount> accountOpt = bankAccountRepository.findById(bankAccountId);
     String accountName = accountOpt.map(BankAccount::getName).orElse("—");
+    String accountCurrency = accountOpt.map(BankAccount::getCurrency).orElse("BRL");
+
+    Balance balance = calculateMonthBalance(username, month, year, accountCurrency);
 
     Locale locale = resolveLocale(lang);
     String monthName = Month.of(month).getDisplayName(TextStyle.FULL, locale);
@@ -462,15 +458,7 @@ public class TransactionService {
     };
   }
 
-  private String resolveUserCurrency(String username) {
-    return userRepository.findById(username)
-        .map(User::getPreferredCurrency)
-        .filter(c -> c != null && !c.isBlank())
-        .orElse("BRL");
-  }
-
-  public List<MonthlySummaryDto> getMonthlySummary(String username, int year) {
-    String currency = resolveUserCurrency(username);
+  public List<MonthlySummaryDto> getMonthlySummary(String username, int year, String currency) {
     var rows = repository.getMonthlySummary(username, year, currency);
 
     var map = new java.util.HashMap<Integer, MonthlySummaryDto>();

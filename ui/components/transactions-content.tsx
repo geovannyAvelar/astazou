@@ -5,7 +5,6 @@ import Link from "next/link"
 import Image from "next/image"
 import { useAuth } from "@/lib/auth-context"
 import { useI18n } from "@/lib/i18n/i18n-context"
-import { useCurrency } from "@/lib/currency-context"
 import { formatCurrency } from "@/lib/currency"
 import { LanguageSwitcher } from "@/components/language-switcher"
 import { ThemeToggle } from "@/components/theme-toggle"
@@ -114,7 +113,6 @@ interface TransactionsPageResponse {
 export function TransactionsContent({ preselectedAccountId }: { preselectedAccountId?: number }) {
     const { user, logout } = useAuth()
     const { t, locale } = useI18n()
-    const { preferredCurrency } = useCurrency()
 
     const [accounts, setAccounts] = useState<BankAccount[]>([])
     const [selectedAccountId, setSelectedAccountId] = useState<number | null>(null)
@@ -774,7 +772,7 @@ export function TransactionsContent({ preselectedAccountId }: { preselectedAccou
     }, [fetchAllTags])
 
     function formatTxCurrency(value: number, account?: BankAccount | null) {
-        return formatCurrency(value, account?.currency || preferredCurrency)
+        return formatCurrency(value, account?.currency || "BRL")
     }
 
     function formatDate(dateStr: string) {

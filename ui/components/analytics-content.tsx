@@ -6,10 +6,8 @@ import Image from "next/image"
 import { useTheme } from "next-themes"
 import { useAuth } from "@/lib/auth-context"
 import { useI18n } from "@/lib/i18n/i18n-context"
-import { useCurrency } from "@/lib/currency-context"
 import { formatCurrency } from "@/lib/currency"
 import { LanguageSwitcher } from "@/components/language-switcher"
-import { CurrencySwitcher } from "@/components/currency-switcher"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { Button } from "@/components/ui/button"
 import {
@@ -53,7 +51,6 @@ export function AnalyticsContent() {
     const { user, logout } = useAuth()
     const { t } = useI18n()
     const { resolvedTheme } = useTheme()
-    const { preferredCurrency } = useCurrency()
     const isDark = resolvedTheme === "dark"
 
     const chartColors = {
@@ -67,6 +64,8 @@ export function AnalyticsContent() {
     const [summary, setSummary] = useState<MonthlySummary[]>([])
     const [isLoading, setIsLoading] = useState(true)
     const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear())
+    const [currencies, setCurrencies] = useState<string[]>([])
+    const [selectedCurrency, setSelectedCurrency] = useState<string>("BRL")
 
     const displayName = user?.completeUsername || user?.username || "User"
     const initials = displayName
@@ -79,7 +78,7 @@ export function AnalyticsContent() {
     const fetchSummary = useCallback(async () => {
         setIsLoading(true)
         try {
-            const res = await fetch(`${API_BASE}/transactions/summary?year=${selectedYear}`, {
+            const res = await fetch(`${API_BASE}/transactions/summary?year=${selectedYear}&currency=${selectedCurrency}`, {
                 credentials: "include"
             })
             if (res.ok) {
@@ -91,11 +90,21 @@ export function AnalyticsContent() {
         } finally {
             setIsLoading(false)
         }
-    }, [selectedYear])
+    }, [selectedYear, selectedCurrency])
 
     useEffect(() => {
         fetchSummary()
     }, [fetchSummary])
+
+    useEffect(() => {
+        fetch(`${API_BASE}/users/currencies`, { credentials: "include" })
+            .then(r => r.ok ? r.json() : ["BRL"])
+            .then((list: string[]) => {
+                setCurrencies(list)
+                if (list.length > 0) setSelectedCurrency(list[0])
+            })
+            .catch(() => setCurrencies(["BRL"]))
+    }, [])
 
     async function handleLogout() {
         setIsLoggingOut(true)
@@ -107,7 +116,7 @@ export function AnalyticsContent() {
     }
 
     function formatAnalyticsCurrency(value: number) {
-        return formatCurrency(value, preferredCurrency)
+        return formatCurrency(value, selectedCurrency)
     }
 
     // Get current month for filtering
@@ -143,7 +152,18 @@ export function AnalyticsContent() {
 
                     <div className="flex items-center gap-3">
                         <ThemeToggle variant="ghost" />
-                        <CurrencySwitcher variant="compact" />
+                        {currencies.length > 0 && (
+                            <Select value={selectedCurrency} onValueChange={setSelectedCurrency}>
+                                <SelectTrigger className="w-[90px] h-8 text-xs">
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {currencies.map(c => (
+                                        <SelectItem key={c} value={c}>{c}</SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        )}
                         <LanguageSwitcher variant="ghost" />
 
                         <div className="hidden items-center gap-3 sm:flex">

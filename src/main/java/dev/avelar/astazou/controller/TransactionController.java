@@ -123,7 +123,8 @@ public class TransactionController {
 
   @GetMapping("/balance")
   public ResponseEntity<Balance> calculateBalanceMonth(@RequestParam(required = false) Integer month,
-      @RequestParam(required = false) Integer year) {
+      @RequestParam(required = false) Integer year,
+      @RequestParam(required = false, defaultValue = "BRL") String currency) {
     Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 
     if (auth == null) {
@@ -140,7 +141,7 @@ public class TransactionController {
       year = now.getYear();
     }
 
-    return ResponseEntity.ok(service.calculateMonthBalance(auth.getName(), month, year));
+    return ResponseEntity.ok(service.calculateMonthBalance(auth.getName(), month, year, currency));
   }
 
   @GetMapping("/last")
@@ -233,7 +234,8 @@ public class TransactionController {
 
   @GetMapping("/summary")
   public ResponseEntity<java.util.List<MonthlySummaryDto>> getMonthlySummary(
-      @RequestParam(required = false) Integer year) {
+      @RequestParam(required = false) Integer year,
+      @RequestParam(required = false, defaultValue = "BRL") String currency) {
     Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 
     if (auth == null) {
@@ -246,7 +248,7 @@ public class TransactionController {
       year = now.getYear();
     }
 
-    return ResponseEntity.ok(service.getMonthlySummary(auth.getName(), year));
+    return ResponseEntity.ok(service.getMonthlySummary(auth.getName(), year, currency));
   }
 
   @GetMapping(value = "/report/{account_id}", produces = MediaType.APPLICATION_PDF_VALUE)

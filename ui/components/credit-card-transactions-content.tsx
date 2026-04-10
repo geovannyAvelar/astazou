@@ -5,7 +5,6 @@ import Link from "next/link"
 import Image from "next/image"
 import { useAuth } from "@/lib/auth-context"
 import { useI18n } from "@/lib/i18n/i18n-context"
-import { useCurrency } from "@/lib/currency-context"
 import { formatCurrency } from "@/lib/currency"
 import { LanguageSwitcher } from "@/components/language-switcher"
 import { ThemeToggle } from "@/components/theme-toggle"
@@ -68,7 +67,6 @@ interface CardTransactionsContentProps {
 export function CreditCardTransactionsContent({ cardId }: CardTransactionsContentProps) {
     const { user, logout } = useAuth()
     const { t } = useI18n()
-    const { preferredCurrency } = useCurrency()
     const [card, setCard] = useState<CreditCardData | null>(null)
     const [transactions, setTransactions] = useState<CreditCardTransaction[]>([])
     const [isLoading, setIsLoading] = useState(true)
@@ -185,7 +183,7 @@ export function CreditCardTransactionsContent({ cardId }: CardTransactionsConten
     }
 
     function formatCardCurrency(value: number) {
-        return formatCurrency(value, card?.currency || preferredCurrency)
+        return formatCurrency(value, card?.currency || "BRL")
     }
 
     function formatDate(dateString: string) {

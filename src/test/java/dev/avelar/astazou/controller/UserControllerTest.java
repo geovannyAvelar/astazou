@@ -1,7 +1,6 @@
 package dev.avelar.astazou.controller;
 
-import dev.avelar.astazou.dto.UserPreferencesForm;
-import dev.avelar.astazou.service.UserService;
+import dev.avelar.astazou.repository.BankAccountRepository;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -23,7 +22,7 @@ import static org.mockito.Mockito.*;
 class UserControllerTest {
 
   @Mock
-  private UserService userService;
+  private BankAccountRepository bankAccountRepository;
 
   @InjectMocks
   private UserController controller;
@@ -38,135 +37,50 @@ class UserControllerTest {
     SecurityContextHolder.getContext().setAuthentication(auth);
   }
 
-  // ── updatePreferences ─────────────────────────────────────────────────────
+  // ── getAccountCurrencies ──────────────────────────────────────────────────
 
   @Test
-  void updatePreferences_returnsUnauthorized_whenNoAuthentication() {
-    UserPreferencesForm form = new UserPreferencesForm("BRL");
-
-    ResponseEntity<?> response = controller.updatePreferences(form);
+  void getAccountCurrencies_returnsUnauthorized_whenNoAuthentication() {
+    ResponseEntity<List<String>> response = controller.getAccountCurrencies();
 
     assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
-    verifyNoInteractions(userService);
+    verifyNoInteractions(bankAccountRepository);
   }
 
   @Test
-  void updatePreferences_returnsBadRequest_whenCurrencyIsNull() {
+  void getAccountCurrencies_returnsUserCurrencies() {
     setAuthentication("alice");
-    UserPreferencesForm form = new UserPreferencesForm(null);
+    when(bankAccountRepository.findDistinctCurrenciesByUsername("alice"))
+        .thenReturn(List.of("BRL", "USD"));
 
-    ResponseEntity<?> response = controller.updatePreferences(form);
-
-    assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
-    verifyNoInteractions(userService);
-  }
-
-  @Test
-  void updatePreferences_returnsBadRequest_whenCurrencyIsBlank() {
-    setAuthentication("alice");
-    UserPreferencesForm form = new UserPreferencesForm("   ");
-
-    ResponseEntity<?> response = controller.updatePreferences(form);
-
-    assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
-    verifyNoInteractions(userService);
-  }
-
-  @Test
-  void updatePreferences_returnsBadRequest_whenCurrencyIsUnsupported() {
-    setAuthentication("alice");
-    UserPreferencesForm form = new UserPreferencesForm("XYZ");
-
-    ResponseEntity<?> response = controller.updatePreferences(form);
-
-    assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
-    verifyNoInteractions(userService);
-  }
-
-  @Test
-  void updatePreferences_returnsOk_whenCurrencyIsValid() {
-    setAuthentication("alice");
-    UserPreferencesForm form = new UserPreferencesForm("USD");
-
-    ResponseEntity<?> response = controller.updatePreferences(form);
+    ResponseEntity<List<String>> response = controller.getAccountCurrencies();
 
     assertEquals(HttpStatus.OK, response.getStatusCode());
-    verify(userService).updatePreferredCurrency("alice", "USD");
+    assertNotNull(response.getBody());
+    assertEquals(List.of("BRL", "USD"), response.getBody());
   }
 
   @Test
-  void updatePreferences_acceptsLowercaseCurrency_andDelegatesToService() {
+  void getAccountCurrencies_fallsBackToBRL_whenNoCurrenciesFound() {
     setAuthentication("alice");
-    UserPreferencesForm form = new UserPreferencesForm("brl");
+    when(bankAccountRepository.findDistinctCurrenciesByUsername("alice"))
+        .thenReturn(List.of());
 
-    ResponseEntity<?> response = controller.updatePreferences(form);
+    ResponseEntity<List<String>> response = controller.getAccountCurrencies();
 
     assertEquals(HttpStatus.OK, response.getStatusCode());
-    verify(userService).updatePreferredCurrency("alice", "brl");
+    assertNotNull(response.getBody());
+    assertEquals(List.of("BRL"), response.getBody());
   }
 
   @Test
-  void updatePreferences_delegatesToService_withAuthenticatedUsername() {
+  void getAccountCurrencies_delegatesToRepositoryWithAuthenticatedUsername() {
     setAuthentication("bob");
-    UserPreferencesForm form = new UserPreferencesForm("EUR");
+    when(bankAccountRepository.findDistinctCurrenciesByUsername("bob"))
+        .thenReturn(List.of("EUR"));
 
-    controller.updatePreferences(form);
+    controller.getAccountCurrencies();
 
-    verify(userService).updatePreferredCurrency("bob", "EUR");
-  }
-
-  @Test
-  void updatePreferences_returnsOk_forEachSupportedCurrency() {
-    setAuthentication("alice");
-
-    List<String> supported = List.of(
-        "ARS", "AUD", "BRL", "CAD", "CHF", "CLP", "EUR", "GBP", "JPY", "MXN", "PEN", "USD", "UYU"
-    );
-
-    for (String currency : supported) {
-      UserPreferencesForm form = new UserPreferencesForm(currency);
-      ResponseEntity<?> response = controller.updatePreferences(form);
-      assertEquals(HttpStatus.OK, response.getStatusCode(),
-          "Expected OK for currency: " + currency);
-    }
-
-    verify(userService, times(supported.size())).updatePreferredCurrency(eq("alice"), anyString());
-  }
-
-  // ── getSupportedCurrencies ────────────────────────────────────────────────
-
-  @Test
-  void getSupportedCurrencies_returnsOk() {
-    ResponseEntity<List<String>> response = controller.getSupportedCurrencies();
-
-    assertEquals(HttpStatus.OK, response.getStatusCode());
-  }
-
-  @Test
-  void getSupportedCurrencies_returnsNonEmptyList() {
-    ResponseEntity<List<String>> response = controller.getSupportedCurrencies();
-
-    assertNotNull(response.getBody());
-    assertFalse(response.getBody().isEmpty());
-  }
-
-  @Test
-  void getSupportedCurrencies_containsExpectedCurrencies() {
-    ResponseEntity<List<String>> response = controller.getSupportedCurrencies();
-
-    List<String> currencies = response.getBody();
-    assertNotNull(currencies);
-    assertTrue(currencies.contains("BRL"));
-    assertTrue(currencies.contains("USD"));
-    assertTrue(currencies.contains("EUR"));
-  }
-
-  @Test
-  void getSupportedCurrencies_returns13Currencies() {
-    ResponseEntity<List<String>> response = controller.getSupportedCurrencies();
-
-    assertNotNull(response.getBody());
-    assertEquals(13, response.getBody().size());
+    verify(bankAccountRepository).findDistinctCurrenciesByUsername("bob");
   }
 }
-

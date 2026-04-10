@@ -5,10 +5,8 @@ import Link from "next/link"
 import Image from "next/image"
 import { useAuth } from "@/lib/auth-context"
 import { useI18n } from "@/lib/i18n/i18n-context"
-import { useCurrency } from "@/lib/currency-context"
 import { formatCurrency, SUPPORTED_CURRENCIES } from "@/lib/currency"
 import { LanguageSwitcher } from "@/components/language-switcher"
-import { CurrencySwitcher } from "@/components/currency-switcher"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -71,7 +69,6 @@ interface PageResponse {
 export function AccountsContent() {
     const { user, logout } = useAuth()
     const { t } = useI18n()
-    const { preferredCurrency } = useCurrency()
     const [accounts, setAccounts] = useState<BankAccount[]>([])
     const [isLoadingAccounts, setIsLoadingAccounts] = useState(true)
     const [page, setPage] = useState(0)
@@ -83,7 +80,7 @@ export function AccountsContent() {
     // Form state
     const [name, setName] = useState("")
     const [initialBalance, setInitialBalance] = useState("")
-    const [currency, setCurrency] = useState(preferredCurrency)
+    const [currency, setCurrency] = useState("BRL")
     const [isCreating, setIsCreating] = useState(false)
     const [formError, setFormError] = useState("")
     const [formSuccess, setFormSuccess] = useState("")
@@ -156,7 +153,7 @@ export function AccountsContent() {
                 body: JSON.stringify({
                     name: name.trim(),
                     initialBalance: initialBalance ? parseFloat(initialBalance) : 0,
-                    currency: currency || preferredCurrency || "BRL",
+                    currency: currency || "BRL",
                 }),
                 credentials: "include"
             })
@@ -165,7 +162,7 @@ export function AccountsContent() {
                 setFormSuccess(t.accountCreated)
                 setName("")
                 setInitialBalance("")
-                setCurrency(preferredCurrency)
+                setCurrency("BRL")
                 setShowForm(false)
                 setPage(0)
                 fetchAccounts(0)
@@ -183,7 +180,7 @@ export function AccountsContent() {
         setEditingAccount(account)
         setEditName(account.name)
         setEditBalance(account.balance.toString())
-        setEditCurrency(account.currency || preferredCurrency || "BRL")
+        setEditCurrency(account.currency || "BRL")
         setEditError("")
         setEditSuccess("")
     }
@@ -217,7 +214,7 @@ export function AccountsContent() {
                 body: JSON.stringify({
                     name: editName.trim(),
                     balance: editBalance ? parseFloat(editBalance) : 0,
-                    currency: editCurrency || preferredCurrency || "BRL",
+                    currency: editCurrency || "BRL",
                 }),
                 credentials: "include"
             })
@@ -248,7 +245,7 @@ export function AccountsContent() {
     }
 
     function formatAccountCurrency(value: number, accountCurrency?: string) {
-        return formatCurrency(value, accountCurrency || preferredCurrency)
+        return formatCurrency(value, accountCurrency || "BRL")
     }
 
     return (
@@ -264,7 +261,6 @@ export function AccountsContent() {
 
                     <div className="flex items-center gap-3">
                         <ThemeToggle variant="ghost" />
-                        <CurrencySwitcher variant="compact" />
                         <LanguageSwitcher variant="ghost" />
 
                         <div className="hidden items-center gap-3 sm:flex">

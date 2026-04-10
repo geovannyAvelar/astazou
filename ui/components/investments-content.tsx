@@ -5,13 +5,19 @@ import Link from "next/link"
 import Image from "next/image"
 import { useAuth } from "@/lib/auth-context"
 import { useI18n } from "@/lib/i18n/i18n-context"
-import { useCurrency } from "@/lib/currency-context"
-import { formatCurrency } from "@/lib/currency"
+import { formatCurrency, SUPPORTED_CURRENCIES } from "@/lib/currency"
 import { LanguageSwitcher } from "@/components/language-switcher"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select"
 import {
     Card,
     CardContent,
@@ -78,7 +84,7 @@ interface PageResponse {
 export function InvestmentsContent() {
     const { user, logout } = useAuth()
     const { t } = useI18n()
-    const { preferredCurrency } = useCurrency()
+    const [selectedCurrency, setSelectedCurrency] = useState<string>("BRL")
 
     const [contributions, setContributions] = useState<InvestmentContribution[]>([])
     const [isLoading, setIsLoading] = useState(true)
@@ -272,7 +278,7 @@ export function InvestmentsContent() {
     }
 
     function formatInvestmentCurrency(value: number) {
-        return formatCurrency(value, preferredCurrency)
+        return formatCurrency(value, selectedCurrency)
     }
 
     function formatQuantity(value: number) {
@@ -281,6 +287,8 @@ export function InvestmentsContent() {
         }).format(value)
     }
 
+    // @ts-ignore
+    // @ts-ignore
     return (
         <div className="min-h-svh bg-background">
             {/* Header */}
@@ -295,6 +303,16 @@ export function InvestmentsContent() {
 
                     <div className="flex items-center gap-3">
                         <ThemeToggle variant="ghost" />
+                        <Select value={selectedCurrency} onValueChange={setSelectedCurrency}>
+                            <SelectTrigger className="w-[90px] h-8 text-xs">
+                                <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {SUPPORTED_CURRENCIES.map(c => (
+                                    <SelectItem key={c.code} value={c.code}>{c.code}</SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
                         <LanguageSwitcher variant="ghost" />
                         <div className="hidden items-center gap-3 sm:flex">
                             <div className="flex size-9 items-center justify-center rounded-full bg-secondary text-secondary-foreground text-sm font-semibold">

@@ -13,48 +13,32 @@ interface CurrencyContextValue {
 
 const CurrencyContext = createContext<CurrencyContextValue | null>(null)
 
+/** Read the stored currency from localStorage (client-only, safe to call in lazy initializer). */
+function readStoredCurrency(): string {
+  if (typeof window === "undefined") return "BRL"
+  return localStorage.getItem(STORAGE_KEY) ?? "BRL"
+}
+
 export function CurrencyProvider({ children }: { children: ReactNode }) {
   const { user, isAuthenticated } = useAuth()
 
-  const getInitial = (): string => {
-    if (typeof window !== "undefined") {
-      const stored = localStorage.getItem(STORAGE_KEY)
-      if (stored) return stored
-    }
-    return user?.preferred_currency ?? "BRL"
-  }
+  // Lazy initializer runs once on the client and reads from localStorage immediately,
+  // avoiding the need for a setState-in-effect pattern.
+  const [preferredCurrency, setPreferredCurrencyState] = useState<string>(readStoredCurrency)
 
-  const [preferredCurrency, setPreferredCurrencyState] = useState<string>("BRL")
-
-  // Sync from server on auth state changes
+  // Sync whenever the server tells us the user's preferred currency changed
+  // (e.g. after login, or after /token/validate resolves).
   useEffect(() => {
     if (isAuthenticated && user?.preferred_currency) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
       setPreferredCurrencyState(user.preferred_currency)
-      if (typeof window !== "undefined") {
-        localStorage.setItem(STORAGE_KEY, user.preferred_currency)
-      }
-    } else if (!isAuthenticated) {
-      // On logout restore from localStorage or fallback
-      if (typeof window !== "undefined") {
-        const stored = localStorage.getItem(STORAGE_KEY)
-        if (stored) setPreferredCurrencyState(stored)
-      }
+      localStorage.setItem(STORAGE_KEY, user.preferred_currency)
     }
   }, [isAuthenticated, user?.preferred_currency])
 
-  // On mount, read from localStorage before first auth response
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      const stored = localStorage.getItem(STORAGE_KEY)
-      if (stored) setPreferredCurrencyState(stored)
-    }
-  }, [])
-
   const setPreferredCurrency = useCallback(async (currency: string) => {
     setPreferredCurrencyState(currency)
-    if (typeof window !== "undefined") {
-      localStorage.setItem(STORAGE_KEY, currency)
-    }
+    localStorage.setItem(STORAGE_KEY, currency)
     try {
       await fetch(`${API_BASE}/users/me/preferences`, {
         method: "PUT",

@@ -85,6 +85,7 @@ public interface TransactionRepository extends CrudRepository<Transaction, Long>
         SELECT t.* FROM transactions t
         JOIN bank_account ba ON t.bank_account_id = ba.id
         WHERE ba.username = :username
+          AND t.transaction_date <= CURRENT_DATE
         ORDER BY t.transaction_date DESC
         LIMIT 10
       """)

@@ -48,6 +48,13 @@ interface BalanceByCurrency {
   amount: number
 }
 
+interface BankAccount {
+  id: number
+  name: string
+  balance: number
+  currency: string
+}
+
 interface Transaction {
   id: number
   transactionDate: string
@@ -80,6 +87,7 @@ export function DashboardContent() {
   const [isLoggingOut, setIsLoggingOut] = useState(false)
   const [balances, setBalances] = useState<BalanceByCurrency[]>([])
   const [transactions, setTransactions] = useState<Transaction[]>([])
+  const [accounts, setAccounts] = useState<BankAccount[]>([])
   const [isLoadingTransactions, setIsLoadingTransactions] = useState(true)
 
   // Get current month and year
@@ -118,10 +126,25 @@ export function DashboardContent() {
     }
   }, [])
 
+  const fetchAccounts = useCallback(async () => {
+    try {
+      const res = await fetch(`${API_BASE}/bank-accounts?page=0&itemsPerPage=100`, {
+        credentials: "include"
+      })
+      if (res.ok) {
+        const data = await res.json()
+        setAccounts(data.content ?? [])
+      }
+    } catch (error) {
+      console.error("Failed to fetch accounts:", error)
+    }
+  }, [])
+
   useEffect(() => {
     fetchBalance()
     fetchLastTransactions()
-  }, [fetchBalance, fetchLastTransactions])
+    fetchAccounts()
+  }, [fetchBalance, fetchLastTransactions, fetchAccounts])
 
   async function handleLogout() {
     setIsLoggingOut(true)
@@ -156,6 +179,8 @@ export function DashboardContent() {
       year: "numeric",
     }).format(date)
   }
+
+  const accountMap = new Map<number, BankAccount>(accounts.map((a) => [a.id, a]))
 
   return (
     <div className="min-h-svh bg-background">
@@ -421,7 +446,8 @@ export function DashboardContent() {
                       <span className={`text-sm font-semibold ${
                         tx.amount >= 0 ? "text-primary" : "text-destructive"
                       }`}>
-                        {tx.amount >= 0 ? "+" : ""}{tx.amount.toFixed(2)}
+                        {tx.amount >= 0 ? "+" : ""}
+                        {formatCurrency(tx.amount, accountMap.get(tx.bankAccountId)?.currency ?? "BRL")}
                       </span>
                     </div>
                   ))}

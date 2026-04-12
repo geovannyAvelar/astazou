@@ -29,10 +29,11 @@ import {
     DollarSign,
     Loader2,
     LogOut,
+    Tags,
     TrendingDown,
     TrendingUp,
 } from "lucide-react"
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts"
+import { LineChart, Line, BarChart, Bar, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts"
 
 const API_BASE: string = (process.env.NEXT_PUBLIC_API_URL as string) || (process.env.REACT_APP_API_BASE as string) || (process.env.VITE_API_BASE as string) || (process.env.API_BASE as string) || 'http://localhost:8080';
 
@@ -41,6 +42,17 @@ interface MonthlySummary {
     income: number
     expenses: number
 }
+
+interface SpendingByTagItem {
+    tag: string
+    total: number
+}
+
+const BAR_COLORS = [
+    "#6366f1", "#f59e0b", "#10b981", "#ef4444", "#3b82f6",
+    "#ec4899", "#14b8a6", "#f97316", "#a855f7", "#84cc16",
+    "#06b6d4", "#e11d48",
+]
 
 const MONTH_NAMES = [
     "Jan", "Feb", "Mar", "Apr", "May", "Jun",
@@ -63,6 +75,7 @@ export function AnalyticsContent() {
     const [isLoggingOut, setIsLoggingOut] = useState(false)
     // Map of currency → 12 monthly summaries
     const [summaryByCurrency, setSummaryByCurrency] = useState<Record<string, MonthlySummary[]>>({})
+    const [spendingByTag, setSpendingByTag] = useState<Record<string, SpendingByTagItem[]>>({})
     const [isLoading, setIsLoading] = useState(true)
     const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear())
 
@@ -77,12 +90,17 @@ export function AnalyticsContent() {
     const fetchSummary = useCallback(async () => {
         setIsLoading(true)
         try {
-            const res = await fetch(`${API_BASE}/transactions/summary?year=${selectedYear}`, {
-                credentials: "include"
-            })
-            if (res.ok) {
-                const data: Record<string, MonthlySummary[]> = await res.json()
+            const [summaryRes, tagsRes] = await Promise.all([
+                fetch(`${API_BASE}/transactions/summary?year=${selectedYear}`, { credentials: "include" }),
+                fetch(`${API_BASE}/transactions/spending-by-tag?year=${selectedYear}`, { credentials: "include" }),
+            ])
+            if (summaryRes.ok) {
+                const data: Record<string, MonthlySummary[]> = await summaryRes.json()
                 setSummaryByCurrency(data)
+            }
+            if (tagsRes.ok) {
+                const data: Record<string, SpendingByTagItem[]> = await tagsRes.json()
+                setSpendingByTag(data)
             }
         } catch (error) {
             console.error("Failed to fetch summary:", error)
@@ -223,7 +241,7 @@ export function AnalyticsContent() {
                                         </Card>
                                     </div>
 
-                                    {/* Chart */}
+                                     {/* Chart */}
                                     <Card>
                                         <CardHeader>
                                             <CardTitle>Monthly Trends</CardTitle>
@@ -251,6 +269,60 @@ export function AnalyticsContent() {
                                                             <Line type="monotone" dataKey="Income" stroke="#22c55e" strokeWidth={2} dot={{ fill: "#22c55e" }} activeDot={{ r: 8 }} />
                                                             <Line type="monotone" dataKey="Expenses" stroke="#ef4444" strokeWidth={2} dot={{ fill: "#ef4444" }} activeDot={{ r: 8 }} />
                                                         </LineChart>
+                                                    </ResponsiveContainer>
+                                                </div>
+                                            )}
+                                        </CardContent>
+                                    </Card>
+
+                                    {/* Spending by category chart */}
+                                    <Card>
+                                        <CardHeader>
+                                            <CardTitle>{t.spendingByCategory}</CardTitle>
+                                            <CardDescription>{t.spendingByCategoryDescription}</CardDescription>
+                                        </CardHeader>
+                                        <CardContent>
+                                            {!spendingByTag[currency] || spendingByTag[currency].length === 0 ? (
+                                                <div className="flex flex-col items-center justify-center py-16 text-center">
+                                                    <Tags className="size-8 text-muted-foreground mb-3" />
+                                                    <p className="text-sm font-medium text-muted-foreground">{t.noTagsForChart}</p>
+                                                    <p className="text-xs text-muted-foreground mt-1">{t.noTagsForChartDescription}</p>
+                                                </div>
+                                            ) : (
+                                                <div className="h-80 w-full">
+                                                    <ResponsiveContainer width="100%" height="100%">
+                                                        <BarChart
+                                                            data={spendingByTag[currency]}
+                                                            margin={{ top: 5, right: 30, left: 20, bottom: 40 }}
+                                                        >
+                                                            <CartesianGrid strokeDasharray="3 3" stroke={chartColors.gridStroke} />
+                                                            <XAxis
+                                                                dataKey="tag"
+                                                                tick={{ fill: chartColors.tickFill, fontSize: 12 }}
+                                                                axisLine={{ stroke: chartColors.gridStroke }}
+                                                                tickLine={{ stroke: chartColors.gridStroke }}
+                                                                angle={-30}
+                                                                textAnchor="end"
+                                                                interval={0}
+                                                            />
+                                                            <YAxis
+                                                                tick={{ fill: chartColors.tickFill, fontSize: 12 }}
+                                                                axisLine={{ stroke: chartColors.gridStroke }}
+                                                                tickLine={{ stroke: chartColors.gridStroke }}
+                                                                tickFormatter={(v) => formatCurrency(v, currency)}
+                                                            />
+                                                            <Tooltip
+                                                                contentStyle={{ backgroundColor: chartColors.tooltipBg, border: `1px solid ${chartColors.tooltipBorder}`, borderRadius: "8px", color: chartColors.tooltipFg }}
+                                                                labelStyle={{ color: chartColors.tooltipFg }}
+                                                                itemStyle={{ color: chartColors.tooltipFg }}
+                                                                formatter={(v: number) => formatCurrency(v, currency)}
+                                                            />
+                                                            <Bar dataKey="total" radius={[4, 4, 0, 0]}>
+                                                                {spendingByTag[currency].map((_, index) => (
+                                                                    <Cell key={index} fill={BAR_COLORS[index % BAR_COLORS.length]} />
+                                                                ))}
+                                                            </Bar>
+                                                        </BarChart>
                                                     </ResponsiveContainer>
                                                 </div>
                                             )}

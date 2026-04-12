@@ -3,6 +3,7 @@ package dev.avelar.astazou.controller;
 import dev.avelar.astazou.dto.Balance;
 import dev.avelar.astazou.dto.BalanceByCurrencyDto;
 import dev.avelar.astazou.dto.MonthlySummaryDto;
+import dev.avelar.astazou.dto.SpendingByTagDto;
 import dev.avelar.astazou.dto.TransactionCreationForm;
 import dev.avelar.astazou.dto.TransactionUpdateForm;
 import dev.avelar.astazou.dto.TransformToTransferForm;
@@ -312,6 +313,23 @@ public class TransactionController {
     }
 
     return ResponseEntity.ok(service.findAllTags(auth.getName()));
+  }
+
+  @GetMapping("/spending-by-tag")
+  public ResponseEntity<java.util.Map<String, java.util.List<SpendingByTagDto>>> getSpendingByTag(
+      @RequestParam(required = false) Integer year) {
+    Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+
+    if (auth == null) {
+      return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+    }
+
+    var now = OffsetDateTime.now();
+    if (year == null) {
+      year = now.getYear();
+    }
+
+    return ResponseEntity.ok(service.getSpendingByTagAllCurrencies(auth.getName(), year));
   }
 
 }

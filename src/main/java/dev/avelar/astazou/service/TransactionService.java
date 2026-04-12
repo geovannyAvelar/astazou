@@ -3,6 +3,7 @@ package dev.avelar.astazou.service;
 import dev.avelar.astazou.dto.Balance;
 import dev.avelar.astazou.dto.BalanceByCurrencyDto;
 import dev.avelar.astazou.dto.MonthlySummaryDto;
+import dev.avelar.astazou.dto.SpendingByTagDto;
 import dev.avelar.astazou.exception.NotFoundException;
 import dev.avelar.astazou.model.BankAccount;
 import dev.avelar.astazou.model.ReportToken;
@@ -653,6 +654,20 @@ public class TransactionService {
 
   public List<String> findAllTags(String username) {
     return repository.findAllTagsByUsername(username);
+  }
+
+  public List<SpendingByTagDto> getSpendingByTag(String username, int year, String currency) {
+    return repository.getSpendingByTag(username, year, currency);
+  }
+
+  /** Returns spending grouped by tag for every currency the user has accounts in. */
+  public java.util.Map<String, List<SpendingByTagDto>> getSpendingByTagAllCurrencies(String username, int year) {
+    List<String> currencies = bankAccountRepository.findDistinctCurrenciesByUsername(username);
+    var result = new java.util.LinkedHashMap<String, List<SpendingByTagDto>>();
+    for (String currency : currencies) {
+      result.put(currency, getSpendingByTag(username, year, currency));
+    }
+    return result;
   }
 
 }

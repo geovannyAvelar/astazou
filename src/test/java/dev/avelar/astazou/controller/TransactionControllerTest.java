@@ -1,6 +1,7 @@
 package dev.avelar.astazou.controller;
 
 import dev.avelar.astazou.dto.*;
+import dev.avelar.astazou.dto.SpendingByTagDto;
 import dev.avelar.astazou.model.Transaction;
 import dev.avelar.astazou.service.TransactionService;
 import dev.avelar.jambock.reports.ReportGenerationException;
@@ -663,6 +664,37 @@ class TransactionControllerTest {
 
     assertEquals(HttpStatus.OK, response.getStatusCode());
     assertTrue(response.getBody().isEmpty());
+  }
+
+  @Test
+  void getSpendingByTag_returnsUnauthorized_whenNoAuthentication() {
+    ResponseEntity<java.util.Map<String, java.util.List<SpendingByTagDto>>> response = controller.getSpendingByTag(2026);
+
+    assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
+    verifyNoInteractions(service);
+  }
+
+  @Test
+  void getSpendingByTag_returnsSpendingMap() {
+    setAuthentication("alice");
+    var data = java.util.Map.of("BRL", List.of(new SpendingByTagDto("food", 500.0)));
+    when(service.getSpendingByTagAllCurrencies("alice", 2026)).thenReturn(data);
+
+    ResponseEntity<java.util.Map<String, java.util.List<SpendingByTagDto>>> response = controller.getSpendingByTag(2026);
+
+    assertEquals(HttpStatus.OK, response.getStatusCode());
+    assertEquals(data, response.getBody());
+  }
+
+  @Test
+  void getSpendingByTag_defaultsToCurrentYear_whenNull() {
+    setAuthentication("alice");
+    int currentYear = OffsetDateTime.now().getYear();
+    when(service.getSpendingByTagAllCurrencies("alice", currentYear)).thenReturn(java.util.Map.of());
+
+    controller.getSpendingByTag(null);
+
+    verify(service).getSpendingByTagAllCurrencies("alice", currentYear);
   }
 }
 

@@ -1,6 +1,7 @@
 package dev.avelar.astazou.repository;
 
 import dev.avelar.astazou.dto.MonthlySummaryDto;
+import dev.avelar.astazou.dto.SpendingByTagDto;
 import dev.avelar.astazou.model.Transaction;
 import org.springframework.data.jdbc.repository.query.Modifying;
 import org.springframework.data.jdbc.repository.query.Query;
@@ -173,6 +174,21 @@ public interface TransactionRepository extends CrudRepository<Transaction, Long>
       ORDER BY tag
       """)
   List<String> findAllTagsByUsername(@Param("username") String username);
+
+  @Query("""
+      SELECT tag_val AS tag, COALESCE(SUM(ABS(t.amount)), 0) AS total
+      FROM transactions t
+      JOIN bank_account ba ON t.bank_account_id = ba.id, UNNEST(t.tags) AS tag_val
+      WHERE ba.username = :username
+        AND ba.currency = :currency
+        AND t.type = 'debit'
+        AND EXTRACT(YEAR FROM t.transaction_date) = :year
+      GROUP BY tag_val
+      ORDER BY total DESC
+      """)
+  List<SpendingByTagDto> getSpendingByTag(@Param("username") String username,
+      @Param("year") int year,
+      @Param("currency") String currency);
 
   @Modifying
   @Query("""

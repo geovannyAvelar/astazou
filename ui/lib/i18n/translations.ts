@@ -249,6 +249,12 @@ export interface Translations {
     selectCurrency: string
     currencyUpdated: string
     currencyUpdateError: string
+
+    // Analytics
+    spendingByCategory: string
+    spendingByCategoryDescription: string
+    noTagsForChart: string
+    noTagsForChartDescription: string
 }
 
 export const translations: Record<Locale, Translations> = {
@@ -486,6 +492,11 @@ export const translations: Record<Locale, Translations> = {
         selectCurrency: "Select currency...",
         currencyUpdated: "Preferred currency updated!",
         currencyUpdateError: "Failed to update currency. Please try again.",
+
+        spendingByCategory: "Spending by Category",
+        spendingByCategoryDescription: "Expenses grouped by tag for the selected year",
+        noTagsForChart: "No tags found",
+        noTagsForChartDescription: "Add tags to your transactions to see spending by category",
     },
     pt: {
         brandTagline: "Assuma o controle do seu futuro financeiro",
@@ -721,6 +732,11 @@ export const translations: Record<Locale, Translations> = {
         selectCurrency: "Selecione a moeda...",
         currencyUpdated: "Moeda preferida atualizada!",
         currencyUpdateError: "Falha ao atualizar moeda. Tente novamente.",
+
+        spendingByCategory: "Gastos por Categoria",
+        spendingByCategoryDescription: "Despesas agrupadas por tag no ano selecionado",
+        noTagsForChart: "Nenhuma tag encontrada",
+        noTagsForChartDescription: "Adicione tags às suas transações para ver os gastos por categoria",
     },
     es: {
         brandTagline: "Toma el control de tu futuro financiero",
@@ -956,5 +972,10 @@ export const translations: Record<Locale, Translations> = {
         selectCurrency: "Selecciona moneda...",
         currencyUpdated: "¡Moneda preferida actualizada!",
         currencyUpdateError: "Error al actualizar moneda. Inténtalo de nuevo.",
+
+        spendingByCategory: "Gastos por Categoría",
+        spendingByCategoryDescription: "Gastos agrupados por etiqueta en el año seleccionado",
+        noTagsForChart: "No se encontraron etiquetas",
+        noTagsForChartDescription: "Agrega etiquetas a tus transacciones para ver los gastos por categoría",
     },
 }

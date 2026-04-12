@@ -2,6 +2,7 @@ package dev.avelar.astazou.service;
 
 import dev.avelar.astazou.dto.Balance;
 import dev.avelar.astazou.dto.MonthlySummaryDto;
+import dev.avelar.astazou.dto.SpendingByTagDto;
 import dev.avelar.astazou.exception.NotFoundException;
 import dev.avelar.astazou.model.BankAccount;
 import dev.avelar.astazou.model.Transaction;
@@ -558,5 +559,42 @@ class TransactionServiceTest {
       assertEquals(0.0, dto.income());
       assertEquals(0.0, dto.expenses());
     });
+  }
+
+  @Test
+  void getSpendingByTag_delegatesToRepository() {
+    List<SpendingByTagDto> data = List.of(new SpendingByTagDto("food", 500.0));
+    when(repository.getSpendingByTag("user", 2025, "BRL")).thenReturn(data);
+
+    List<SpendingByTagDto> result = service.getSpendingByTag("user", 2025, "BRL");
+
+    assertEquals(data, result);
+    verify(repository).getSpendingByTag("user", 2025, "BRL");
+  }
+
+  @Test
+  void getSpendingByTagAllCurrencies_returnsMapPerCurrency() {
+    when(bankAccountRepository.findDistinctCurrenciesByUsername("user")).thenReturn(List.of("BRL", "USD"));
+    when(repository.getSpendingByTag("user", 2025, "BRL"))
+        .thenReturn(List.of(new SpendingByTagDto("food", 100.0)));
+    when(repository.getSpendingByTag("user", 2025, "USD"))
+        .thenReturn(List.of());
+
+    var result = service.getSpendingByTagAllCurrencies("user", 2025);
+
+    assertEquals(2, result.size());
+    assertEquals(1, result.get("BRL").size());
+    assertEquals("food", result.get("BRL").get(0).tag());
+    assertTrue(result.get("USD").isEmpty());
+  }
+
+  @Test
+  void getSpendingByTagAllCurrencies_returnsEmptyMap_whenNoCurrencies() {
+    when(bankAccountRepository.findDistinctCurrenciesByUsername("user")).thenReturn(List.of());
+
+    var result = service.getSpendingByTagAllCurrencies("user", 2025);
+
+    assertTrue(result.isEmpty());
+    verify(repository, never()).getSpendingByTag(any(), anyInt(), any());
   }
 }

@@ -1,6 +1,6 @@
 package dev.avelar.astazou.service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
 import dev.avelar.astazou.dto.PythonScriptForm;
 import dev.avelar.astazou.dto.ScriptExecutionResult;
 import dev.avelar.astazou.exception.NotFoundException;
@@ -37,6 +37,8 @@ public class PythonScriptService {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(PythonScriptService.class);
 
+  private static final ObjectMapper MAPPER = new ObjectMapper();
+
   @Value("${astazou.scripts.max-transactions:500}")
   private int maxTransactions;
 
@@ -46,17 +48,14 @@ public class PythonScriptService {
   private final PythonScriptRepository repository;
   private final TransactionRepository transactionRepository;
   private final BankAccountRepository bankAccountRepository;
-  private final ObjectMapper objectMapper;
 
   @Autowired
   public PythonScriptService(PythonScriptRepository repository,
       TransactionRepository transactionRepository,
-      BankAccountRepository bankAccountRepository,
-      ObjectMapper objectMapper) {
+      BankAccountRepository bankAccountRepository) {
     this.repository = repository;
     this.transactionRepository = transactionRepository;
     this.bankAccountRepository = bankAccountRepository;
-    this.objectMapper = objectMapper;
   }
 
   // ── CRUD ──────────────────────────────────────────────────────────────────
@@ -134,8 +133,8 @@ public class PythonScriptService {
     int exitCode = 0;
 
     try {
-      String txJson = objectMapper.writeValueAsString(buildTransactionMaps(transactions));
-      String acJson = objectMapper.writeValueAsString(buildAccountMaps(accounts));
+      String txJson = MAPPER.writeValueAsString(buildTransactionMaps(transactions));
+      String acJson = MAPPER.writeValueAsString(buildAccountMaps(accounts));
 
       try (Context context = Context.newBuilder("python")
           .allowAllAccess(false)

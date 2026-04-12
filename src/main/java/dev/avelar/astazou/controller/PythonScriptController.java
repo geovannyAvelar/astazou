@@ -1,5 +1,6 @@
 package dev.avelar.astazou.controller;
 
+import dev.avelar.astazou.dto.ExecuteRequest;
 import dev.avelar.astazou.dto.PythonScriptForm;
 import dev.avelar.astazou.dto.ScriptExecutionResult;
 import dev.avelar.astazou.exception.NotFoundException;
@@ -74,11 +75,13 @@ public class PythonScriptController {
   }
 
   @PostMapping("/{id}/execute")
-  public ResponseEntity<ScriptExecutionResult> execute(@PathVariable Long id) {
+  public ResponseEntity<ScriptExecutionResult> execute(@PathVariable Long id,
+      @RequestBody(required = false) ExecuteRequest request) {
     Authentication auth = SecurityContextHolder.getContext().getAuthentication();
     if (auth == null) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
     try {
-      return ResponseEntity.ok(service.execute(id, auth.getName()));
+      String requirements = request != null ? request.requirements() : null;
+      return ResponseEntity.ok(service.execute(id, auth.getName(), requirements));
     } catch (NotFoundException e) {
       return ResponseEntity.notFound().build();
     }

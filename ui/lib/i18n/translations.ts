@@ -287,6 +287,12 @@ export interface Translations {
     scriptFailed: string
     unsavedChanges: string
     editScriptName: string
+    // Requirements / deps
+    requirements: string
+    requirementsPlaceholder: string
+    requirementsHint: string
+    installLog: string
+    installingDeps: string
 }
 
 export const translations: Record<Locale, Translations> = {
@@ -560,6 +566,11 @@ export const translations: Record<Locale, Translations> = {
         scriptFailed: "Script execution failed",
         unsavedChanges: "Unsaved changes",
         editScriptName: "Edit name",
+        requirements: "Requirements",
+        requirementsPlaceholder: "# One package per line (requirements.txt format)\nnumpy\nrequests==2.31.0",
+        requirementsHint: "Pure-Python packages recommended. Installed ephemerally per run.",
+        installLog: "Install log",
+        installingDeps: "Installing dependencies...",
     },
     pt: {
         brandTagline: "Assuma o controle do seu futuro financeiro",
@@ -831,6 +842,11 @@ export const translations: Record<Locale, Translations> = {
         scriptFailed: "Falha na execução do script",
         unsavedChanges: "Alterações não salvas",
         editScriptName: "Editar nome",
+        requirements: "Dependências",
+        requirementsPlaceholder: "# Um pacote por linha (formato requirements.txt)\nnumpy\nrequests==2.31.0",
+        requirementsHint: "Pacotes Python puro recomendados. Instalados de forma efêmera a cada execução.",
+        installLog: "Log de instalação",
+        installingDeps: "Instalando dependências...",
     },
     es: {
         brandTagline: "Toma el control de tu futuro financiero",
@@ -1102,5 +1118,10 @@ export const translations: Record<Locale, Translations> = {
         scriptFailed: "Error en la ejecución del script",
         unsavedChanges: "Cambios sin guardar",
         editScriptName: "Editar nombre",
+        requirements: "Dependencias",
+        requirementsPlaceholder: "# Un paquete por línea (formato requirements.txt)\nnumpy\nrequests==2.31.0",
+        requirementsHint: "Se recomiendan paquetes Python puro. Instalados de forma efímera en cada ejecución.",
+        installLog: "Log de instalación",
+        installingDeps: "Instalando dependencias...",
     },
 }

@@ -37,12 +37,19 @@ import {
     ResizableHandle,
 } from "@/components/ui/resizable"
 import {
+    Tabs,
+    TabsContent,
+    TabsList,
+    TabsTrigger,
+} from "@/components/ui/tabs"
+import {
     ArrowLeft,
     CheckCircle2,
     Clock,
     Code2,
     Loader2,
     LogOut,
+    Package,
     Pencil,
     Play,
     Plus,
@@ -82,6 +89,7 @@ interface ExecutionResult {
     error: string
     exitCode: number
     executionTimeMs: number
+    installLog: string | null
 }
 
 // ── Component ───────────────────────────────────────────────────────────────
@@ -110,6 +118,9 @@ export function ScriptsContent() {
 
     // Execution output
     const [executionResult, setExecutionResult] = useState<ExecutionResult | null>(null)
+
+    // Requirements (pip packages, per-script, ephemeral)
+    const [requirements, setRequirements] = useState("")
 
     // Create dialog
     const [showCreateDialog, setShowCreateDialog] = useState(false)
@@ -152,6 +163,7 @@ export function ScriptsContent() {
         setEditedDescription(script.description ?? "")
         setIsDirty(false)
         setExecutionResult(null)
+        setRequirements("")
         setIsEditingName(false)
     }
 
@@ -199,9 +211,14 @@ export function ScriptsContent() {
         setIsRunning(true)
         setExecutionResult(null)
         try {
+            const body = requirements.trim()
+                ? JSON.stringify({ requirements: requirements.trim() })
+                : undefined
             const res = await fetch(`${API_BASE}/scripts/${selectedScript.id}/execute`, {
                 method: "POST",
+                headers: body ? { "Content-Type": "application/json" } : undefined,
                 credentials: "include",
+                body,
             })
             if (res.ok) {
                 const result: ExecutionResult = await res.json()
@@ -462,58 +479,113 @@ export function ScriptsContent() {
 
                                 <ResizableHandle withHandle />
 
-                                {/* Output panel */}
+                                {/* Output / Requirements tabbed panel */}
                                 <ResizablePanel defaultSize={35} minSize={15} className="flex flex-col">
-                                    <div className="flex items-center gap-2 border-b px-3 py-2 shrink-0">
-                                        <Terminal className="size-3.5 text-muted-foreground" />
-                                        <span className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">{t.scriptOutput}</span>
-                                        {executionResult && (
-                                            <div className="ml-auto flex items-center gap-3">
-                                                {executionResult.exitCode === 0 ? (
-                                                    <span className="flex items-center gap-1 text-xs text-emerald-600 dark:text-emerald-400 font-medium">
-                                                        <CheckCircle2 className="size-3.5" /> {t.scriptSuccess}
-                                                    </span>
-                                                ) : (
-                                                    <span className="flex items-center gap-1 text-xs text-destructive font-medium">
-                                                        <XCircle className="size-3.5" /> {t.scriptFailed}
-                                                    </span>
-                                                )}
-                                                <span className="flex items-center gap-1 text-xs text-muted-foreground">
-                                                    <Clock className="size-3" /> {executionResult.executionTimeMs}ms
-                                                </span>
-                                            </div>
-                                        )}
-                                        {isRunning && (
-                                            <div className="ml-auto flex items-center gap-1.5 text-xs text-muted-foreground">
-                                                <Loader2 className="size-3 animate-spin" /> {t.scriptRunning}
-                                            </div>
-                                        )}
-                                    </div>
+                                    <Tabs defaultValue="output" className="flex flex-col flex-1 overflow-hidden">
+                                        {/* Tab bar */}
+                                        <div className="flex items-center border-b px-3 shrink-0 gap-2">
+                                            <TabsList className="h-9 bg-transparent p-0 gap-1">
+                                                <TabsTrigger
+                                                    value="output"
+                                                    className="h-8 gap-1.5 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent text-xs px-2"
+                                                >
+                                                    <Terminal className="size-3" />
+                                                    {t.scriptOutput}
+                                                </TabsTrigger>
+                                                <TabsTrigger
+                                                    value="requirements"
+                                                    className="h-8 gap-1.5 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent text-xs px-2"
+                                                >
+                                                    <Package className="size-3" />
+                                                    {t.requirements}
+                                                    {requirements.trim() && (
+                                                        <span className="ml-1 size-1.5 rounded-full bg-amber-400 inline-block" />
+                                                    )}
+                                                </TabsTrigger>
+                                            </TabsList>
 
-                                    <div className="flex-1 overflow-y-auto bg-zinc-950 dark:bg-zinc-950 font-mono text-xs p-3">
-                                        {!executionResult && !isRunning && (
-                                            <p className="text-zinc-600">
-                                                {`# ${t.scriptOutput} — ${t.runScript.toLowerCase()} a script to see results here`}
-                                            </p>
-                                        )}
-                                        {executionResult && (
-                                            <>
-                                                {executionResult.output && (
-                                                    <pre className="text-zinc-200 whitespace-pre-wrap break-all">
-                                                        {executionResult.output}
-                                                    </pre>
+                                            {/* Status badges – always visible */}
+                                            {executionResult && (
+                                                <div className="ml-auto flex items-center gap-3">
+                                                    {executionResult.exitCode === 0 ? (
+                                                        <span className="flex items-center gap-1 text-xs text-emerald-600 dark:text-emerald-400 font-medium">
+                                                            <CheckCircle2 className="size-3.5" /> {t.scriptSuccess}
+                                                        </span>
+                                                    ) : (
+                                                        <span className="flex items-center gap-1 text-xs text-destructive font-medium">
+                                                            <XCircle className="size-3.5" /> {t.scriptFailed}
+                                                        </span>
+                                                    )}
+                                                    <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                                                        <Clock className="size-3" /> {executionResult.executionTimeMs}ms
+                                                    </span>
+                                                </div>
+                                            )}
+                                            {isRunning && (
+                                                <div className="ml-auto flex items-center gap-1.5 text-xs text-muted-foreground">
+                                                    <Loader2 className="size-3 animate-spin" />
+                                                    {requirements.trim() ? t.installingDeps : t.scriptRunning}
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        {/* ── Output tab ── */}
+                                        <TabsContent value="output" className="flex-1 overflow-hidden mt-0 data-[state=active]:flex flex-col">
+                                            <div className="flex-1 overflow-y-auto bg-zinc-950 font-mono text-xs p-3">
+                                                {!executionResult && !isRunning && (
+                                                    <p className="text-zinc-600">
+                                                        {`# ${t.scriptOutput} — ${t.runScript.toLowerCase()} a script to see results here`}
+                                                    </p>
                                                 )}
-                                                {executionResult.error && (
-                                                    <pre className="text-red-400 whitespace-pre-wrap break-all mt-1">
-                                                        {executionResult.error}
-                                                    </pre>
+                                                {executionResult && (
+                                                    <>
+                                                        {/* Install log (amber) */}
+                                                        {executionResult.installLog && (
+                                                            <details open={executionResult.exitCode !== 0} className="mb-2">
+                                                                <summary className="text-amber-400 cursor-pointer select-none mb-1">
+                                                                    ▸ {t.installLog}
+                                                                </summary>
+                                                                <pre className="text-amber-300/80 whitespace-pre-wrap break-all pl-3">
+                                                                    {executionResult.installLog}
+                                                                </pre>
+                                                            </details>
+                                                        )}
+                                                        {/* Script stdout */}
+                                                        {executionResult.output && (
+                                                            <pre className="text-zinc-200 whitespace-pre-wrap break-all">
+                                                                {executionResult.output}
+                                                            </pre>
+                                                        )}
+                                                        {/* Script stderr */}
+                                                        {executionResult.error && (
+                                                            <pre className="text-red-400 whitespace-pre-wrap break-all mt-1">
+                                                                {executionResult.error}
+                                                            </pre>
+                                                        )}
+                                                        {!executionResult.output && !executionResult.error && !executionResult.installLog && (
+                                                            <p className="text-zinc-600"># (no output)</p>
+                                                        )}
+                                                    </>
                                                 )}
-                                                {!executionResult.output && !executionResult.error && (
-                                                    <p className="text-zinc-600"># (no output)</p>
-                                                )}
-                                            </>
-                                        )}
-                                    </div>
+                                            </div>
+                                        </TabsContent>
+
+                                        {/* ── Requirements tab ── */}
+                                        <TabsContent value="requirements" className="flex-1 overflow-hidden mt-0 data-[state=active]:flex flex-col">
+                                            <div className="flex flex-col flex-1 overflow-hidden p-3 gap-2">
+                                                <p className="text-xs text-muted-foreground shrink-0">
+                                                    {t.requirementsHint}
+                                                </p>
+                                                <Textarea
+                                                    className="flex-1 resize-none font-mono text-xs bg-zinc-950 text-zinc-200 border-zinc-800 focus-visible:ring-zinc-700 placeholder:text-zinc-600"
+                                                    placeholder={t.requirementsPlaceholder}
+                                                    value={requirements}
+                                                    onChange={(e) => setRequirements(e.target.value)}
+                                                    spellCheck={false}
+                                                />
+                                            </div>
+                                        </TabsContent>
+                                    </Tabs>
                                 </ResizablePanel>
 
                             </ResizablePanelGroup>
@@ -611,6 +683,7 @@ const DEFAULT_SCRIPT = `# Available variables:
 #     id, name, balance, currency
 #
 # Use print() to produce output.
+# Need extra packages? Add them in the "Requirements" tab below.
 
 # Example: total income vs expenses
 credits = sum(t['amount'] for t in transactions if t['type'] == 'credit')

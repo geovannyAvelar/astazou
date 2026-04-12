@@ -4,6 +4,8 @@ public record ScriptExecutionResult(
     String output,
     String error,
     int exitCode,
-    long executionTimeMs
+    long executionTimeMs,
+    /** Captured pip output; null when no dependencies were requested. */
+    String installLog
 ) {}
 

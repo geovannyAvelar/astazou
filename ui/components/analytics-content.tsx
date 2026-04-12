@@ -241,8 +241,8 @@ export function AnalyticsContent() {
                                         </Card>
                                     </div>
 
-                                     {/* Chart */}
-                                    <Card>
+                                    {/* Chart */}
+                                    <Card className="mt-6">
                                         <CardHeader>
                                             <CardTitle>Monthly Trends</CardTitle>
                                             <CardDescription>Income vs Expenses throughout the year</CardDescription>
@@ -276,7 +276,7 @@ export function AnalyticsContent() {
                                     </Card>
 
                                     {/* Spending by category chart */}
-                                    <Card>
+                                    <Card className="mt-6">
                                         <CardHeader>
                                             <CardTitle>{t.spendingByCategory}</CardTitle>
                                             <CardDescription>{t.spendingByCategoryDescription}</CardDescription>

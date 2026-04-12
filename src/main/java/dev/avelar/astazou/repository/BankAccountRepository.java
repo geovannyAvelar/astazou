@@ -33,4 +33,7 @@ public interface BankAccountRepository extends CrudRepository<BankAccount, Long>
   @Query("SELECT DISTINCT currency FROM bank_account WHERE username = :username ORDER BY currency")
   List<String> findDistinctCurrenciesByUsername(String username);
 
+  @Query("SELECT * FROM bank_account WHERE username = :username ORDER BY name")
+  List<BankAccount> findAllByUsername(String username);
+
 }

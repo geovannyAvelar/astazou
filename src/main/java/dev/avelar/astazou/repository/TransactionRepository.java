@@ -190,6 +190,16 @@ public interface TransactionRepository extends CrudRepository<Transaction, Long>
       @Param("year") int year,
       @Param("currency") String currency);
 
+  @Query("""
+        SELECT t.* FROM transactions t
+        JOIN bank_account ba ON t.bank_account_id = ba.id
+        WHERE ba.username = :username
+        ORDER BY t.transaction_date DESC
+        LIMIT :limit
+      """)
+  List<Transaction> findRecentByUsername(@Param("username") String username,
+      @Param("limit") int limit);
+
   @Modifying
   @Query("""
       UPDATE transactions t

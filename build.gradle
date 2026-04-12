@@ -61,6 +61,9 @@ dependencies {
     testImplementation 'org.springframework.boot:spring-boot-starter-security-test'
     testImplementation 'org.springframework.boot:spring-boot-starter-webmvc-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    // GraalVM Polyglot API + GraalPy (Python) engine
+    implementation 'org.graalvm.polyglot:polyglot:24.2.0'
+    implementation 'org.graalvm.polyglot:python-community:24.2.0'
 }
 
 dependencyManagement {

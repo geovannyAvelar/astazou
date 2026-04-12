@@ -255,6 +255,38 @@ export interface Translations {
     spendingByCategoryDescription: string
     noTagsForChart: string
     noTagsForChartDescription: string
+
+    // Python Scripts
+    pythonScripts: string
+    pythonScriptsDescription: string
+    createScript: string
+    scriptName: string
+    scriptNamePlaceholder: string
+    scriptDescription: string
+    scriptDescriptionPlaceholder: string
+    runScript: string
+    saveScript: string
+    deleteScript: string
+    deleteScriptDescription: string
+    noScripts: string
+    noScriptsDescription: string
+    noScriptSelected: string
+    noScriptSelectedDescription: string
+    scriptOutput: string
+    scriptRunning: string
+    scriptSaved: string
+    scriptSaveError: string
+    scriptCreated: string
+    scriptCreateError: string
+    scriptDeleted: string
+    scriptDeleteError: string
+    scriptNameRequired: string
+    availableVariables: string
+    executionTime: string
+    scriptSuccess: string
+    scriptFailed: string
+    unsavedChanges: string
+    editScriptName: string
 }
 
 export const translations: Record<Locale, Translations> = {
@@ -497,6 +529,37 @@ export const translations: Record<Locale, Translations> = {
         spendingByCategoryDescription: "Expenses grouped by tag for the selected year",
         noTagsForChart: "No tags found",
         noTagsForChartDescription: "Add tags to your transactions to see spending by category",
+
+        pythonScripts: "Python Scripts",
+        pythonScriptsDescription: "Write and run Python scripts to analyze your financial data.",
+        createScript: "New Script",
+        scriptName: "Script Name",
+        scriptNamePlaceholder: "e.g. Monthly Summary, Tax Analysis...",
+        scriptDescription: "Description",
+        scriptDescriptionPlaceholder: "What does this script do? (optional)",
+        runScript: "Run",
+        saveScript: "Save",
+        deleteScript: "Delete script",
+        deleteScriptDescription: "This action cannot be undone. The script will be permanently removed.",
+        noScripts: "No scripts yet",
+        noScriptsDescription: "Create your first Python script to start analyzing your financial data.",
+        noScriptSelected: "No script selected",
+        noScriptSelectedDescription: "Select a script from the list or create a new one.",
+        scriptOutput: "Output",
+        scriptRunning: "Running...",
+        scriptSaved: "Script saved successfully!",
+        scriptSaveError: "Failed to save script. Please try again.",
+        scriptCreated: "Script created successfully!",
+        scriptCreateError: "Failed to create script. Please try again.",
+        scriptDeleted: "Script deleted successfully!",
+        scriptDeleteError: "Failed to delete script. Please try again.",
+        scriptNameRequired: "Please enter a script name.",
+        availableVariables: "Available: transactions[], accounts[]",
+        executionTime: "Execution time",
+        scriptSuccess: "Script executed successfully",
+        scriptFailed: "Script execution failed",
+        unsavedChanges: "Unsaved changes",
+        editScriptName: "Edit name",
     },
     pt: {
         brandTagline: "Assuma o controle do seu futuro financeiro",
@@ -737,6 +800,37 @@ export const translations: Record<Locale, Translations> = {
         spendingByCategoryDescription: "Despesas agrupadas por tag no ano selecionado",
         noTagsForChart: "Nenhuma tag encontrada",
         noTagsForChartDescription: "Adicione tags às suas transações para ver os gastos por categoria",
+
+        pythonScripts: "Scripts Python",
+        pythonScriptsDescription: "Escreva e execute scripts Python para analisar seus dados financeiros.",
+        createScript: "Novo Script",
+        scriptName: "Nome do Script",
+        scriptNamePlaceholder: "ex. Resumo Mensal, Análise de Impostos...",
+        scriptDescription: "Descrição",
+        scriptDescriptionPlaceholder: "O que este script faz? (opcional)",
+        runScript: "Executar",
+        saveScript: "Salvar",
+        deleteScript: "Excluir script",
+        deleteScriptDescription: "Esta ação não pode ser desfeita. O script será removido permanentemente.",
+        noScripts: "Nenhum script ainda",
+        noScriptsDescription: "Crie seu primeiro script Python para começar a analisar seus dados financeiros.",
+        noScriptSelected: "Nenhum script selecionado",
+        noScriptSelectedDescription: "Selecione um script da lista ou crie um novo.",
+        scriptOutput: "Saída",
+        scriptRunning: "Executando...",
+        scriptSaved: "Script salvo com sucesso!",
+        scriptSaveError: "Falha ao salvar script. Tente novamente.",
+        scriptCreated: "Script criado com sucesso!",
+        scriptCreateError: "Falha ao criar script. Tente novamente.",
+        scriptDeleted: "Script excluído com sucesso!",
+        scriptDeleteError: "Falha ao excluir script. Tente novamente.",
+        scriptNameRequired: "Por favor, insira o nome do script.",
+        availableVariables: "Disponível: transactions[], accounts[]",
+        executionTime: "Tempo de execução",
+        scriptSuccess: "Script executado com sucesso",
+        scriptFailed: "Falha na execução do script",
+        unsavedChanges: "Alterações não salvas",
+        editScriptName: "Editar nome",
     },
     es: {
         brandTagline: "Toma el control de tu futuro financiero",
@@ -977,5 +1071,36 @@ export const translations: Record<Locale, Translations> = {
         spendingByCategoryDescription: "Gastos agrupados por etiqueta en el año seleccionado",
         noTagsForChart: "No se encontraron etiquetas",
         noTagsForChartDescription: "Agrega etiquetas a tus transacciones para ver los gastos por categoría",
+
+        pythonScripts: "Scripts Python",
+        pythonScriptsDescription: "Escribe y ejecuta scripts Python para analizar tus datos financieros.",
+        createScript: "Nuevo Script",
+        scriptName: "Nombre del Script",
+        scriptNamePlaceholder: "ej. Resumen Mensual, Análisis de Impuestos...",
+        scriptDescription: "Descripción",
+        scriptDescriptionPlaceholder: "¿Qué hace este script? (opcional)",
+        runScript: "Ejecutar",
+        saveScript: "Guardar",
+        deleteScript: "Eliminar script",
+        deleteScriptDescription: "Esta acción no se puede deshacer. El script será eliminado permanentemente.",
+        noScripts: "Sin scripts aún",
+        noScriptsDescription: "Crea tu primer script Python para comenzar a analizar tus datos financieros.",
+        noScriptSelected: "Ningún script seleccionado",
+        noScriptSelectedDescription: "Selecciona un script de la lista o crea uno nuevo.",
+        scriptOutput: "Salida",
+        scriptRunning: "Ejecutando...",
+        scriptSaved: "Script guardado exitosamente!",
+        scriptSaveError: "Error al guardar script. Inténtalo de nuevo.",
+        scriptCreated: "Script creado exitosamente!",
+        scriptCreateError: "Error al crear script. Inténtalo de nuevo.",
+        scriptDeleted: "Script eliminado exitosamente!",
+        scriptDeleteError: "Error al eliminar script. Inténtalo de nuevo.",
+        scriptNameRequired: "Por favor, ingresa el nombre del script.",
+        availableVariables: "Disponible: transactions[], accounts[]",
+        executionTime: "Tiempo de ejecución",
+        scriptSuccess: "Script ejecutado exitosamente",
+        scriptFailed: "Error en la ejecución del script",
+        unsavedChanges: "Cambios sin guardar",
+        editScriptName: "Editar nombre",
     },
 }

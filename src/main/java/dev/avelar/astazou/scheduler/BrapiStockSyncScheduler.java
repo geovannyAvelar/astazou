@@ -21,9 +21,14 @@ public class BrapiStockSyncScheduler {
 
   /**
    * Runs the stock sync once as soon as the application is ready.
+   * Only runs when {@code brapi.scheduler.enabled} is {@code true}.
    */
   @EventListener(ApplicationReadyEvent.class)
   public void syncOnStartup() {
+    if (!schedulerEnabled) {
+      log.debug("BrapiStockSyncScheduler is disabled (brapi.scheduler.enabled=false). Skipping startup sync.");
+      return;
+    }
     log.info("Starting BrAPI stock list sync.");
     syncStocks();
   }

@@ -51,7 +51,7 @@ public class StockQuoteScheduler {
       return;
     }
 
-    DayOfWeek today = LocalDate.now().getDayOfWeek();
+    DayOfWeek today = LocalDate.now(SAO_PAULO).getDayOfWeek();
     if (today == DayOfWeek.SATURDAY || today == DayOfWeek.SUNDAY) {
       log.debug("Skipping quote refresh on weekend ({}).", today);
       return;

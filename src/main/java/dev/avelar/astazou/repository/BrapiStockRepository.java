@@ -6,6 +6,7 @@ import org.springframework.data.jdbc.repository.query.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -15,6 +16,7 @@ public interface BrapiStockRepository extends CrudRepository<BrapiStock, Long> {
   List<BrapiStock> findAll();
 
   @Modifying
+  @Transactional
   @Query("""
       INSERT INTO brapi_stock (ticker, name, sector, synced_at)
       VALUES (:#{#s.ticker}, :#{#s.name}, :#{#s.sector}, now())

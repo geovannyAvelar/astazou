@@ -1,6 +1,7 @@
 package dev.avelar.astazou.service;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -28,6 +29,7 @@ public class StockLogoService {
 
   private final HttpClient httpClient;
 
+  @Autowired
   public StockLogoService(@Value("${astazou.logos.storage-path:./logos}") String storagePath) {
     this.storageDir = Paths.get(storagePath).toAbsolutePath().normalize();
     this.httpClient = HttpClient.newBuilder()

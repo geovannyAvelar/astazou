@@ -18,6 +18,15 @@ public interface BrapiStockRepository extends CrudRepository<BrapiStock, Long> {
 
   Optional<BrapiStock> findByTicker(String ticker);
 
+  @Query("""
+      SELECT * FROM brapi_stock
+      WHERE ticker ILIKE CONCAT(:q, '%')
+         OR name   ILIKE CONCAT('%', :q, '%')
+      ORDER BY ticker
+      LIMIT 10
+      """)
+  List<BrapiStock> search(@Param("q") String q);
+
   @Modifying
   @Transactional
   @Query("""

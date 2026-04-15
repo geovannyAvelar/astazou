@@ -218,6 +218,7 @@ export interface Translations {
     refresh: string
     backToQuotes: string
     stockSector: string
+    noStocksFound: string
 
     // Investments
     investments: string
@@ -503,6 +504,7 @@ export const translations: Record<Locale, Translations> = {
         refresh: "Refresh",
         backToQuotes: "Back to Quotes",
         stockSector: "Sector",
+        noStocksFound: "No stocks found.",
 
         investments: "Investments",
         investmentsDescription: "Track your investment contributions by ticker.",
@@ -781,6 +783,7 @@ export const translations: Record<Locale, Translations> = {
         refresh: "Atualizar",
         backToQuotes: "Voltar às Cotações",
         stockSector: "Setor",
+        noStocksFound: "Nenhum ativo encontrado.",
 
         investments: "Investimentos",
         investmentsDescription: "Acompanhe seus aportes em investimentos por ticker.",
@@ -1059,6 +1062,7 @@ export const translations: Record<Locale, Translations> = {
         refresh: "Actualizar",
         backToQuotes: "Volver a Cotizaciones",
         stockSector: "Sector",
+        noStocksFound: "Ningún activo encontrado.",
 
         investments: "Inversiones",
         investmentsDescription: "Registra tus aportes de inversión por ticker.",

@@ -40,6 +40,7 @@ public class SecurityConfig {
                 "/",
                 "/token/**",
                 "/actuator/**",
+                "/logos/**",
                 "/reports/validate/**")
             .permitAll())
         .authorizeHttpRequests(matcher -> matcher.anyRequest().authenticated())

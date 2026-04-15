@@ -19,20 +19,28 @@ public class BrapiStockService {
 
   private final BrapiStockRepository brapiStockRepository;
 
+  private final StockLogoService stockLogoService;
+
   /**
-   * Fetches all available stocks from BrAPI and upserts them into the {@code brapi_stock} table.
+   * Fetches all available stocks from BrAPI, downloads their logos, and upserts
+   * everything into the {@code brapi_stock} table.
    */
   @Transactional
   public void syncStocks() {
     List<BrapiStock> stocks = brapiService.listStocks().stream()
         .filter(s -> s.getStock() != null && !s.getStock().isBlank())
         .filter(s -> !s.getStock().toUpperCase().endsWith("F"))
-        .filter(s -> !s.getStock().toUpperCase().endsWith("34") && !s.getStock().toUpperCase().endsWith("39") )
-        .map(s -> BrapiStock.builder()
-            .ticker(s.getStock().toUpperCase())
-            .name(s.getName())
-            .sector(s.getSector())
-            .build())
+        .filter(s -> !s.getStock().toUpperCase().endsWith("34") && !s.getStock().toUpperCase().endsWith("39"))
+        .map(s -> {
+          String ticker  = s.getStock().toUpperCase();
+          String logoUrl = stockLogoService.downloadAndStore(ticker, s.getLogo());
+          return BrapiStock.builder()
+              .ticker(ticker)
+              .name(s.getName())
+              .sector(s.getSector())
+              .logoUrl(logoUrl)
+              .build();
+        })
         .toList();
 
     log.info("Syncing {} stock(s) from BrAPI into brapi_stock table.", stocks.size());

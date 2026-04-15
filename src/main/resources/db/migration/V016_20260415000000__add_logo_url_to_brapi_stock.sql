@@ -1,0 +1,2 @@
+ALTER TABLE brapi_stock ADD COLUMN IF NOT EXISTS logo_url TEXT;
+

@@ -29,6 +29,9 @@ public class BrapiStock {
   @Column("sector")
   private String sector;
 
+  @Column("logo_url")
+  private String logoUrl;
+
   @Column("synced_at")
   private OffsetDateTime syncedAt;
 

@@ -18,12 +18,13 @@ public interface BrapiStockRepository extends CrudRepository<BrapiStock, Long> {
   @Modifying
   @Transactional
   @Query("""
-      INSERT INTO brapi_stock (ticker, name, sector, synced_at)
-      VALUES (:#{#s.ticker}, :#{#s.name}, :#{#s.sector}, now())
+      INSERT INTO brapi_stock (ticker, name, sector, logo_url, synced_at)
+      VALUES (:#{#s.ticker}, :#{#s.name}, :#{#s.sector}, :#{#s.logoUrl}, now())
       ON CONFLICT (ticker)
       DO UPDATE SET
           name      = EXCLUDED.name,
           sector    = EXCLUDED.sector,
+          logo_url  = EXCLUDED.logo_url,
           synced_at = now()
       """)
   void upsert(@Param("s") BrapiStock stock);

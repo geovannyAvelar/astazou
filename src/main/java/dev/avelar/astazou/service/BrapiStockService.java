@@ -26,6 +26,8 @@ public class BrapiStockService {
   public void syncStocks() {
     List<BrapiStock> stocks = brapiService.listStocks().stream()
         .filter(s -> s.getStock() != null && !s.getStock().isBlank())
+        .filter(s -> !s.getStock().toUpperCase().endsWith("F"))
+        .filter(s -> !s.getStock().toUpperCase().endsWith("34") && !s.getStock().toUpperCase().endsWith("39") )
         .map(s -> BrapiStock.builder()
             .ticker(s.getStock().toUpperCase())
             .name(s.getName())

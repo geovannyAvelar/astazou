@@ -41,7 +41,7 @@ public class BrapiStockSyncScheduler {
   @Scheduled(cron = "${brapi.stock-sync.cron:0 0 6 * * MON}", zone = "America/Sao_Paulo")
   public void syncStocks() {
     if (!schedulerEnabled) {
-      log.debug("BrapiStockSyncScheduler is disabled (brapi.scheduler.enabled=false). Skipping sync.");
+      log.info("BrapiStockSyncScheduler is disabled (brapi.scheduler.enabled=false). Skipping sync.");
       return;
     }
 

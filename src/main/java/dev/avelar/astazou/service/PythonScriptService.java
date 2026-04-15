@@ -117,6 +117,9 @@ public class PythonScriptService {
    */
   public ScriptExecutionResult execute(Long scriptId, String username, String requirements) {
     PythonScript script = findByIdAndUsername(scriptId, username);
+    LOGGER.info("Executing script id={} name='{}' for user='{}' deps={}",
+        scriptId, script.getName(), username,
+        (requirements != null && !requirements.isBlank()) ? "yes" : "none");
 
     List<Transaction> transactions = transactionRepository.findRecentByUsername(username, maxTransactions);
     List<BankAccount> accounts = bankAccountRepository.findAllByUsername(username);
@@ -163,6 +166,7 @@ public class PythonScriptService {
           () -> runScript(code, transactions, accounts, finalDepsDir, finalInstallLog));
       return future.get(timeoutSeconds, TimeUnit.SECONDS);
     } catch (TimeoutException e) {
+      LOGGER.warn("Script execution timed out after {} seconds", timeoutSeconds);
       return new ScriptExecutionResult("",
           "Script execution timed out after " + timeoutSeconds + " seconds.",
           1, (long) timeoutSeconds * 1000, finalInstallLog);
@@ -185,6 +189,9 @@ public class PythonScriptService {
     ByteArrayOutputStream err = new ByteArrayOutputStream();
     long start = System.currentTimeMillis();
     int exitCode = 0;
+
+    LOGGER.info("Starting GraalPy script execution | transactions={} accounts={} depsDir={}",
+        transactions.size(), accounts.size(), depsDir != null ? depsDir : "none");
 
     try {
       String txJson = MAPPER.writeValueAsString(buildTransactionMaps(transactions));
@@ -218,22 +225,30 @@ public class PythonScriptService {
         preamble.append("transactions = json.loads(_tx_json)\n");
         preamble.append("accounts = json.loads(_ac_json)\n");
 
+        LOGGER.debug("Evaluating Python code via GraalPy context");
         context.eval("python", preamble + "\n" + code);
       }
 
     } catch (PolyglotException e) {
-      writeErr(err, formatPolyglotError(e));
+      String msg = formatPolyglotError(e);
+      LOGGER.warn("GraalPy PolyglotException during script execution: {}", msg);
+      writeErr(err, msg);
       exitCode = 1;
     } catch (Exception e) {
-      writeErr(err, e.getMessage() != null ? e.getMessage() : e.getClass().getName());
+      String msg = e.getMessage() != null ? e.getMessage() : e.getClass().getName();
+      LOGGER.error("Unexpected error during script execution: {}", msg, e);
+      writeErr(err, msg);
       exitCode = 1;
     }
+
+    long elapsed = System.currentTimeMillis() - start;
+    LOGGER.info("GraalPy script execution finished | exitCode={} elapsed={}ms", exitCode, elapsed);
 
     return new ScriptExecutionResult(
         out.toString(StandardCharsets.UTF_8),
         err.toString(StandardCharsets.UTF_8),
         exitCode,
-        System.currentTimeMillis() - start,
+        elapsed,
         installLog
     );
   }

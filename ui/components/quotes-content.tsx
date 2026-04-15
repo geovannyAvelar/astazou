@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useCallback } from "react"
+import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { useAuth } from "@/lib/auth-context"
 import { useI18n } from "@/lib/i18n/i18n-context"
@@ -8,32 +8,10 @@ import { LanguageSwitcher } from "@/components/language-switcher"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import {
-  ArrowLeft,
-  Loader2,
-  LogOut,
-  Search,
-  TrendingUp,
-  RefreshCw,
-  Clock,
-  AlertCircle,
-} from "lucide-react"
+import { Card, CardContent } from "@/components/ui/card"
+import { ArrowLeft, Loader2, LogOut, Search, TrendingUp } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
-
-const API_BASE: string = (process.env.NEXT_PUBLIC_API_URL as string) || (process.env.REACT_APP_API_BASE as string) || (process.env.VITE_API_BASE as string) || (process.env.API_BASE as string) || 'http://localhost:8080';
-
-interface StockQuote {
-  id: number
-  symbol: string
-  shortName: string
-  longName: string
-  currency: string
-  price: number
-  updatedAt: string
-}
 
 export function QuotesContent() {
   const { user, logout } = useAuth()
@@ -41,42 +19,13 @@ export function QuotesContent() {
   const router = useRouter()
 
   const [ticker, setTicker] = useState("")
-  const [quote, setQuote] = useState<StockQuote | null>(null)
-  const [isLoading, setIsLoading] = useState(false)
   const [isLoggingOut, setIsLoggingOut] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const [searchedTicker, setSearchedTicker] = useState<string | null>(null)
 
-  const fetchQuote = useCallback(async (symbol: string) => {
-    if (!symbol.trim()) return
-    setIsLoading(true)
-    setError(null)
-    setQuote(null)
-    setSearchedTicker(symbol.toUpperCase())
-    try {
-      const res = await fetch(`${API_BASE}/quotes/${encodeURIComponent(symbol.trim().toUpperCase())}`, {
-          credentials: "include"
-      })
-      if (res.status === 404) {
-        setError(t.quoteNotFound)
-        return
-      }
-      if (!res.ok) {
-        setError(t.quoteError)
-        return
-      }
-      const data: StockQuote = await res.json()
-      setQuote(data)
-    } catch {
-      setError(t.quoteError)
-    } finally {
-      setIsLoading(false)
-    }
-  }, [t])
-
-  async function handleSearch(e: React.FormEvent) {
+  function handleSearch(e: React.FormEvent) {
     e.preventDefault()
-    await fetchQuote(ticker)
+    const symbol = ticker.trim().toUpperCase()
+    if (!symbol) return
+    router.push(`/quotes/${encodeURIComponent(symbol)}`)
   }
 
   async function handleLogout() {
@@ -96,30 +45,6 @@ export function QuotesContent() {
     .join("")
     .toUpperCase()
     .slice(0, 2)
-
-  function formatPrice(price: number, currency: string) {
-    return new Intl.NumberFormat("pt-BR", {
-      style: "currency",
-      currency: currency || "BRL",
-      minimumFractionDigits: 2,
-    }).format(price)
-  }
-
-  function formatDateTime(dateStr: string) {
-    return new Intl.DateTimeFormat("pt-BR", {
-      day: "2-digit",
-      month: "2-digit",
-      year: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-      second: "2-digit",
-    }).format(new Date(dateStr))
-  }
-
-  function getStaleMinutes(dateStr: string): number {
-    const diff = Date.now() - new Date(dateStr).getTime()
-    return Math.floor(diff / 60000)
-  }
 
   return (
     <div className="min-h-svh bg-background">
@@ -191,7 +116,7 @@ export function QuotesContent() {
         </div>
 
         {/* Search form */}
-        <Card className="mb-6">
+        <Card>
           <CardContent className="pt-6">
             <form onSubmit={handleSearch} className="flex gap-2">
               <Input
@@ -200,86 +125,17 @@ export function QuotesContent() {
                 placeholder={t.tickerPlaceholder}
                 className="flex-1 font-mono uppercase"
                 maxLength={12}
-                disabled={isLoading}
+                autoFocus
               />
-              <Button type="submit" disabled={isLoading || !ticker.trim()} className="gap-2">
-                {isLoading ? (
-                  <Loader2 className="size-4 animate-spin" />
-                ) : (
-                  <Search className="size-4" />
-                )}
+              <Button type="submit" disabled={!ticker.trim()} className="gap-2">
+                <Search className="size-4" />
                 {t.search}
               </Button>
             </form>
             <p className="mt-2 text-xs text-muted-foreground">{t.quotesCacheNote}</p>
           </CardContent>
         </Card>
-
-        {/* Error state */}
-        {error && (
-          <Card className="border-destructive/50 bg-destructive/5">
-            <CardContent className="flex items-center gap-3 pt-6">
-              <AlertCircle className="size-5 text-destructive shrink-0" />
-              <div>
-                <p className="font-medium text-destructive">{searchedTicker}</p>
-                <p className="text-sm text-muted-foreground">{error}</p>
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Quote result */}
-        {quote && !error && (
-          <Card>
-            <CardHeader className="pb-2">
-              <div className="flex items-start justify-between">
-                <div>
-                  <CardTitle className="flex items-center gap-2 text-xl font-mono">
-                    {quote.symbol}
-                    <Badge variant="outline" className="font-sans text-xs font-normal">
-                      {quote.currency}
-                    </Badge>
-                  </CardTitle>
-                  <CardDescription className="mt-1">
-                    {quote.longName || quote.shortName}
-                  </CardDescription>
-                </div>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => fetchQuote(quote.symbol)}
-                  disabled={isLoading}
-                  title={t.refresh}
-                >
-                  <RefreshCw className={`size-4 ${isLoading ? "animate-spin" : ""}`} />
-                </Button>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="mt-2 flex items-baseline gap-2">
-                <span className="text-4xl font-bold text-foreground tracking-tight">
-                  {formatPrice(quote.price, quote.currency)}
-                </span>
-              </div>
-
-              {quote.updatedAt && (
-                <div className="mt-4 flex items-center gap-1.5 text-xs text-muted-foreground">
-                  <Clock className="size-3.5" />
-                  <span>
-                    {t.lastUpdated}: {formatDateTime(quote.updatedAt)}
-                  </span>
-                  {getStaleMinutes(quote.updatedAt) < 20 && (
-                    <Badge variant="secondary" className="ml-1 text-xs">
-                      {t.cached}
-                    </Badge>
-                  )}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        )}
       </main>
     </div>
   )
 }
-

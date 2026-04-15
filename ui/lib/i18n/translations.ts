@@ -216,6 +216,8 @@ export interface Translations {
     lastUpdated: string
     cached: string
     refresh: string
+    backToQuotes: string
+    stockSector: string
 
     // Investments
     investments: string
@@ -499,6 +501,8 @@ export const translations: Record<Locale, Translations> = {
         lastUpdated: "Last updated",
         cached: "Cached",
         refresh: "Refresh",
+        backToQuotes: "Back to Quotes",
+        stockSector: "Sector",
 
         investments: "Investments",
         investmentsDescription: "Track your investment contributions by ticker.",
@@ -775,6 +779,8 @@ export const translations: Record<Locale, Translations> = {
         lastUpdated: "Última atualização",
         cached: "Cache",
         refresh: "Atualizar",
+        backToQuotes: "Voltar às Cotações",
+        stockSector: "Setor",
 
         investments: "Investimentos",
         investmentsDescription: "Acompanhe seus aportes em investimentos por ticker.",
@@ -1051,6 +1057,8 @@ export const translations: Record<Locale, Translations> = {
         lastUpdated: "Última actualización",
         cached: "Caché",
         refresh: "Actualizar",
+        backToQuotes: "Volver a Cotizaciones",
+        stockSector: "Sector",
 
         investments: "Inversiones",
         investmentsDescription: "Registra tus aportes de inversión por ticker.",

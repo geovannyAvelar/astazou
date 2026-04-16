@@ -668,7 +668,7 @@ class TransactionControllerTest {
 
   @Test
   void getSpendingByTag_returnsUnauthorized_whenNoAuthentication() {
-    ResponseEntity<java.util.Map<String, java.util.List<SpendingByTagDto>>> response = controller.getSpendingByTag(2026);
+    ResponseEntity<java.util.Map<String, java.util.List<SpendingByTagDto>>> response = controller.getSpendingByTag(2026, null);
 
     assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
     verifyNoInteractions(service);
@@ -680,7 +680,7 @@ class TransactionControllerTest {
     var data = java.util.Map.of("BRL", List.of(new SpendingByTagDto("food", 500.0)));
     when(service.getSpendingByTagAllCurrencies("alice", 2026)).thenReturn(data);
 
-    ResponseEntity<java.util.Map<String, java.util.List<SpendingByTagDto>>> response = controller.getSpendingByTag(2026);
+    ResponseEntity<java.util.Map<String, java.util.List<SpendingByTagDto>>> response = controller.getSpendingByTag(2026, null);
 
     assertEquals(HttpStatus.OK, response.getStatusCode());
     assertEquals(data, response.getBody());
@@ -692,7 +692,7 @@ class TransactionControllerTest {
     int currentYear = OffsetDateTime.now().getYear();
     when(service.getSpendingByTagAllCurrencies("alice", currentYear)).thenReturn(java.util.Map.of());
 
-    controller.getSpendingByTag(null);
+    controller.getSpendingByTag(null, null);
 
     verify(service).getSpendingByTagAllCurrencies("alice", currentYear);
   }

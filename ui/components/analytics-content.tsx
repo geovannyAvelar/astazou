@@ -78,6 +78,8 @@ export function AnalyticsContent() {
     const [spendingByTag, setSpendingByTag] = useState<Record<string, SpendingByTagItem[]>>({})
     const [isLoading, setIsLoading] = useState(true)
     const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear())
+    // Per-currency selected month for "Spending by Category" ("all" = whole year)
+    const [categoryMonth, setCategoryMonth] = useState<Record<string, string>>({})
 
     const displayName = user?.completeUsername || user?.username || "User"
     const initials = displayName
@@ -108,6 +110,26 @@ export function AnalyticsContent() {
             setIsLoading(false)
         }
     }, [selectedYear])
+
+    const fetchSpendingByTag = useCallback(async (currency: string, month: string) => {
+        try {
+            const url = month === "all"
+                ? `${API_BASE}/transactions/spending-by-tag?year=${selectedYear}`
+                : `${API_BASE}/transactions/spending-by-tag?year=${selectedYear}&month=${month}`
+            const res = await fetch(url, { credentials: "include" })
+            if (res.ok) {
+                const data: Record<string, SpendingByTagItem[]> = await res.json()
+                setSpendingByTag(prev => ({ ...prev, [currency]: data[currency] ?? [] }))
+            }
+        } catch (error) {
+            console.error("Failed to fetch spending by tag:", error)
+        }
+    }, [selectedYear])
+
+    const handleCategoryMonthChange = useCallback((currency: string, month: string) => {
+        setCategoryMonth(prev => ({ ...prev, [currency]: month }))
+        fetchSpendingByTag(currency, month)
+    }, [fetchSpendingByTag])
 
     useEffect(() => {
         fetchSummary()
@@ -278,8 +300,31 @@ export function AnalyticsContent() {
                                     {/* Spending by category chart */}
                                     <Card className="mt-6">
                                         <CardHeader>
-                                            <CardTitle>{t.spendingByCategory}</CardTitle>
-                                            <CardDescription>{t.spendingByCategoryDescription}</CardDescription>
+                                            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                                                <div>
+                                                    <CardTitle>{t.spendingByCategory}</CardTitle>
+                                                    <CardDescription>{t.spendingByCategoryDescription}</CardDescription>
+                                                </div>
+                                                {(() => {
+                                                    const availableMonths = months
+                                                        .filter(m => m.expenses > 0 || m.income > 0)
+                                                        .map(m => m.month)
+                                                    const selectedMonth = categoryMonth[currency] ?? "all"
+                                                    return (
+                                                        <Select value={selectedMonth} onValueChange={(v) => handleCategoryMonthChange(currency, v)}>
+                                                            <SelectTrigger className="w-36 shrink-0">
+                                                                <SelectValue />
+                                                            </SelectTrigger>
+                                                            <SelectContent>
+                                                                <SelectItem value="all">All</SelectItem>
+                                                                {availableMonths.map(m => (
+                                                                    <SelectItem key={m} value={m.toString()}>{MONTH_NAMES[m - 1]}</SelectItem>
+                                                                ))}
+                                                            </SelectContent>
+                                                        </Select>
+                                                    )
+                                                })()}
+                                            </div>
                                         </CardHeader>
                                         <CardContent>
                                             {!spendingByTag[currency] || spendingByTag[currency].length === 0 ? (

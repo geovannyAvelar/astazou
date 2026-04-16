@@ -191,6 +191,23 @@ public interface TransactionRepository extends CrudRepository<Transaction, Long>
       @Param("currency") String currency);
 
   @Query("""
+      SELECT tag_val AS tag, COALESCE(SUM(ABS(t.amount)), 0) AS total
+      FROM transactions t
+      JOIN bank_account ba ON t.bank_account_id = ba.id, UNNEST(t.tags) AS tag_val
+      WHERE ba.username = :username
+        AND ba.currency = :currency
+        AND t.type = 'debit'
+        AND EXTRACT(YEAR FROM t.transaction_date) = :year
+        AND EXTRACT(MONTH FROM t.transaction_date) = :month
+      GROUP BY tag_val
+      ORDER BY total DESC
+      """)
+  List<SpendingByTagDto> getSpendingByTagAndMonth(@Param("username") String username,
+      @Param("year") int year,
+      @Param("month") int month,
+      @Param("currency") String currency);
+
+  @Query("""
         SELECT t.* FROM transactions t
         JOIN bank_account ba ON t.bank_account_id = ba.id
         WHERE ba.username = :username

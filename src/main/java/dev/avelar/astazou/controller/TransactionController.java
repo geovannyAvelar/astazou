@@ -317,7 +317,8 @@ public class TransactionController {
 
   @GetMapping("/spending-by-tag")
   public ResponseEntity<java.util.Map<String, java.util.List<SpendingByTagDto>>> getSpendingByTag(
-      @RequestParam(required = false) Integer year) {
+      @RequestParam(required = false) Integer year,
+      @RequestParam(required = false) Integer month) {
     Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 
     if (auth == null) {
@@ -329,6 +330,9 @@ public class TransactionController {
       year = now.getYear();
     }
 
+    if (month != null) {
+      return ResponseEntity.ok(service.getSpendingByTagAllCurrencies(auth.getName(), year, month));
+    }
     return ResponseEntity.ok(service.getSpendingByTagAllCurrencies(auth.getName(), year));
   }
 

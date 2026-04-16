@@ -660,12 +660,26 @@ public class TransactionService {
     return repository.getSpendingByTag(username, year, currency);
   }
 
+  public List<SpendingByTagDto> getSpendingByTag(String username, int year, int month, String currency) {
+    return repository.getSpendingByTagAndMonth(username, year, month, currency);
+  }
+
   /** Returns spending grouped by tag for every currency the user has accounts in. */
   public java.util.Map<String, List<SpendingByTagDto>> getSpendingByTagAllCurrencies(String username, int year) {
     List<String> currencies = bankAccountRepository.findDistinctCurrenciesByUsername(username);
     var result = new java.util.LinkedHashMap<String, List<SpendingByTagDto>>();
     for (String currency : currencies) {
       result.put(currency, getSpendingByTag(username, year, currency));
+    }
+    return result;
+  }
+
+  /** Returns spending grouped by tag for every currency, filtered by month. */
+  public java.util.Map<String, List<SpendingByTagDto>> getSpendingByTagAllCurrencies(String username, int year, int month) {
+    List<String> currencies = bankAccountRepository.findDistinctCurrenciesByUsername(username);
+    var result = new java.util.LinkedHashMap<String, List<SpendingByTagDto>>();
+    for (String currency : currencies) {
+      result.put(currency, getSpendingByTag(username, year, month, currency));
     }
     return result;
   }

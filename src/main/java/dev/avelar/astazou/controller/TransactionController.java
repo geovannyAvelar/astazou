@@ -304,6 +304,24 @@ public class TransactionController {
     }
   }
 
+  @PatchMapping("/{transaction_id}/exclude-from-reports")
+  public ResponseEntity<Void> updateExcludeFromReports(
+      @PathVariable("transaction_id") Long transactionId,
+      @RequestParam boolean exclude) {
+    Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+
+    if (auth == null) {
+      return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+    }
+
+    try {
+      service.updateExcludeFromReports(transactionId, auth.getName(), exclude);
+      return ResponseEntity.ok().build();
+    } catch (Exception e) {
+      return ResponseEntity.badRequest().build();
+    }
+  }
+
   @GetMapping("/tags")
   public ResponseEntity<java.util.List<String>> getAllTags() {
     Authentication auth = SecurityContextHolder.getContext().getAuthentication();

@@ -1,0 +1,3 @@
+ALTER TABLE transactions
+    ADD COLUMN IF NOT EXISTS exclude_from_reports BOOLEAN NOT NULL DEFAULT FALSE;
+

@@ -66,6 +66,7 @@ public interface TransactionRepository extends CrudRepository<Transaction, Long>
         AND ba.currency = :currency
         AND EXTRACT(YEAR FROM t.transaction_date) = :year
         AND EXTRACT(MONTH FROM t.transaction_date) = :month
+        AND NOT t.exclude_from_reports
       """)
   Double calculateIncomeByUsernameAndMonth(@Param("username") String username, @Param("month") Integer month,
       @Param("year") Integer year, @Param("currency") String currency);
@@ -78,6 +79,7 @@ public interface TransactionRepository extends CrudRepository<Transaction, Long>
         AND ba.currency = :currency
         AND EXTRACT(YEAR FROM t.transaction_date) = :year
         AND EXTRACT(MONTH FROM t.transaction_date) = :month
+        AND NOT t.exclude_from_reports
       """)
   Double calculateExpenseByUsernameAndMonth(@Param("username") String username, @Param("month") Integer month,
       @Param("year") Integer year, @Param("currency") String currency);
@@ -148,6 +150,7 @@ public interface TransactionRepository extends CrudRepository<Transaction, Long>
           AND ba.currency = :currency
           AND EXTRACT(YEAR FROM t.transaction_date) = :year
           AND (t.type = 'credit' or t.type = 'debit')
+          AND NOT t.exclude_from_reports
         GROUP BY month
         ORDER BY month
       """)
@@ -183,6 +186,7 @@ public interface TransactionRepository extends CrudRepository<Transaction, Long>
         AND ba.currency = :currency
         AND t.type = 'debit'
         AND EXTRACT(YEAR FROM t.transaction_date) = :year
+        AND NOT t.exclude_from_reports
       GROUP BY tag_val
       ORDER BY total DESC
       """)
@@ -199,6 +203,7 @@ public interface TransactionRepository extends CrudRepository<Transaction, Long>
         AND t.type = 'debit'
         AND EXTRACT(YEAR FROM t.transaction_date) = :year
         AND EXTRACT(MONTH FROM t.transaction_date) = :month
+        AND NOT t.exclude_from_reports
       GROUP BY tag_val
       ORDER BY total DESC
       """)
@@ -216,6 +221,32 @@ public interface TransactionRepository extends CrudRepository<Transaction, Long>
       """)
   List<Transaction> findRecentByUsername(@Param("username") String username,
       @Param("limit") int limit);
+
+  @Modifying
+  @Query("""
+      UPDATE transactions t
+      SET exclude_from_reports = :excludeFromReports
+      FROM bank_account ba
+      WHERE t.bank_account_id = ba.id
+        AND t.id = :transactionId
+        AND ba.username = :username
+      """)
+  void updateExcludeFromReports(@Param("transactionId") Long transactionId,
+      @Param("username") String username,
+      @Param("excludeFromReports") boolean excludeFromReports);
+
+  @Query("""
+        SELECT t.* FROM transactions t
+        WHERE t.bank_account_id = :bankAccountId
+        AND EXTRACT(YEAR FROM t.transaction_date) = :year
+        AND EXTRACT(MONTH FROM t.transaction_date) = :month
+        AND NOT t.exclude_from_reports
+        ORDER BY t.transaction_date DESC
+        LIMIT :limit OFFSET :offset
+      """)
+  List<Transaction> findByAccountIdAndMonthForReport(@Param("bankAccountId") Long bankAccountId,
+      @Param("month") Integer month, @Param("year") Integer year,
+      @Param("limit") int limit, @Param("offset") int offset);
 
   @Modifying
   @Query("""

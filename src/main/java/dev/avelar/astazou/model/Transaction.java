@@ -49,4 +49,8 @@ public class Transaction {
   @Builder.Default
   private String[] tags = new String[0];
 
+  @Column("exclude_from_reports")
+  @Builder.Default
+  private boolean excludeFromReports = false;
+
 }

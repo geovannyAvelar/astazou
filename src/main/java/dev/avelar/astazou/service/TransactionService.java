@@ -392,7 +392,7 @@ public class TransactionService {
   public byte[] generateMonthlyReport(String username, Long bankAccountId, Integer month, Integer year, String lang)
       throws ReportGenerationException {
     List<Transaction> transactions =
-        repository.findByAccountIdAndMonth(bankAccountId, month, year, Integer.MAX_VALUE, 0);
+        repository.findByAccountIdAndMonthForReport(bankAccountId, month, year, Integer.MAX_VALUE, 0);
 
     Optional<BankAccount> accountOpt = bankAccountRepository.findById(bankAccountId);
     String accountName = accountOpt.map(BankAccount::getName).orElse("—");
@@ -654,6 +654,10 @@ public class TransactionService {
 
   public List<String> findAllTags(String username) {
     return repository.findAllTagsByUsername(username);
+  }
+
+  public void updateExcludeFromReports(Long transactionId, String username, boolean excludeFromReports) {
+    repository.updateExcludeFromReports(transactionId, username, excludeFromReports);
   }
 
   public List<SpendingByTagDto> getSpendingByTag(String username, int year, String currency) {

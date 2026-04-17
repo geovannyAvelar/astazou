@@ -52,6 +52,7 @@ import {
     ArrowDownRight,
     ArrowLeftRight,
     ArrowUpRight,
+    EyeOff,
     FileDown,
     FileText,
     Loader2,
@@ -96,6 +97,7 @@ interface Transaction {
     bankAccountId: number
     sequence: number
     tags: string[]
+    excludeFromReports: boolean
 }
 
 interface TransactionsPageResponse {
@@ -659,6 +661,23 @@ export function TransactionsContent({ preselectedAccountId }: { preselectedAccou
         setShowEditDialog(true)
     }
 
+    async function handleToggleExcludeFromReports(tx: Transaction) {
+        const newValue = !tx.excludeFromReports
+        try {
+            const res = await fetch(
+                `${API_BASE}/transactions/${tx.id}/exclude-from-reports?exclude=${newValue}`,
+                { method: "PATCH", credentials: "include" }
+            )
+            if (res.ok) {
+                setTransactions(prev =>
+                    prev.map(t => t.id === tx.id ? { ...t, excludeFromReports: newValue } : t)
+                )
+            }
+        } catch {
+            // silently fail
+        }
+    }
+
     async function handleEditTransaction() {
         if (!transactionToEdit) return
         setEditError("")
@@ -1207,7 +1226,7 @@ export function TransactionsContent({ preselectedAccountId }: { preselectedAccou
                                             <div className="flex items-center justify-between sm:justify-end gap-3 mt-2 sm:mt-0">
                                                 <p className={`text-sm font-semibold ${
                                                     tx.amount >= 0 ? "text-primary" : "text-destructive"
-                                                }`}>
+                                                } ${tx.excludeFromReports ? "opacity-50 line-through" : ""}`}>
                                                     {tx.amount >= 0 ? "+" : ""}{formatTxCurrency(tx.amount, accounts.find(a => a.id === selectedAccountId))}
                                                 </p>
                                                 <div className="flex gap-1">
@@ -1243,6 +1262,16 @@ export function TransactionsContent({ preselectedAccountId }: { preselectedAccou
                                                     <Button
                                                         variant="ghost"
                                                         size="icon-sm"
+                                                        onClick={() => handleToggleExcludeFromReports(tx)}
+                                                        aria-label={t.excludeFromReports}
+                                                        title={t.excludeFromReports}
+                                                        className={tx.excludeFromReports ? "text-amber-500 hover:text-amber-600" : "text-muted-foreground hover:text-amber-500"}
+                                                    >
+                                                        <EyeOff className="size-4" />
+                                                    </Button>
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="icon-sm"
                                                         onClick={() => openDeleteDialog(tx)}
                                                         aria-label={t.deleteTransaction || "Delete transaction"}
                                                         className="text-muted-foreground hover:text-destructive"
@@ -1269,6 +1298,15 @@ export function TransactionsContent({ preselectedAccountId }: { preselectedAccou
                                                         {tag}
                                                     </span>
                                                 ))}
+                                            </div>
+                                        )}
+                                        {/* Excluded from reports badge */}
+                                        {tx.excludeFromReports && (
+                                            <div className="flex pl-0 sm:pl-9 mt-0.5">
+                                                <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/10 text-amber-600 border border-amber-500/20 px-2 py-0.5 text-xs font-medium">
+                                                    <EyeOff className="size-2.5" />
+                                                    {t.excludeFromReports}
+                                                </span>
                                             </div>
                                         )}
                                     </div>

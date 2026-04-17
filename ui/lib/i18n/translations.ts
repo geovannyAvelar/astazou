@@ -98,6 +98,8 @@ export interface Translations {
     deleting: string
     delete: string
     updateAccount: string
+    excludeFromReports: string
+    excludeFromReportsDescription: string
 
     // Search
     search: string
@@ -394,6 +396,8 @@ export const translations: Record<Locale, Translations> = {
         deleting: "Deleting...",
         delete: "Delete",
         updateAccount: "Update account balance",
+        excludeFromReports: "Exclude from reports",
+        excludeFromReportsDescription: "This transaction will not be included in reports, analytics or totals",
 
         // Search
         search: "Search",
@@ -673,6 +677,8 @@ export const translations: Record<Locale, Translations> = {
         deleting: "Excluindo...",
         delete: "Excluir",
         updateAccount: "Atualizar saldo da conta",
+        excludeFromReports: "Excluir dos relatórios",
+        excludeFromReportsDescription: "Esta transação não será incluída em relatórios, análises ou totais",
 
         // Search
         search: "Pesquisar",
@@ -952,6 +958,8 @@ export const translations: Record<Locale, Translations> = {
         deleting: "Eliminando...",
         delete: "Eliminar",
         updateAccount: "Actualizar saldo de la cuenta",
+        excludeFromReports: "Excluir de informes",
+        excludeFromReportsDescription: "Esta transacción no se incluirá en informes, análisis ni totales",
 
         // Search
         search: "Buscar",
